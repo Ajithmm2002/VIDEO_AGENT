@@ -606,15 +606,7 @@ export function polishPlanItem(input: {
   const description = rewriteHowTo
     ? howToShoot(title, shootNote(input.theme, input.index, malayalam), malayalam, input.platform, subject)
     : input.item.description.trim();
-  const rewriteScript = !input.item.script.trim() || (isWeakVideoTitle(oldTitle) && input.item.script.includes(oldTitle));
-  const script = rewriteScript
-    ? localAudioScript({
-        title,
-        description,
-        language: malayalam ? "ml" : input.language,
-        durationSeconds: input.durationSeconds,
-      }).script
-    : input.item.script;
+  const script = isWeakVideoTitle(oldTitle) && input.item.script.includes(oldTitle) ? "" : input.item.script;
   return {
     title,
     topic: (input.item.topic.trim() || subject).slice(0, 500),
@@ -722,17 +714,11 @@ export function localContentPlan(input: {
       input.platform,
       topic,
     );
-    const audio = localAudioScript({
-      title,
-      description,
-      language: malayalam ? "ml" : "en",
-      durationSeconds: input.durationSeconds,
-    });
     return {
       title,
       topic,
       description,
-      script: audio.script,
+      script: "",
       durationSeconds: input.durationSeconds,
     };
   });

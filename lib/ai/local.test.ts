@@ -89,7 +89,7 @@ describe("writing drafts", () => {
 });
 
 describe("content plans", () => {
-  it("builds one video idea per day with a how-to and a timed script", () => {
+  it("builds one video idea per day with a how-to and no audio script", () => {
     const result = localContentPlan({
       language: "en",
       platform: "both",
@@ -103,7 +103,7 @@ describe("content plans", () => {
     expect(result.items.every((item) => !/^comedy:/i.test(item.title))).toBe(true);
     expect(result.items.every((item) => !item.title.includes("first 10 seconds"))).toBe(true);
     expect(result.items.every((item) => item.description.toLowerCase().includes("how to shoot"))).toBe(true);
-    expect(result.items.every((item) => item.script.includes("[0:00]"))).toBe(true);
+    expect(result.items.every((item) => item.script === "")).toBe(true);
     expect(result.items[0].durationSeconds).toBe(30);
   });
 
@@ -138,7 +138,7 @@ describe("content plans", () => {
     expect(result.items.every((item) => !item.title.includes("comedy"))).toBe(true);
     expect(result.items.every((item) => !item.title.includes("ആദ്യ 10 സെക്കൻഡ്"))).toBe(true);
     expect(containsMalayalam(result.items[0].description)).toBe(true);
-    expect(containsMalayalam(result.items[0].script)).toBe(true);
+    expect(result.items.every((item) => item.script === "")).toBe(true);
   });
 
   it("never uses a category label as the video title", () => {
@@ -194,7 +194,7 @@ describe("content plans", () => {
     expect(polished.title).toBe("Don't start Arduino like this");
     expect(polished.description).not.toMatch(/tech angle:/i);
     expect(polished.description).not.toContain("aurduino: the first 10 seconds");
-    expect(polished.script).not.toContain("aurduino: the first 10 seconds");
+    expect(polished.script).toBe("");
     expect(isWeakVideoTitle(polished.title)).toBe(false);
     expect(isWeakHowTo(polished.description)).toBe(false);
   });

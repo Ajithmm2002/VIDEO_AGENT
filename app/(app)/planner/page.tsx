@@ -14,7 +14,7 @@ export default async function PlannerPage() {
       <PageHeader
         eyebrow="Plan"
         title="Idea planner"
-        description="Build 1 to 7 days of video ideas. Each idea is a title, how to shoot it, and a spoken audio script for 15 seconds up to 5 minutes."
+        description="Build 1 to 7 days of video ideas. Each idea is a title and how to shoot it. Write an audio script only when you click the button on that idea."
       />
       <PlannerStudio
         configured={isSupabaseConfigured()}

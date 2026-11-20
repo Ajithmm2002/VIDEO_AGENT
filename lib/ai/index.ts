@@ -145,6 +145,7 @@ export async function generateContentPlan(input: {
         platform: input.platform,
         durationSeconds: input.durationSeconds,
       }),
+      script: "",
       planned_date: dates[index] ?? dates[dates.length - 1],
     })),
   };

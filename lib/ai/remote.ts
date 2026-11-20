@@ -1,6 +1,5 @@
 import type { ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
 import { spokenWordTarget } from "@/lib/utils";
-import { localAudioScript } from "@/lib/ai/local";
 import {
   localThumbnail,
   toEnglishHashtags,
@@ -326,9 +325,8 @@ export async function remoteContentPlan(input: {
   count: number;
   durationSeconds: VideoDuration;
 }): Promise<Omit<ContentPlan, "items"> & { items: Array<Omit<ContentPlan["items"][number], "planned_date">> }> {
-  const words = spokenWordTarget(input.durationSeconds);
   const data = await complete(
-    `You plan a personal YouTube and Instagram calendar. Reply with JSON only: {"items":[{"title":string,"topic":string,"description":string,"script":string}]}.
+    `You plan a personal YouTube and Instagram calendar. Reply with JSON only: {"items":[{"title":string,"topic":string,"description":string}]}.
 
 Rules:
 - Return exactly ${input.count} items. No extra keys.
@@ -338,17 +336,16 @@ Rules:
 - Good titles sound like: "Don't start Arduino like this", "Arduino before you write any code", "വീട്ടിൽ കറന്റ് പോയാൽ ഉണ്ടാകുന്ന 3 തരം ആളുകൾ".
 - topic: a short note for the creator.
 - description: how to execute the video. Shot order, what to film, props, and where to stand. 4-7 short lines. Never write "tech angle:" or "comedy angle:". Never quote a placeholder title.
-- script: the spoken audio script for a ${input.durationSeconds}-second video, about ${words} words, with times like [0:00]. What they say out loud.
+- Do not write an audio script. The creator will request that separately.
 - Mix the selected categories. Related to the brief. Do not repeat titles.`,
     `Language: ${input.language}
 Platform: ${input.platform}
 Categories: ${input.themes.join(", ") || "(none)"}
 Brief: ${input.description || "(none)"}
 Days / ideas: ${input.count}
-Video length seconds: ${input.durationSeconds}
-Spoken-word target per script: ${words}`,
+Video length seconds: ${input.durationSeconds}`,
     {
-      maxOutputTokens: Math.min(8000, 900 + input.count * Math.max(500, words * 2)),
+      maxOutputTokens: Math.min(4000, 700 + input.count * 350),
       timeoutMs: 50000,
       temperature: 0.8,
     },
@@ -360,18 +357,12 @@ Spoken-word target per script: ${words}`,
     const title = typeof row.title === "string" ? row.title.trim() : "";
     const topic = typeof row.topic === "string" ? row.topic.trim() : title;
     const description = typeof row.description === "string" ? row.description.trim() : "";
-    const script = typeof row.script === "string" ? row.script.trim() : "";
     if (!title || !description) return [];
     return [{
       title: title.slice(0, 80),
       topic: (topic || title).slice(0, 500),
       description: description.slice(0, 8000),
-      script: (script || localAudioScript({
-        title,
-        description,
-        language: input.language,
-        durationSeconds: input.durationSeconds,
-      }).script).slice(0, 20000),
+      script: "",
       durationSeconds: input.durationSeconds,
     }];
   });

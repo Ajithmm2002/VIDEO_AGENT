@@ -20,6 +20,7 @@ type DraftItem = {
   topic: string;
   description: string;
   script: string;
+  scriptSource?: "button" | "user";
   durationSeconds: VideoDuration;
   planned_date: string;
   included: boolean;
@@ -118,22 +119,26 @@ export function PlannerStudio({
             const durationSeconds = isVideoDuration(item.durationSeconds) ? item.durationSeconds : restoredDuration;
             const draft = {
               ...item,
-              script: item.script ?? "",
+              script: item.scriptSource ? item.script ?? "" : "",
+              scriptSource: item.scriptSource,
               durationSeconds,
               included: item.included !== false,
             };
             if (!isWeakVideoTitle(draft.title) && !isWeakHowTo(draft.description)) return draft;
+            const polished = polishPlanItem({
+              item: draft,
+              brief: stored.description ?? "",
+              theme: restoredThemes[index % restoredThemes.length] ?? "lifestyle",
+              index,
+              language: restoredLanguage,
+              platform: restoredPlatform,
+              durationSeconds,
+            });
             return {
               ...draft,
-              ...polishPlanItem({
-                item: draft,
-                brief: stored.description ?? "",
-                theme: restoredThemes[index % restoredThemes.length] ?? "lifestyle",
-                index,
-                language: restoredLanguage,
-                platform: restoredPlatform,
-                durationSeconds,
-              }),
+              ...polished,
+              script: draft.scriptSource ? polished.script : "",
+              scriptSource: draft.scriptSource,
             };
           }),
         );
@@ -163,7 +168,7 @@ export function PlannerStudio({
           title: item.title,
           topic: item.topic,
           description: item.description,
-          script: item.script ?? "",
+          script: "",
           durationSeconds: isVideoDuration(item.durationSeconds) ? item.durationSeconds : durationSeconds,
           planned_date: item.planned_date,
           included: true,
@@ -177,7 +182,7 @@ export function PlannerStudio({
       setItems((current) =>
         current.map((item) =>
           item.id === result.itemId
-            ? { ...item, script: result.script, durationSeconds: result.durationSeconds }
+            ? { ...item, script: result.script, durationSeconds: result.durationSeconds, scriptSource: "button" as const }
             : item,
         ),
       );
@@ -265,7 +270,7 @@ export function PlannerStudio({
       <Card className="grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm leading-6 text-muted">
-            Get video titles, how-to-shoot notes, and a spoken audio script. Plans run from 1 day to 1 week. You can edit everything before saving.
+            Get video titles and how-to-shoot notes. Audio scripts stay empty until you click Write audio script on an idea.
           </p>
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${provider === "remote" ? "bg-accent/12 text-accent" : "bg-surface-2 text-muted"}`}>
             {provider === "remote" ? "Gemini" : aiConnected ? "Gemini when available" : "Local templates"}
@@ -329,7 +334,7 @@ export function PlannerStudio({
         <div className="grid gap-2">
           <p className="text-sm font-medium">Video length</p>
           <DurationPills value={durationSeconds} onChange={setDurationSeconds} />
-          <p className="text-xs leading-5 text-muted">Audio scripts are written to this length. You can change it on any idea later.</p>
+          <p className="text-xs leading-5 text-muted">Used when you write an audio script. You can change it on any idea later.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Start date">
@@ -351,7 +356,7 @@ export function PlannerStudio({
         <div className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">Suggested videos</h2>
-            <p className="text-sm text-muted">Title is the idea. Description is how to shoot it. Edit the audio script or rewrite it for another length.</p>
+            <p className="text-sm text-muted">Title is the idea. Description is how to shoot it. Write an audio script only when you need one.</p>
           </div>
           {items.map((item, index) => (
             <Card key={item.id} className="grid gap-3">
@@ -390,8 +395,8 @@ export function PlannerStudio({
                   disabled={scriptingId === item.id}
                 />
               </div>
-              <Field label="Audio script" hint="Spoken words for this length. Edit freely, or rewrite after you change the time.">
-                <TextArea className="min-h-40" value={item.script} onChange={(event) => patchItem(item.id, { script: event.target.value })} />
+              <Field label="Audio script" hint="Stays empty until you generate it. Edit freely after that.">
+                <TextArea className="min-h-40" value={item.script} onChange={(event) => patchItem(item.id, { script: event.target.value, scriptSource: "user" })} placeholder="Click Write audio script when you want spoken words for this idea." />
               </Field>
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -426,6 +431,7 @@ export function PlannerStudio({
                     topic: "",
                     description: "",
                     script: "",
+                    scriptSource: undefined,
                     durationSeconds,
                     planned_date: current.at(-1)?.planned_date || startDate,
                     included: true,

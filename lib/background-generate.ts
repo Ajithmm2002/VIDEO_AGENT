@@ -259,13 +259,13 @@ export function startPlanGeneration(input: {
         title: item.title,
         topic: item.topic,
         description: item.description,
-        script: item.script ?? "",
+        script: "",
         durationSeconds: item.durationSeconds ?? input.durationSeconds,
         planned_date: item.planned_date,
         included: true,
       })),
     });
-    toast.success("Video ideas ready. Open Planner to edit scripts and dates.", { id: "gen-plan" });
+    toast.success("Video ideas ready. Open Planner to edit titles, then write an audio script if you need one.", { id: "gen-plan" });
     for (const listener of resultListeners.plan) listener(data);
   });
 }
@@ -295,7 +295,7 @@ export function startScriptGeneration(input: {
           ...current,
           items: current.items.map((item) =>
             item.id === input.itemId
-              ? { ...item, script: data.script, durationSeconds: input.durationSeconds }
+              ? { ...item, script: data.script, durationSeconds: input.durationSeconds, scriptSource: "button" }
               : item,
           ),
         });
