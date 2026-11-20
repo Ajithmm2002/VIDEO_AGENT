@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink } from "lucide-react";
@@ -11,6 +11,7 @@ import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/compone
 import { googleFlowUrl, languageLabels } from "@/lib/labels";
 import type { ContentOption, Language } from "@/lib/types";
 import { languages } from "@/lib/types";
+import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
 
 export function ThumbnailStudio({
   configured,
@@ -30,6 +31,36 @@ export function ThumbnailStudio({
   const [provider, setProvider] = useState<"local" | "remote" | null>(null);
   const [contentId, setContentId] = useState(initial.contentId);
   const [pending, setPending] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- restore unsaved work after switching pages */
+    const stored = readDraft<{
+      topic: string;
+      language: Language;
+      styleNotes: string;
+      landscape: string;
+      vertical: string;
+      provider: "local" | "remote" | null;
+      contentId: string;
+    }>("thumbnail-draft");
+    if (stored) {
+      if (!initial.topic) setTopic(stored.topic);
+      if (!initial.topic) setLanguage(stored.language);
+      setStyleNotes(stored.styleNotes ?? "");
+      setLandscape(stored.landscape ?? "");
+      setVertical(stored.vertical ?? "");
+      setProvider(stored.provider ?? null);
+      if (!initial.contentId && stored.contentId) setContentId(stored.contentId);
+    }
+    setDraftReady(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [initial.contentId, initial.topic]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    writeDraft("thumbnail-draft", { topic, language, styleNotes, landscape, vertical, provider, contentId });
+  }, [draftReady, topic, language, styleNotes, landscape, vertical, provider, contentId]);
 
   async function onGenerate() {
     setPending(true);
@@ -52,6 +83,7 @@ export function ThumbnailStudio({
       return;
     }
     toast.success(contentId ? "Prompt saved on the content item" : "Prompt saved");
+    clearDraft("thumbnail-draft");
     router.refresh();
   }
 

@@ -34,17 +34,22 @@ describe("writing drafts", () => {
     expect(result.titles).toHaveLength(3);
     expect(result.hook.length).toBeGreaterThan(10);
     expect(result.youtubeDescription).toContain("Home coffee");
+    expect(result.youtubeDescription).toContain("🔥");
     expect(result.instagramCaption.length).toBeGreaterThan(5);
     expect(result.scriptOutline).toContain("Hook");
     expect(result.hashtags.every((tag) => tag.startsWith("#"))).toBe(true);
     expect(result.tags.length).toBeGreaterThan(0);
+    expect(result.hashtags.every((tag) => !containsMalayalam(tag))).toBe(true);
   });
 
-  it("writes Malayalam when that language is selected", () => {
+  it("writes Malayalam copy with English tags and hashtags", () => {
     const result = localWriting({ topic: "പുസ്തക നിർദേശം", language: "ml", platform: "youtube" });
     expect(containsMalayalam(result.titles[0])).toBe(true);
+    expect(result.youtubeDescription).toContain("🔥");
     expect(result.hashtags).toContain("#Malayalam");
-    expect(hashtagsFor("പുസ്തക നിർദേശം", "youtube", "ml").every((tag) => tag.startsWith("#"))).toBe(true);
+    expect(result.hashtags.every((tag) => tag.startsWith("#") && !containsMalayalam(tag))).toBe(true);
+    expect(result.tags.every((tag) => !containsMalayalam(tag))).toBe(true);
+    expect(hashtagsFor("പുസ്തക നിർദേശം", "youtube", "ml").every((tag) => tag.startsWith("#") && !containsMalayalam(tag))).toBe(true);
   });
 
   it("honours requested YouTube tag and hashtag counts", () => {
@@ -58,6 +63,7 @@ describe("writing drafts", () => {
     expect(result.tags).toHaveLength(8);
     expect(result.hashtags).toHaveLength(20);
     expect(result.hashtags.every((tag) => tag.startsWith("#"))).toBe(true);
+    expect(result.description).toContain("🔥");
     expect(result.description.length).toBeGreaterThan(10);
   });
 });

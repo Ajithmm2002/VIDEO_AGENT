@@ -1,5 +1,12 @@
 import type { Language, Platform } from "@/lib/types";
-import { localThumbnail, type ThumbnailDraft, type TopicCopy, type WritingDraft } from "@/lib/ai/local";
+import {
+  localThumbnail,
+  toEnglishHashtags,
+  toEnglishTags,
+  type ThumbnailDraft,
+  type TopicCopy,
+  type WritingDraft,
+} from "@/lib/ai/local";
 
 type RemoteThumbnail = Omit<ThumbnailDraft, "provider"> & { provider: "remote" };
 type RemoteWriting = Omit<WritingDraft, "provider"> & { provider: "remote" };
@@ -54,7 +61,7 @@ async function geminiComplete(system: string, user: string) {
               responseMimeType: "application/json",
             },
           }),
-          signal: AbortSignal.timeout(30000),
+          signal: AbortSignal.timeout(50000),
         },
       );
     } catch {
@@ -144,6 +151,24 @@ export async function remoteThumbnail(input: {
   };
 }
 
+const copySystem = `You write YouTube and Instagram copy for one creator. First understand the specific video idea from the title, topic, and notes. Do not write generic filler.
+
+Reply with JSON only.
+
+Rules:
+- titles, hook, scriptOutline, description, youtubeDescription, instagramCaption: write in the requested language (Malayalam or English). Match the actual idea.
+- Use relevant emojis in descriptions and captions. One emoji at the start of a hook or bullet is enough. Do not spam emojis.
+- YouTube description: hook, then 4-6 specific bullets about THIS topic, then a comment CTA.
+- Instagram caption: 3-5 short lines with emojis, then a question.
+- tags: YouTube SEO tags in ENGLISH only. ASCII letters, numbers, and spaces. No #. No Malayalam script. Mix short tags and long-tail phrases from the idea.
+- hashtags: ENGLISH only. Start with #. CamelCase or one word. No spaces. No Malayalam script. Include topic-specific tags. If the idea is Malayalam, also include #Malayalam and #Kerala.
+- Return exactly the requested tag and hashtag counts.
+- Keep the script as a short outline, not a full filmed script.`;
+
+function stringList(value: unknown) {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
+}
+
 export async function remoteWriting(input: {
   topic: string;
   language: Language;
@@ -151,25 +176,25 @@ export async function remoteWriting(input: {
   tone?: string;
   tagCount?: number;
   hashtagCount?: number;
+  title?: string;
+  notes?: string;
 }): Promise<RemoteWriting> {
   const tagCount = input.tagCount ?? 12;
   const hashtagCount = input.hashtagCount ?? 15;
   const data = await complete(
-    "You draft social content for one creator. Reply with JSON only: {\"titles\": string[3], \"youtubeDescription\": string, \"instagramCaption\": string, \"tags\": string[], \"hashtags\": string[], \"hook\": string, \"scriptOutline\": string}. Write in the requested language. Hashtags must start with #. Keep the script as a short outline, not a full filmed script.",
-    `Topic: ${input.topic}\nLanguage: ${input.language}\nPlatform: ${input.platform}\nTone: ${input.tone || "clear and specific"}\nYouTube SEO tags wanted: ${tagCount}\nHashtags wanted: ${hashtagCount}`,
+    `${copySystem} JSON shape: {"titles": string[3], "youtubeDescription": string, "instagramCaption": string, "tags": string[], "hashtags": string[], "hook": string, "scriptOutline": string}.`,
+    `Title: ${input.title || "(none)"}\nTopic: ${input.topic}\nNotes: ${input.notes || "(none)"}\nLanguage: ${input.language}\nPlatform: ${input.platform}\nTone: ${input.tone || "clear and specific"}\nYouTube SEO tags wanted: ${tagCount}\nHashtags wanted: ${hashtagCount}`,
   );
   const titles = Array.isArray(data.titles) ? data.titles.filter((item) => typeof item === "string") : [];
   if (titles.length < 1 || typeof data.youtubeDescription !== "string" || typeof data.hook !== "string") {
     throw new Error("The connected AI provider returned an incomplete draft.");
   }
-  const stringList = (value: unknown) =>
-    Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
   return {
     titles: titles.slice(0, 3),
     youtubeDescription: data.youtubeDescription,
     instagramCaption: typeof data.instagramCaption === "string" ? data.instagramCaption : "",
-    tags: stringList(data.tags).slice(0, tagCount),
-    hashtags: stringList(data.hashtags).map((tag) => (tag.startsWith("#") ? tag : `#${tag}`)).slice(0, hashtagCount),
+    tags: toEnglishTags(stringList(data.tags), tagCount),
+    hashtags: toEnglishHashtags(stringList(data.hashtags), hashtagCount),
     hook: data.hook,
     scriptOutline: typeof data.scriptOutline === "string" ? data.scriptOutline : "",
     provider: "remote",
@@ -182,13 +207,13 @@ export async function remoteTopicCopy(input: {
   platform: Platform;
   tagCount: number;
   hashtagCount: number;
+  title?: string;
+  notes?: string;
 }): Promise<TopicCopy> {
   const data = await complete(
-    "You write YouTube and Instagram copy for one creator. Reply with JSON only: {\"description\": string, \"youtubeDescription\": string, \"instagramCaption\": string, \"tags\": string[], \"hashtags\": string[]}. Write in the requested language. tags are YouTube SEO tags without #. hashtags must start with #. Return exactly the requested counts. Make tags searchable and specific to the topic.",
-    `Topic: ${input.topic}\nLanguage: ${input.language}\nPlatform: ${input.platform}\nYouTube SEO tags wanted: ${input.tagCount}\nHashtags wanted: ${input.hashtagCount}`,
+    `${copySystem} JSON shape: {"description": string, "youtubeDescription": string, "instagramCaption": string, "tags": string[], "hashtags": string[]}.`,
+    `Title: ${input.title || "(none)"}\nTopic: ${input.topic}\nNotes: ${input.notes || "(none)"}\nLanguage: ${input.language}\nPlatform: ${input.platform}\nYouTube SEO tags wanted: ${input.tagCount}\nHashtags wanted: ${input.hashtagCount}`,
   );
-  const stringList = (value: unknown) =>
-    Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
   const youtubeDescription = typeof data.youtubeDescription === "string" ? data.youtubeDescription.trim() : "";
   const description = typeof data.description === "string" ? data.description.trim() : youtubeDescription;
   if (!youtubeDescription && !description) {
@@ -198,8 +223,8 @@ export async function remoteTopicCopy(input: {
     description: description || youtubeDescription,
     youtubeDescription: youtubeDescription || description,
     instagramCaption: typeof data.instagramCaption === "string" ? data.instagramCaption.trim() : "",
-    tags: stringList(data.tags).map((tag) => tag.replace(/^#/, "").trim()).filter(Boolean).slice(0, input.tagCount),
-    hashtags: stringList(data.hashtags).map((tag) => (tag.startsWith("#") ? tag : `#${tag.replace(/\s+/g, "")}`)).slice(0, input.hashtagCount),
+    tags: toEnglishTags(stringList(data.tags), input.tagCount),
+    hashtags: toEnglishHashtags(stringList(data.hashtags), input.hashtagCount),
     provider: "remote",
   };
 }

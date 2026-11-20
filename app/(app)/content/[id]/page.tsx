@@ -21,7 +21,7 @@ export default async function EditContentPage({ params }: { params: Promise<{ id
     <div>
       <PageHeader eyebrow="Edit" title={content.title} description="Update the plan, copy, checklist, and performance numbers." />
       <ContentForm
-        key={content.updated_at}
+        key={content.id}
         content={content}
         categories={categories}
         collections={collections}

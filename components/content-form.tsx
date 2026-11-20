@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteContent, duplicateContent, saveAsTemplate, saveContent, setThumbnailPath } from "@/lib/actions/content";
@@ -12,6 +12,7 @@ import type { Category, Content, ContentInput, HashtagCollection } from "@/lib/t
 import { languages, platforms, statuses } from "@/lib/types";
 import { defaultChecklist, newId, safeFileName } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
 
 function splitTags(value: string) {
   return value.split(/[\n,]/).map((item) => item.trim()).filter(Boolean);
@@ -109,6 +110,35 @@ export function ContentForm({
   const [tagCount, setTagCount] = useState(12);
   const [hashtagCount, setHashtagCount] = useState(15);
   const [generator, setGenerator] = useState<"local" | "remote" | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const draftKey = content?.id ? `content-draft:${content.id}` : "content-draft:new";
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- restore unsaved work after switching pages */
+    const stored = readDraft<{
+      form: ContentInput;
+      tagsText: string;
+      hashText: string;
+      tagCount: number;
+      hashtagCount: number;
+      generator: "local" | "remote" | null;
+    }>(draftKey);
+    if (stored?.form) {
+      setForm(stored.form);
+      setTagsText(stored.tagsText ?? stored.form.tags.join(", "));
+      setHashText(stored.hashText ?? stored.form.hashtags.join(" "));
+      if (stored.tagCount) setTagCount(stored.tagCount);
+      if (stored.hashtagCount) setHashtagCount(stored.hashtagCount);
+      setGenerator(stored.generator ?? null);
+    }
+    setDraftReady(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    writeDraft(draftKey, { form, tagsText, hashText, tagCount, hashtagCount, generator });
+  }, [draftKey, draftReady, form, tagsText, hashText, tagCount, hashtagCount, generator]);
 
   function patch(partial: Partial<ContentInput>) {
     setForm((current) => ({ ...current, ...partial }));
@@ -124,6 +154,8 @@ export function ContentForm({
     try {
       const result = await generateFromTopic({
         topic,
+        title: form.title,
+        notes: [form.script_notes, form.description].filter(Boolean).join("\n\n"),
         language: form.language,
         platform: form.platform,
         tagCount,
@@ -210,6 +242,8 @@ export function ContentForm({
       }
     }
     setPending(false);
+    clearDraft(draftKey);
+    if (!content?.id) clearDraft("content-draft:new");
     toast.success(result.message ?? "Saved");
     router.push(`/content/${result.id}`);
     router.refresh();
@@ -271,8 +305,8 @@ export function ContentForm({
           <div>
             <h2 className="font-semibold">Generate from topic</h2>
             <p className="mt-1 text-sm leading-6 text-muted">
-              Fills the description, YouTube description, Instagram caption, YouTube tags, and hashtags from the topic.
-              You can change the counts, then edit the text before saving.
+              Reads the title, topic, and notes, then fills a description with emojis plus English YouTube tags and hashtags.
+              Change the counts, then edit anything before saving.
             </p>
           </div>
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${generator === "remote" ? "bg-accent/12 text-accent" : "bg-surface-2 text-muted"}`}>

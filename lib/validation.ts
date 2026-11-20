@@ -109,6 +109,8 @@ export const writingRequestSchema = z.object({
   tone: z.string().trim().max(200).optional().default(""),
   tagCount: z.number().int().min(1).max(30).optional().default(12),
   hashtagCount: z.number().int().min(1).max(30).optional().default(15),
+  title: z.string().trim().max(200).optional().default(""),
+  notes: z.string().trim().max(4000).optional().default(""),
 });
 
 export const topicCopySchema = z.object({
@@ -117,6 +119,8 @@ export const topicCopySchema = z.object({
   platform: z.enum(platforms),
   tagCount: z.number().int().min(1).max(30),
   hashtagCount: z.number().int().min(1).max(30),
+  title: z.string().trim().max(200).optional().default(""),
+  notes: z.string().trim().max(4000).optional().default(""),
 });
 
 export const passwordSchema = z

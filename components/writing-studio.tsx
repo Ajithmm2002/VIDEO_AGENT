@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { applyWriting, createFromWriting, generateWriting } from "@/lib/actions/generate";
@@ -10,6 +10,7 @@ import { languageLabels, platformLabels } from "@/lib/labels";
 import type { ContentInput, ContentOption, Language, Platform } from "@/lib/types";
 import { languages, platforms } from "@/lib/types";
 import { defaultChecklist } from "@/lib/utils";
+import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
 
 export function WritingStudio({
   configured,
@@ -39,11 +40,76 @@ export function WritingStudio({
   const [hashtags, setHashtags] = useState("");
   const [hook, setHook] = useState("");
   const [scriptOutline, setScriptOutline] = useState("");
+  const [draftReady, setDraftReady] = useState(false);
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- restore unsaved work after switching pages */
+    const stored = readDraft<{
+      topic: string;
+      language: Language;
+      platform: Platform;
+      tone: string;
+      tagCount: number;
+      hashtagCount: number;
+      titles: string[];
+      youtubeDescription: string;
+      instagramCaption: string;
+      tags: string;
+      hashtags: string;
+      hook: string;
+      scriptOutline: string;
+      provider: "local" | "remote" | null;
+      contentId: string;
+    }>("writing-draft");
+    if (stored) {
+      const sameTopic = !initial.topic || stored.topic === initial.topic;
+      if (!initial.topic) setTopic(stored.topic);
+      if (!initial.language || sameTopic) setLanguage(stored.language);
+      if (!initial.platform || sameTopic) setPlatform(stored.platform);
+      setTone(stored.tone ?? "");
+      if (stored.tagCount) setTagCount(stored.tagCount);
+      if (stored.hashtagCount) setHashtagCount(stored.hashtagCount);
+      if (sameTopic) {
+        setTitles(stored.titles?.length ? stored.titles : ["", "", ""]);
+        setYoutubeDescription(stored.youtubeDescription ?? "");
+        setInstagramCaption(stored.instagramCaption ?? "");
+        setTags(stored.tags ?? "");
+        setHashtags(stored.hashtags ?? "");
+        setHook(stored.hook ?? "");
+        setScriptOutline(stored.scriptOutline ?? "");
+        setProvider(stored.provider ?? null);
+      }
+      if (!initial.contentId && stored.contentId) setContentId(stored.contentId);
+    }
+    setDraftReady(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [initial.contentId, initial.language, initial.platform, initial.topic]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    writeDraft("writing-draft", {
+      topic,
+      language,
+      platform,
+      tone,
+      tagCount,
+      hashtagCount,
+      titles,
+      youtubeDescription,
+      instagramCaption,
+      tags,
+      hashtags,
+      hook,
+      scriptOutline,
+      provider,
+      contentId,
+    });
+  }, [draftReady, topic, language, platform, tone, tagCount, hashtagCount, titles, youtubeDescription, instagramCaption, tags, hashtags, hook, scriptOutline, provider, contentId]);
 
   async function onGenerate() {
     setPending(true);
     try {
-      const result = await generateWriting({ topic, language, platform, tone, tagCount, hashtagCount });
+      const result = await generateWriting({ topic, language, platform, tone, tagCount, hashtagCount, title: titles[0], notes: scriptOutline });
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -180,6 +246,7 @@ export function WritingStudio({
               return;
             }
             toast.success("Draft applied");
+            clearDraft("writing-draft");
             router.push(`/content/${contentId}`);
           }}
         >
@@ -194,6 +261,7 @@ export function WritingStudio({
               return;
             }
             toast.success("Content created");
+            clearDraft("writing-draft");
             router.push(`/content/${result.id}`);
           }}
         >

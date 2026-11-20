@@ -4,6 +4,8 @@ import {
   localThumbnail,
   localTopicCopy,
   localWriting,
+  toEnglishHashtags,
+  toEnglishTags,
   type ThumbnailDraft,
   type TopicCopy,
   type WritingDraft,
@@ -48,15 +50,19 @@ export async function generateWritingDraft(input: {
   tone?: string;
   tagCount?: number;
   hashtagCount?: number;
+  title?: string;
+  notes?: string;
 }): Promise<WritingResult> {
   const local = localWriting(input);
+  const tagCount = input.tagCount ?? 12;
+  const hashtagCount = input.hashtagCount ?? 15;
   if (!remoteAiEnabled()) return local;
   try {
     const result = await remoteWriting(input);
     return {
       ...result,
-      tags: mergeLimited(result.tags, local.tags, input.tagCount ?? 12),
-      hashtags: mergeLimited(result.hashtags, local.hashtags, input.hashtagCount ?? 15),
+      tags: toEnglishTags(mergeLimited(result.tags, local.tags, tagCount), tagCount),
+      hashtags: toEnglishHashtags(mergeLimited(result.hashtags, local.hashtags, hashtagCount), hashtagCount),
     };
   } catch {
     return local;
@@ -69,6 +75,8 @@ export async function generateTopicCopy(input: {
   platform: Platform;
   tagCount: number;
   hashtagCount: number;
+  title?: string;
+  notes?: string;
 }): Promise<TopicCopyResult> {
   const local = localTopicCopy(input);
   if (!remoteAiEnabled()) return local;
@@ -79,8 +87,8 @@ export async function generateTopicCopy(input: {
       description: result.description || local.description,
       youtubeDescription: result.youtubeDescription || local.youtubeDescription,
       instagramCaption: result.instagramCaption || local.instagramCaption,
-      tags: mergeLimited(result.tags, local.tags, input.tagCount),
-      hashtags: mergeLimited(result.hashtags, local.hashtags, input.hashtagCount),
+      tags: toEnglishTags(mergeLimited(result.tags, local.tags, input.tagCount), input.tagCount),
+      hashtags: toEnglishHashtags(mergeLimited(result.hashtags, local.hashtags, input.hashtagCount), input.hashtagCount),
     };
   } catch {
     return local;

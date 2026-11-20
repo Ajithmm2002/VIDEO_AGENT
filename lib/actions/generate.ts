@@ -55,6 +55,8 @@ export async function generateWriting(input: {
   tone?: string;
   tagCount?: number;
   hashtagCount?: number;
+  title?: string;
+  notes?: string;
 }) {
   const parsed = writingRequestSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };
@@ -74,6 +76,8 @@ export async function generateFromTopic(input: {
   platform: Platform;
   tagCount: number;
   hashtagCount: number;
+  title?: string;
+  notes?: string;
 }) {
   const parsed = topicCopySchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };

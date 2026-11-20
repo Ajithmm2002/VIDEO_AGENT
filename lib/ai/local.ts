@@ -22,8 +22,10 @@ export function containsMalayalam(text: string) {
   return /[\u0D00-\u0D7F]/.test(text);
 }
 
-function words(topic: string) {
-  return topic.split(/[^\p{L}\p{N}]+/u).filter((word) => word.length > 1);
+function latinWords(topic: string) {
+  return topic
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((word) => word.length > 1 && !containsMalayalam(word) && /^[A-Za-z0-9]+$/.test(word));
 }
 
 function unique(values: string[]) {
@@ -36,16 +38,40 @@ function unique(values: string[]) {
   });
 }
 
-function fillList(seed: string[], extras: string[], count: number) {
-  const filled = unique([...seed, ...extras]);
-  const bases = unique([...seed, ...extras].filter(Boolean));
-  const fallback = bases[0] || "topic";
+export function toEnglishTags(values: string[], count: number) {
+  return unique(
+    values.map((value) =>
+      value
+        .replace(/^#/, "")
+        .replace(/[\u0D00-\u0D7F]/g, "")
+        .replace(/[^\x00-\x7F]/g, "")
+        .trim(),
+    ).filter((value) => /^[A-Za-z0-9][A-Za-z0-9 &'/-]{0,79}$/.test(value)),
+  ).slice(0, count);
+}
+
+export function toEnglishHashtags(values: string[], count: number) {
+  return unique(
+    values.map((value) => {
+      const compact = value.replace(/[\u0D00-\u0D7F]/g, "").replace(/[^A-Za-z0-9]+/g, "");
+      return compact.length > 1 ? `#${compact}` : "";
+    }).filter(Boolean),
+  ).slice(0, count);
+}
+
+function fillList(seed: string[], extras: string[], count: number, kind: "tag" | "hashtag") {
+  const source = kind === "hashtag" ? toEnglishHashtags([...seed, ...extras], 80) : toEnglishTags([...seed, ...extras], 80);
+  const filled = [...source];
+  const bases = filled.length ? filled : kind === "hashtag" ? ["#Topic"] : ["topic"];
   let i = 1;
   while (filled.length < count && i < 80) {
-    const base = bases[(i - 1) % Math.max(bases.length, 1)] || fallback;
-    const next = base.startsWith("#") ? `${base}${i}` : `${base} ${i}`;
-    if (!filled.some((item) => item.toLowerCase() === next.toLowerCase())) {
-      filled.push(next);
+    const base = bases[(i - 1) % bases.length];
+    const next = kind === "hashtag"
+      ? `#${base.replace(/^#/, "")}${i}`
+      : `${base.replace(/^#/, "")} ${i}`;
+    const clean = kind === "hashtag" ? toEnglishHashtags([next], 1)[0] : toEnglishTags([next], 1)[0];
+    if (clean && !filled.some((item) => item.toLowerCase() === clean.toLowerCase())) {
+      filled.push(clean);
     }
     i += 1;
   }
@@ -53,43 +79,48 @@ function fillList(seed: string[], extras: string[], count: number) {
 }
 
 export function hashtagsFor(topic: string, platform: Platform, language: Language, count = 12) {
-  const compact = topic.replace(/[^\p{L}\p{N}]+/gu, "");
-  const tags = words(topic).slice(0, 8).map((word) => `#${word}`);
+  const malayalam = language === "ml" || containsMalayalam(topic);
+  const fromTopic = latinWords(topic).map((word) => `#${word}`);
   const extras = [
-    compact ? `#${compact}` : "",
-    language === "ml" ? "#Malayalam" : "#Creator",
-    language === "ml" ? "#Kerala" : "#Tutorial",
+    ...fromTopic,
+    malayalam ? "#Malayalam" : "#Creator",
+    malayalam ? "#Kerala" : "#Tutorial",
+    malayalam ? "#MalayalamYouTube" : "#Explained",
+    malayalam ? "#Mollywood" : "#HowTo",
     platform !== "instagram" ? "#YouTube" : "",
     platform !== "instagram" ? "#YouTubeTips" : "",
+    platform !== "instagram" ? "#Shorts" : "",
     platform !== "youtube" ? "#Instagram" : "",
     platform !== "youtube" ? "#Reels" : "",
-    "#Shorts",
-    "#Vlog",
-    "#HowTo",
     "#Tips",
     "#Guide",
-    "#Daily",
+    "#Beginner",
+    "#MustWatch",
     "#LearnOnYouTube",
+    "#Daily",
+    "#Vlog",
   ];
-  return fillList([...tags, ...extras], extras, count);
+  return fillList(fromTopic, extras, count, "hashtag");
 }
 
 export function tagsFor(topic: string, platform: Platform, language: Language, count = 12) {
+  const malayalam = language === "ml" || containsMalayalam(topic);
+  const fromTopic = latinWords(topic);
   const extras = [
-    language === "ml" ? "Malayalam" : "English",
-    language === "ml" ? "Kerala" : "tutorial",
+    ...fromTopic,
+    malayalam ? "Malayalam" : "tutorial",
+    malayalam ? "Kerala" : "explained",
+    malayalam ? "Malayalam YouTube" : "how to",
     platform !== "instagram" ? "YouTube" : "",
     platform !== "instagram" ? "YouTube tags" : "",
     platform !== "youtube" ? "Instagram" : "",
-    "vlog",
-    "how to",
     "beginner",
-    "explained",
     "guide",
     "tips",
-    topic.trim(),
+    "vlog",
+    topic.replace(/[\u0D00-\u0D7F]/g, "").trim(),
   ];
-  return fillList([...words(topic), ...extras], extras, count);
+  return fillList(fromTopic, extras, count, "tag");
 }
 
 export function localThumbnail(input: {
@@ -177,21 +208,58 @@ export function localTopicCopy(input: {
   platform: Platform;
   tagCount: number;
   hashtagCount: number;
+  title?: string;
+  notes?: string;
 }): TopicCopy {
   const draft = localWriting({
     topic: input.topic,
     language: input.language,
     platform: input.platform,
+    title: input.title,
+    notes: input.notes,
+    tagCount: input.tagCount,
+    hashtagCount: input.hashtagCount,
   });
-  const language = containsMalayalam(input.topic) ? "ml" : input.language;
   return {
     description: draft.youtubeDescription,
     youtubeDescription: draft.youtubeDescription,
     instagramCaption: draft.instagramCaption,
-    tags: tagsFor(input.topic, input.platform, language, input.tagCount),
-    hashtags: hashtagsFor(input.topic, input.platform, language, input.hashtagCount),
+    tags: draft.tags,
+    hashtags: draft.hashtags,
     provider: "local",
   };
+}
+
+function englishDescription(topic: string, title?: string, notes?: string) {
+  const subject = title?.trim() || topic;
+  return [
+    `🔥 ${subject} — a practical walkthrough, not a vague overview.`,
+    "",
+    "📌 In this video:",
+    `✅ What ${topic} actually means, and who it helps`,
+    "✅ The 3 points that change how you approach it",
+    "✅ One example you can try the same day",
+    ...(notes?.trim() ? ["", `🧠 From the notes: ${notes.trim().slice(0, 280)}`] : []),
+    "",
+    "💬 Comment the next question you want covered.",
+    "👍 Save this if you are going to try it.",
+  ].join("\n");
+}
+
+function malayalamDescription(topic: string, title?: string, notes?: string) {
+  const subject = title?.trim() || topic;
+  return [
+    `🔥 ${subject} — വ്യക്തമായ ഒരു വിശദീകരണം, ഫിൽലർ അല്ല.`,
+    "",
+    "📌 ഈ വീഡിയോയിൽ:",
+    `✅ ${topic} എന്താണ്, ആർക്കാണ് ഉപകാരപ്പെടുക`,
+    "✅ മാറ്റമുണ്ടാക്കുന്ന മൂന്ന് കാര്യങ്ങൾ",
+    "✅ ഇന്ന് തന്നെ പരീക്ഷിക്കാവുന്ന ഒരു ഉദാഹരണം",
+    ...(notes?.trim() ? ["", `🧠 നോട്ടിൽ നിന്ന്: ${notes.trim().slice(0, 280)}`] : []),
+    "",
+    "💬 അടുത്ത ചോദ്യം കമന്റിൽ എഴുതുക.",
+    "👍 ഉപകാരപ്പെട്ടാൽ സേവ് ചെയ്യുക.",
+  ].join("\n");
 }
 
 export function localWriting(input: {
@@ -201,12 +269,17 @@ export function localWriting(input: {
   tone?: string;
   tagCount?: number;
   hashtagCount?: number;
+  title?: string;
+  notes?: string;
 }): WritingDraft {
   const topic = input.topic.trim();
-  const malayalam = input.language === "ml" || containsMalayalam(topic);
+  const malayalam = input.language === "ml" || containsMalayalam(topic) || containsMalayalam(input.title ?? "") || containsMalayalam(input.notes ?? "");
   const tone = input.tone?.trim() ?? "";
   const tags = tagsFor(topic, input.platform, malayalam ? "ml" : "en", input.tagCount ?? 12);
   const hashtags = hashtagsFor(topic, input.platform, malayalam ? "ml" : "en", input.hashtagCount ?? 15);
+  const youtubeDescription = malayalam
+    ? malayalamDescription(topic, input.title, input.notes)
+    : englishDescription(topic, input.title, input.notes);
 
   if (malayalam) {
     return {
@@ -215,21 +288,12 @@ export function localWriting(input: {
         `${topic} ലളിതമായി മനസ്സിലാക്കാം`,
         `${topic} — ഒരു വ്യക്തമായ വിശദീകരണം`,
       ],
-      hook: `${topic} കേൾക്കുമ്പോൾ ആദ്യം വരുന്ന സംശയം നേരിട്ട് പറഞ്ഞ് തുടങ്ങുക. ഒരു ചെറിയ ഉദാഹരണം കൂടി ചേർത്താൽ കാണുന്നയാൾ തുടർന്നും നിൽക്കും.`,
-      youtubeDescription: [
-        `${topic} എന്ന വിഷയം വ്യക്തമായി വിശദീകരിക്കുന്ന വീഡിയോ.`,
-        "",
-        "ഈ വീഡിയോയിൽ:",
-        `• ${topic} എന്താണ്, ആർക്കാണ് ഉപകാരപ്പെടുക`,
-        "• പ്രധാനപ്പെട്ട മൂന്ന് കാര്യങ്ങൾ",
-        "• ഉടൻ പരീക്ഷിക്കാവുന്ന ഒരു ഉദാഹരണം",
-        "",
-        "അടുത്ത വിഷയം കമന്റിൽ എഴുതുക.",
-      ].join("\n"),
+      hook: `🎯 ${topic} കേൾക്കുമ്പോൾ ആദ്യം വരുന്ന സംശയം നേരിട്ട് പറഞ്ഞ് തുടങ്ങുക. ഒരു ചെറിയ ഉദാഹരണം കൂടി ചേർത്താൽ കാണുന്നയാൾ തുടർന്നും നിൽക്കും.`,
+      youtubeDescription,
       instagramCaption: [
-        `${topic} — ചുരുക്കത്തിൽ.`,
-        "മുഴുവൻ വിശദീകരണം വീഡിയോയിൽ ഉണ്ട്.",
-        "നിങ്ങളുടെ അഭിപ്രായം കമന്റിൽ എഴുതുക.",
+        `✨ ${topic} — ചുരുക്കത്തിൽ.`,
+        "🎥 മുഴുവൻ വിശദീകരണം വീഡിയോയിൽ ഉണ്ട്.",
+        "💬 നിങ്ങളുടെ അഭിപ്രായം കമന്റിൽ എഴുതുക.",
       ].join("\n"),
       tags,
       hashtags,
@@ -244,21 +308,12 @@ export function localWriting(input: {
       `${topic}, explained without the fluff`,
       `The practical guide to ${topic}`,
     ],
-    hook: `Start with the question people already have about ${topic}, then promise one clear answer in the next few seconds.`,
-    youtubeDescription: [
-      `A clear walkthrough of ${topic}.`,
-      "",
-      "In this video:",
-      `• What ${topic} means, and who it is for`,
-      "• The three points that change how you approach it",
-      "• One example you can try immediately",
-      "",
-      "If you want a follow-up, leave the next question in the comments.",
-    ].join("\n"),
+    hook: `🎯 Start with the question people already have about ${topic}, then promise one clear answer in the next few seconds.`,
+    youtubeDescription,
     instagramCaption: [
-      `${topic}, in one minute.`,
-      "The full breakdown is in the video.",
-      "Tell me what you would add.",
+      `✨ ${topic}, in one minute.`,
+      "🎥 The full breakdown is in the video.",
+      "💬 Tell me what you would add.",
     ].join("\n"),
     tags,
     hashtags,
