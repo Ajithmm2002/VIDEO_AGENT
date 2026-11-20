@@ -1,5 +1,5 @@
-import type { AffiliateAd, AffiliateProductType, ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
-import { localAffiliateAd } from "@/lib/ai/affiliate";
+import type { AffiliateAd, ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import { affiliateCreditName, affiliateCreditPrice, applyAffiliateCredits, localAffiliateAd, type AffiliateAdInput } from "@/lib/ai/affiliate";
 import { spokenWordTarget } from "@/lib/utils";
 import {
   localThumbnail,
@@ -373,16 +373,14 @@ Video length seconds: ${input.durationSeconds}`,
   return { provider: "remote", items: items.slice(0, input.count) };
 }
 
-export async function remoteAffiliateAd(input: {
-  productType: AffiliateProductType;
-  productName: string;
-  productUrl: string;
-  notes: string;
-  language: Language;
-  platform: Platform;
-  hashtagCount: number;
-}): Promise<AffiliateAd> {
+export async function remoteAffiliateAd(input: AffiliateAdInput): Promise<AffiliateAd> {
   const fallback = localAffiliateAd(input);
+  const creditName = affiliateCreditName(input.creditName ?? "");
+  const price = affiliateCreditPrice(input.price ?? "");
+  const professionalImageAd = Boolean(input.professionalImageAd);
+  const imagePromptRule = professionalImageAd
+    ? `- imagePrompt: English Google Flow prompt for a professional paid retail ad. Mention 16:9 and 9:16. Include the listing price on the ad if one was provided. Use only the provided credit name. No fake brands, no invented prices.`
+    : `- imagePrompt: English Google Flow prompt for a simple product photograph only. Mention 16:9 and 9:16. Plain background, centred product, no ad layout, no on-image text, no price, no credit, no logos.`;
   const data = await complete(
     `You write professional affiliate product ads. JSON only: {"title":string,"postDescription":string,"instagramCaption":string,"hashtags":string[],"imagePrompt":string,"videoPrompt":string}.
 
@@ -390,9 +388,10 @@ Rules:
 - This is a paid-looking product advertisement for clothing, jewellery, shoes, electronics, or similar retail, not a comedy skit.
 - title: under 80 characters, names the product.
 - postDescription and instagramCaption: requested language. Selling copy, 4-8 short lines, emojis sparingly, include an affiliate disclosure, and include the product URL if one was given.
+- End postDescription and instagramCaption with the provided account/company credit and listing price only. Never invent a shop name, creator name, or price.
 - hashtags: ENGLISH only, start with #, exactly ${input.hashtagCount} items. Mix product, shop, and affiliate tags. No Malayalam script.
-- imagePrompt: English Google Flow prompt for a studio catalogue still. Mention 16:9 and 9:16. No logos, no watermarks, no fake UI.
-- videoPrompt: English prompt for a 15-30s professional product video ad. Camera moves, lighting, end card. No meme style.
+${imagePromptRule}
+- videoPrompt: English prompt for a 15-30s professional product video ad. Camera moves, lighting, and an end credit that uses only the provided name and price. No meme style.
 - Be specific to the product type and notes.`,
     `Product type: ${input.productType}
 Product name: ${input.productName || "(from listing)"}
@@ -400,7 +399,10 @@ Product URL: ${input.productUrl || "(none)"}
 Notes: ${input.notes || "(none)"}
 Language: ${input.language}
 Platform: ${input.platform}
-Hashtag count: ${input.hashtagCount}`,
+Hashtag count: ${input.hashtagCount}
+End credit name: ${creditName || "(none — do not invent a name)"}
+Listing price: ${price || "(none — do not invent a price)"}
+Image style: ${professionalImageAd ? "professional ad with listing price on the image" : "simple product photo, no price on the image"}`,
     {
       maxOutputTokens: 2200,
       timeoutMs: 25000,
@@ -418,13 +420,19 @@ Hashtag count: ${input.hashtagCount}`,
     throw new Error("The connected AI provider returned an incomplete product ad.");
   }
   const mergedHashtags = toEnglishHashtags([...hashtags, ...fallback.hashtags], input.hashtagCount);
-  return {
-    title: title.slice(0, 80),
-    postDescription: postDescription.slice(0, 8000),
-    instagramCaption: (instagramCaption || postDescription).slice(0, 5000),
-    hashtags: mergedHashtags.length ? mergedHashtags : fallback.hashtags,
-    imagePrompt: imagePrompt.slice(0, 8000),
-    videoPrompt: videoPrompt.slice(0, 8000),
-    provider: "remote",
-  };
+  return applyAffiliateCredits(
+    {
+      title: title.slice(0, 80),
+      postDescription: postDescription.slice(0, 8000),
+      instagramCaption: (instagramCaption || postDescription).slice(0, 5000),
+      hashtags: mergedHashtags.length ? mergedHashtags : fallback.hashtags,
+      imagePrompt: imagePrompt.slice(0, 8000),
+      videoPrompt: videoPrompt.slice(0, 8000),
+      provider: "remote",
+    },
+    creditName,
+    price,
+    input.language,
+    professionalImageAd,
+  );
 }

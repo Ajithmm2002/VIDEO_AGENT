@@ -167,4 +167,5 @@ export type ProductPreview = {
   description: string;
   image: string | null;
   siteName: string;
+  price: string | null;
 };

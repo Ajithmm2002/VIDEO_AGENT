@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { generateAffiliateAd, generateAudioScript, generateContentPlan, generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
+import { affiliateCreditName } from "@/lib/ai/affiliate";
 import { isSupabaseConfigured } from "@/lib/env";
+import { normalizeListingPrice } from "@/lib/listing-price";
 import { requireSession } from "@/lib/session";
 import type { ActionResult, AffiliateProductType, ContentInput, Language, Platform, VideoDuration } from "@/lib/types";
 import { defaultChecklist, storedPrompt } from "@/lib/utils";
@@ -225,6 +227,24 @@ export async function generateScript(input: {
   }
 }
 
+async function resolveAffiliateCreditName(requested: string) {
+  const fromForm = affiliateCreditName(requested);
+  if (fromForm) return fromForm;
+  if (!isSupabaseConfigured()) return "";
+  const session = await requireSession();
+  if (!session.ok) return "";
+  const { data } = await session.supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", session.user.id)
+    .maybeSingle();
+  const profileName = typeof data?.display_name === "string" ? affiliateCreditName(data.display_name) : "";
+  if (profileName) return profileName;
+  const meta = session.user.user_metadata?.display_name;
+  if (typeof meta === "string" && affiliateCreditName(meta)) return affiliateCreditName(meta);
+  return affiliateCreditName(session.user.email?.split("@")[0] ?? "");
+}
+
 export async function generateAffiliate(input: {
   productType: AffiliateProductType;
   productName: string;
@@ -233,13 +253,20 @@ export async function generateAffiliate(input: {
   language: Language;
   platform: Platform;
   hashtagCount: number;
+  creditName?: string;
+  price?: string;
+  professionalImageAd?: boolean;
 }) {
   const parsed = affiliateRequestSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };
   const blocked = await generationAllowed();
   if (blocked) return blocked;
   try {
-    const result = await generateAffiliateAd(parsed.data);
+    const result = await generateAffiliateAd({
+      ...parsed.data,
+      creditName: await resolveAffiliateCreditName(parsed.data.creditName),
+      price: normalizeListingPrice(parsed.data.price),
+    });
     return { ok: true as const, result };
   } catch (error) {
     return { ok: false as const, error: aiError(error, "Could not write that product ad.") };

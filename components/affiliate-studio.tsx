@@ -12,6 +12,7 @@ import { affiliateProductTypeLabels, googleFlowUrl, languageLabels, platformLabe
 import type { AffiliateAd, AffiliateProductType, Language, Platform, ProductPreview } from "@/lib/types";
 import { affiliateProductTypes, languages, platforms } from "@/lib/types";
 import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
+import { priceFromPreviewText } from "@/lib/listing-price";
 import { defaultChecklist, newId } from "@/lib/utils";
 
 function DraftField({
@@ -37,7 +38,15 @@ function DraftField({
   );
 }
 
-export function AffiliateStudio({ configured, aiConnected }: { configured: boolean; aiConnected: boolean }) {
+export function AffiliateStudio({
+  configured,
+  aiConnected,
+  accountName,
+}: {
+  configured: boolean;
+  aiConnected: boolean;
+  accountName: string;
+}) {
   const router = useRouter();
   const jobs = useGenerationJobs();
   const pending = jobs.affiliate.pending;
@@ -48,6 +57,9 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
   const [language, setLanguage] = useState<Language>("en");
   const [platform, setPlatform] = useState<Platform>("instagram");
   const [hashtagCount, setHashtagCount] = useState(15);
+  const [creditName, setCreditName] = useState(accountName);
+  const [price, setPrice] = useState("");
+  const [professionalImageAd, setProfessionalImageAd] = useState(false);
   const [preview, setPreview] = useState<ProductPreview | null>(null);
   const [previewError, setPreviewError] = useState("");
   const [imageBroken, setImageBroken] = useState(false);
@@ -72,6 +84,9 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
       language: Language;
       platform: Platform;
       hashtagCount: number;
+      creditName?: string;
+      price?: string;
+      professionalImageAd?: boolean;
       preview: ProductPreview | null;
       title: string;
       postDescription: string;
@@ -89,6 +104,9 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
       if (stored.language) setLanguage(stored.language);
       if (stored.platform) setPlatform(stored.platform);
       if (stored.hashtagCount) setHashtagCount(stored.hashtagCount);
+      setCreditName(stored.creditName?.trim() || accountName);
+      setPrice(stored.price || stored.preview?.price || priceFromPreviewText(stored.preview?.description ?? ""));
+      setProfessionalImageAd(Boolean(stored.professionalImageAd));
       setPreview(stored.preview ?? null);
       setTitle(stored.title ?? "");
       setPostDescription(stored.postDescription ?? "");
@@ -124,6 +142,9 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
       language,
       platform,
       hashtagCount,
+      creditName,
+      price,
+      professionalImageAd,
       preview,
       title,
       postDescription,
@@ -133,7 +154,7 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
       videoPrompt,
       provider,
     });
-  }, [draftReady, pending, productType, productName, productUrl, notes, language, platform, hashtagCount, preview, title, postDescription, instagramCaption, hashtags, imagePrompt, videoPrompt, provider]);
+  }, [draftReady, pending, productType, productName, productUrl, notes, language, platform, hashtagCount, creditName, price, professionalImageAd, preview, title, postDescription, instagramCaption, hashtags, imagePrompt, videoPrompt, provider]);
 
   async function loadPreview(url = productUrl) {
     const trimmed = url.trim();
@@ -160,6 +181,8 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
       setProductUrl(data.preview.url);
       if (!productName.trim() && data.preview.title) setProductName(data.preview.title);
       if (!notes.trim() && data.preview.description) setNotes(data.preview.description.slice(0, 400));
+      const listingPrice = data.preview.price || priceFromPreviewText(data.preview.description);
+      if (listingPrice) setPrice(listingPrice);
     } catch {
       setPreview(null);
       setPreviewError("Could not load that product link.");
@@ -181,6 +204,9 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
       language,
       platform,
       hashtagCount,
+      creditName: creditName.trim() || accountName,
+      price: price.trim(),
+      professionalImageAd,
     });
   }
 
@@ -260,7 +286,7 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
             })}
           </div>
         </div>
-        <Field label="Product link" hint="Amazon, Flipkart, or any https product page. We try to load the listing photo.">
+        <Field label="Product link" hint="Amazon, Flipkart, Meesho invite or collection links, or any https product page. We try to load the listing photo.">
           <div className="flex flex-wrap gap-2">
             <TextInput
               className="min-w-0 flex-1"
@@ -311,6 +337,17 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
           <Field label="What to highlight" hint="Optional. Example: 18k gold, wireless ANC, 50% off.">
             <TextInput value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={1000} />
           </Field>
+          <Field label="Account / company name" hint="Used in the end credit. Defaults to your signed-in account name.">
+            <TextInput
+              value={creditName}
+              onChange={(event) => setCreditName(event.target.value)}
+              maxLength={80}
+              placeholder={accountName || "Your name or company"}
+            />
+          </Field>
+          <Field label="Listing price" hint="Filled from the product link when possible. Shown in the end credit.">
+            <TextInput value={price} onChange={(event) => setPrice(event.target.value)} maxLength={40} placeholder="₹" />
+          </Field>
           <Field label="Language">
             <SelectInput value={language} onChange={(event) => setLanguage(event.target.value as Language)}>
               {languages.map((item) => <option key={item} value={item}>{languageLabels[item]}</option>)}
@@ -323,6 +360,23 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
           </Field>
         </div>
         <CountSelect label="Number of hashtags" value={hashtagCount} onChange={setHashtagCount} />
+        <div className="grid gap-2">
+          <p className="text-sm font-medium">Image prompt</p>
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={professionalImageAd}
+              onChange={(event) => setProfessionalImageAd(event.target.checked)}
+            />
+            <span>
+              Professional image ad
+              <span className="mt-0.5 block text-xs leading-5 text-muted">
+                Checked: a studio ad with the listing price on the image. Unchecked: a simple product photo with no price or ad layout.
+              </span>
+            </span>
+          </label>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={onGenerate} loading={pending} disabled={saving}>
             {pending ? "Writing ad…" : "Generate product ad"}
@@ -347,11 +401,20 @@ export function AffiliateStudio({ configured, aiConnected }: { configured: boole
             </div>
             <TextInput value={title} onChange={(event) => setTitle(event.target.value)} maxLength={80} />
           </Card>
-          <DraftField label="Post description" value={postDescription} onChange={setPostDescription} hint="Caption for the post, including an affiliate disclosure." />
+          <DraftField label="Post description" value={postDescription} onChange={setPostDescription} hint="Caption for the post, including an affiliate disclosure and the end credit." />
           <DraftField label="Instagram caption" value={instagramCaption} onChange={setInstagramCaption} />
           <DraftField label="Hashtags" value={hashtags} onChange={setHashtags} hint="English hashtags, ready to paste." />
-          <DraftField label="Image prompt" value={imagePrompt} onChange={setImagePrompt} hint="Paste into Google Flow for a studio product still." />
-          <DraftField label="Video prompt" value={videoPrompt} onChange={setVideoPrompt} hint="Paste into Google Flow for a short product ad." />
+          <DraftField
+            label="Image prompt"
+            value={imagePrompt}
+            onChange={setImagePrompt}
+            hint={
+              professionalImageAd
+                ? "Paste into Google Flow. Professional ad with the listing price on the image."
+                : "Paste into Google Flow. Simple product photo, no price or ad text on the image."
+            }
+          />
+          <DraftField label="Video prompt" value={videoPrompt} onChange={setVideoPrompt} hint="Paste into Google Flow. The end credit uses your account/company name and listing price." />
           <Button className="w-fit" onClick={() => void onSave()} loading={saving} disabled={!configured || pending}>
             {saving ? "Saving…" : "Save as content"}
           </Button>

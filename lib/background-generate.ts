@@ -321,6 +321,9 @@ export function startAffiliateGeneration(input: {
   language: Language;
   platform: Platform;
   hashtagCount: number;
+  creditName: string;
+  price: string;
+  professionalImageAd: boolean;
 }) {
   void runJob("affiliate", input, "gen-affiliate", (result) => {
     if (!result || typeof result !== "object") return;
@@ -341,6 +344,9 @@ export function startAffiliateGeneration(input: {
       language: input.language,
       platform: input.platform,
       hashtagCount: input.hashtagCount,
+      creditName: input.creditName,
+      price: input.price,
+      professionalImageAd: input.professionalImageAd,
       title: data.title,
       postDescription: data.postDescription,
       instagramCaption: data.instagramCaption,

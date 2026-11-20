@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { localAffiliateAd } from "@/lib/ai/affiliate";
+import { localAffiliateAd, withCaptionCredit } from "@/lib/ai/affiliate";
 import { containsMalayalam } from "@/lib/ai/local";
+import { formatListingPrice, normalizeListingPrice } from "@/lib/listing-price";
 import { isBlockedHost, parsePublicHttpsUrl } from "@/lib/safe-url";
 
 describe("affiliate ads", () => {
@@ -13,6 +14,8 @@ describe("affiliate ads", () => {
       language: "en",
       platform: "instagram",
       hashtagCount: 12,
+      creditName: "FindByAish",
+      price: "₹1807",
     });
     expect(result.title.toLowerCase()).toContain("gold");
     expect(result.postDescription.toLowerCase()).toContain("affiliate");
@@ -21,6 +24,45 @@ describe("affiliate ads", () => {
     expect(result.videoPrompt.toLowerCase()).toContain("orbit");
     expect(result.hashtags).toHaveLength(12);
     expect(result.hashtags.every((tag) => tag.startsWith("#") && !containsMalayalam(tag))).toBe(true);
+    expect(result.postDescription).toContain("Credit: FindByAish");
+    expect(result.postDescription).toContain("Price: ₹1807");
+    expect(result.instagramCaption).toContain("Credit: FindByAish");
+    expect(result.videoPrompt).toContain("Credit: FindByAish");
+    expect(result.videoPrompt).toContain("Price: ₹1807");
+    expect(result.imagePrompt.toLowerCase()).toContain("simple product");
+    expect(result.imagePrompt).not.toContain("Price: ₹1807");
+  });
+
+  it("writes a professional image ad with the listing price when that option is on", () => {
+    const result = localAffiliateAd({
+      productType: "clothing",
+      productName: "Embroidered Anarkali Kurta Set",
+      productUrl: "https://example.com/kurta",
+      notes: "",
+      language: "en",
+      platform: "instagram",
+      hashtagCount: 8,
+      creditName: "FindByAish",
+      price: "₹1807",
+      professionalImageAd: true,
+    });
+    expect(result.imagePrompt.toLowerCase()).toContain("advertisement");
+    expect(result.imagePrompt).toContain("₹1807");
+    expect(result.imagePrompt).toContain("FindByAish");
+    expect(result.imagePrompt.toLowerCase()).not.toContain("simple product photograph only");
+  });
+
+  it("replaces an invented end credit with the account name and listing price", () => {
+    const fixed = withCaptionCredit(
+      "Soft cotton kurta.\n\nCredit: LuxeHub\nPrice: ₹999",
+      "FindByAish",
+      "₹1807",
+      "en",
+    );
+    expect(fixed).toContain("Credit: FindByAish");
+    expect(fixed).toContain("Price: ₹1807");
+    expect(fixed).not.toContain("LuxeHub");
+    expect(fixed).not.toContain("₹999");
   });
 
   it("writes Malayalam copy with English hashtags for electronics", () => {
@@ -36,6 +78,13 @@ describe("affiliate ads", () => {
     expect(containsMalayalam(result.postDescription)).toBe(true);
     expect(result.hashtags.every((tag) => !containsMalayalam(tag))).toBe(true);
     expect(result.imagePrompt.toLowerCase()).toContain("electronics");
+  });
+});
+
+describe("listing price", () => {
+  it("formats rupee prices from Meesho amounts", () => {
+    expect(formatListingPrice(1807, "INR")).toBe("₹1807");
+    expect(normalizeListingPrice("Rs. 1,807")).toBe("₹1807");
   });
 });
 

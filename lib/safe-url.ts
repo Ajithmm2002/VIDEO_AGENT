@@ -1,3 +1,4 @@
+import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 
 function octets(ip: string) {
@@ -39,5 +40,12 @@ export function parsePublicHttpsUrl(value: string) {
     return url;
   } catch {
     return null;
+  }
+}
+
+export async function assertPublicHost(hostname: string) {
+  const records = await lookup(hostname, { all: true });
+  if (!records.length || records.some((record) => isPrivateIp(record.address))) {
+    throw new Error("That link cannot be previewed.");
   }
 }

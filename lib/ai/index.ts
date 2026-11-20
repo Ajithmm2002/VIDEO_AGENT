@@ -1,6 +1,6 @@
-import type { AffiliateAd, AffiliateProductType, ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import type { AffiliateAd, ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import { localAffiliateAd, type AffiliateAdInput } from "@/lib/ai/affiliate";
 import { remoteAiEnabled } from "@/lib/env";
-import { localAffiliateAd } from "@/lib/ai/affiliate";
 import {
   localAudioScript,
   localContentPlan,
@@ -167,15 +167,7 @@ export async function generateAudioScript(input: {
   }
 }
 
-export async function generateAffiliateAd(input: {
-  productType: AffiliateProductType;
-  productName: string;
-  productUrl: string;
-  notes: string;
-  language: Language;
-  platform: Platform;
-  hashtagCount: number;
-}): Promise<AffiliateAd> {
+export async function generateAffiliateAd(input: AffiliateAdInput): Promise<AffiliateAd> {
   const local = localAffiliateAd(input);
   if (!remoteAiEnabled()) return local;
   try {
