@@ -1,8 +1,9 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { isSupabaseConfigured, supabasePublicKey, supabaseUrl } from "@/lib/env";
 
-export async function createClient() {
+export const createClient = cache(async () => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase is not configured.");
   }
@@ -24,4 +25,4 @@ export async function createClient() {
       },
     },
   });
-}
+});

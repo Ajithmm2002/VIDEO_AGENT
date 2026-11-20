@@ -1,8 +1,9 @@
+import { cache } from "react";
 import { headers } from "next/headers";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   if (!isSupabaseConfigured()) return null;
   try {
     const supabase = await createClient();
@@ -12,6 +13,11 @@ export async function getCurrentUser() {
   } catch {
     return null;
   }
+});
+
+export async function requestUserEmail() {
+  const headerStore = await headers();
+  return headerStore.get("x-user-email");
 }
 
 export async function requestOrigin() {

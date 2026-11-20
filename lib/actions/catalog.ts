@@ -7,10 +7,7 @@ import { categorySchema, firstIssue, hashtagCollectionSchema } from "@/lib/valid
 import { uniqueLimited } from "@/lib/utils";
 
 function refreshCatalog() {
-  revalidatePath("/content");
-  revalidatePath("/settings");
-  revalidatePath("/hashtags");
-  revalidatePath("/library");
+  revalidatePath("/", "layout");
 }
 
 export async function saveCategory(id: string | null, input: { name: string; color: string | null }): Promise<ActionResult> {

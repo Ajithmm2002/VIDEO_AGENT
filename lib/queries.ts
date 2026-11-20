@@ -88,10 +88,15 @@ export type ContentFilters = {
   templates?: string;
 };
 
+const cardSelect =
+  "id, user_id, category_id, title, topic, platform, language, planned_date, status, checklist, is_template, created_at, updated_at";
+const librarySelect =
+  "id, user_id, category_id, title, topic, platform, language, description, youtube_description, instagram_caption, video_url, published_url, thumbnail_path, thumbnail_prompt, notes, reference_links, planned_date, status, is_template, created_at, updated_at";
+
 export async function listContents(filters: ContentFilters) {
   const supabase = await client();
   if (!supabase) return [];
-  let query = supabase.from("contents").select("*");
+  let query = supabase.from("contents").select(cardSelect);
   const q = sanitizeSearch(filters.q ?? "");
   if (q) {
     query = query.or(`title.ilike.%${q}%,topic.ilike.%${q}%,description.ilike.%${q}%`);
@@ -153,26 +158,6 @@ export async function signedThumbnailMap(contents: Content[]) {
   return map;
 }
 
-type CountQuery = PromiseLike<{ count: number | null; error: unknown }> & {
-  eq: (column: string, value: string) => CountQuery;
-  in: (column: string, values: string[]) => CountQuery;
-};
-
-async function countContents(
-  supabase: SupabaseClient,
-  options?: { status?: string; platforms?: string[] },
-) {
-  let query = supabase
-    .from("contents")
-    .select("id", { count: "exact", head: true })
-    .eq("is_template", false) as unknown as CountQuery;
-  if (options?.status) query = query.eq("status", options.status);
-  if (options?.platforms) query = query.in("platform", options.platforms);
-  const { count, error } = await query;
-  if (error) return 0;
-  return count ?? 0;
-}
-
 export async function dashboardData() {
   const supabase = await client();
   const empty = {
@@ -195,48 +180,34 @@ export async function dashboardData() {
     timeZone: "UTC",
   }).format(new Date());
 
-  const [total, idea, planning, progress, ready, scheduled, published, youtube, instagram, recentResult, upcomingResult] =
-    await Promise.all([
-      countContents(supabase),
-      countContents(supabase, { status: "idea" }),
-      countContents(supabase, { status: "planning" }),
-      countContents(supabase, { status: "in_progress" }),
-      countContents(supabase, { status: "ready" }),
-      countContents(supabase, { status: "scheduled" }),
-      countContents(supabase, { status: "published" }),
-      countContents(supabase, { platforms: ["youtube", "both"] }),
-      countContents(supabase, { platforms: ["instagram", "both"] }),
-      supabase
-        .from("contents")
-        .select("*")
-        .eq("is_template", false)
-        .order("updated_at", { ascending: false })
-        .limit(6),
-      supabase
-        .from("contents")
-        .select("*")
-        .eq("is_template", false)
-        .gte("planned_date", today)
-        .neq("status", "published")
-        .order("planned_date", { ascending: true })
-        .limit(6),
-    ]);
+  const { data, error, count } = await supabase
+    .from("contents")
+    .select("id, title, status, platform, planned_date, updated_at, checklist", { count: "exact" })
+    .eq("is_template", false)
+    .order("updated_at", { ascending: false })
+    .limit(1000);
 
-  if (recentResult.error || upcomingResult.error) {
-    console.error("dashboardData", recentResult.error ?? upcomingResult.error);
+  if (error) {
+    console.error("dashboardData", error);
     throw new Error("Could not load the dashboard.");
   }
 
+  const rows = parseContents(data ?? []);
+  const upcoming = [...rows]
+    .filter((item) => item.planned_date && item.planned_date >= today && item.status !== "published")
+    .sort((a, b) => (a.planned_date ?? "").localeCompare(b.planned_date ?? ""))
+    .slice(0, 6);
+
   return {
-    total,
-    drafts: idea + planning + progress,
-    ready,
-    scheduled,
-    published,
-    youtube,
-    instagram,
-    recent: await attachCategories(supabase, recentResult.data ?? []),
-    upcoming: await attachCategories(supabase, upcomingResult.data ?? []),
+    total: count ?? rows.length,
+    drafts: rows.filter((item) => item.status === "idea" || item.status === "planning" || item.status === "in_progress").length,
+    ready: rows.filter((item) => item.status === "ready").length,
+    scheduled: rows.filter((item) => item.status === "scheduled").length,
+    published: rows.filter((item) => item.status === "published").length,
+    youtube: rows.filter((item) => item.platform === "youtube" || item.platform === "both").length,
+    instagram: rows.filter((item) => item.platform === "instagram" || item.platform === "both").length,
+    recent: rows.slice(0, 6),
+    upcoming,
   };
 }
 
@@ -245,13 +216,13 @@ export async function calendarContents(start: string, end: string, platform?: st
   if (!supabase) return { dated: [] as Content[], undated: [] as Content[] };
   let dated = supabase
     .from("contents")
-    .select("*")
+    .select(cardSelect)
     .eq("is_template", false)
     .gte("planned_date", start)
     .lte("planned_date", end);
   let undated = supabase
     .from("contents")
-    .select("*")
+    .select(cardSelect)
     .eq("is_template", false)
     .is("planned_date", null)
     .order("updated_at", { ascending: false })
@@ -282,7 +253,7 @@ export async function libraryContents() {
   if (!supabase) return [] as Content[];
   const { data, error } = await supabase
     .from("contents")
-    .select("*")
+    .select(librarySelect)
     .eq("is_template", false)
     .order("updated_at", { ascending: false })
     .limit(500);

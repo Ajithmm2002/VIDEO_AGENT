@@ -137,8 +137,7 @@ export async function savePrompt(input: {
     await session.supabase.from("contents").update({ thumbnail_prompt: combined, topic }).eq("id", input.contentId);
   }
 
-  revalidatePath("/thumbnails");
-  revalidatePath("/content");
+  revalidatePath("/", "layout");
   return { ok: true, message: "Prompt saved." };
 }
 
@@ -153,8 +152,7 @@ export async function createFromWriting(input: ContentInput): Promise<ActionResu
     .select("id")
     .single();
   if (error || !data) return { ok: false, error: "Could not create content from this draft." };
-  revalidatePath("/content");
-  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
   return { ok: true, id: (data as { id: string }).id };
 }
 
@@ -178,8 +176,6 @@ export async function applyWriting(
   if (!data) return { ok: false, error: "Choose one of your content items." };
   const { error } = await session.supabase.from("contents").update(parsed.data).eq("id", contentId);
   if (error) return { ok: false, error: "Could not update that content." };
-  revalidatePath("/content");
-  revalidatePath(`/content/${contentId}`);
-  revalidatePath("/assistant");
+  revalidatePath("/", "layout");
   return { ok: true, id: contentId, message: "Draft applied." };
 }

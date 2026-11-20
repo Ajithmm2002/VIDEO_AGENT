@@ -29,6 +29,15 @@ function copyCookies(from: NextResponse, to: NextResponse) {
   return to;
 }
 
+function withRequestHeaders(request: NextRequest, email: string | null) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete("x-user-email");
+  if (email) requestHeaders.set("x-user-email", email);
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+}
+
 export async function updateSession(request: NextRequest) {
   if (!isSupabaseConfigured()) {
     if (process.env.NODE_ENV === "production") {
@@ -40,7 +49,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
-  let response = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete("x-user-email");
+  let response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
   const supabase = createServerClient(supabaseUrl(), supabasePublicKey(), {
     cookies: {
       getAll() {
@@ -48,7 +61,9 @@ export async function updateSession(request: NextRequest) {
       },
       setAll(cookiesToSet, headers) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
+        response = NextResponse.next({
+          request: { headers: requestHeaders },
+        });
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
@@ -78,5 +93,5 @@ export async function updateSession(request: NextRequest) {
     return copyCookies(response, NextResponse.redirect(url));
   }
 
-  return response;
+  return copyCookies(response, withRequestHeaders(request, user?.email ?? null));
 }

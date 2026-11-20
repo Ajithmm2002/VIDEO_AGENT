@@ -69,6 +69,7 @@ export function AppShell({
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch
                   onClick={() => setOpen(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium",
@@ -91,6 +92,7 @@ export function AppShell({
         <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Account</p>
         <Link
           href="/settings"
+          prefetch
           onClick={() => setOpen(false)}
           className={cn(
             "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium",
@@ -116,7 +118,7 @@ export function AppShell({
         </div>
         {nav}
         <div className="mt-auto rounded-2xl border border-line bg-surface-2/70 px-3 py-3">
-          <p className="truncate text-xs font-medium">{email ?? (configured ? "Signed out" : "Local draft mode")}</p>
+          <p className="truncate text-xs font-medium">{email ?? (configured ? "Workspace" : "Local draft mode")}</p>
           <p className="mt-1 text-[11px] leading-4 text-muted">
             {email ? "Private workspace" : "Connect Supabase to save your work."}
           </p>

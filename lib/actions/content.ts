@@ -28,14 +28,7 @@ function isOwnThumbnailPath(userId: string, contentId: string, path: string) {
 }
 
 function refresh() {
-  revalidatePath("/dashboard");
-  revalidatePath("/content");
-  revalidatePath("/calendar");
-  revalidatePath("/library");
-  revalidatePath("/thumbnails");
-  revalidatePath("/assistant");
-  revalidatePath("/settings");
-  revalidatePath("/hashtags");
+  revalidatePath("/", "layout");
 }
 
 function contentRow(userId: string, input: ContentInput) {
@@ -108,7 +101,13 @@ export async function saveContent(id: string | null, input: ContentInput): Promi
 async function copyContent(id: string, asTemplate: boolean): Promise<ActionResult> {
   const session = await requireSession();
   if (!session.ok) return session;
-  const { data, error } = await session.supabase.from("contents").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await session.supabase
+    .from("contents")
+    .select(
+      "category_id, title, topic, platform, language, description, youtube_description, instagram_caption, tags, hashtags, script_notes, thumbnail_prompt, video_url, notes, reference_links, checklist, planned_date",
+    )
+    .eq("id", id)
+    .maybeSingle();
   if (error || !data) return { ok: false, error: "Could not find that content." };
   const source = data as Record<string, unknown>;
   const title = String(source.title ?? "Untitled");
@@ -156,15 +155,13 @@ export async function saveAsTemplate(id: string) {
 export async function deleteContent(id: string): Promise<ActionResult> {
   const session = await requireSession();
   if (!session.ok) return session;
-  const folder = `${session.user.id}/${id}`;
-  const listed = await session.supabase.storage.from("thumbnails").list(folder);
-  if (listed.data?.length) {
-    await session.supabase.storage
-      .from("thumbnails")
-      .remove(listed.data.map((file) => `${folder}/${file.name}`));
-  }
+  const existing = await session.supabase.from("contents").select("thumbnail_path").eq("id", id).maybeSingle();
+  const path = (existing.data as { thumbnail_path?: string | null } | null)?.thumbnail_path;
   const { error } = await session.supabase.from("contents").delete().eq("id", id);
   if (error) return { ok: false, error: "Could not delete this content." };
+  if (path) {
+    void session.supabase.storage.from("thumbnails").remove([path]);
+  }
   refresh();
   return { ok: true, message: "Content deleted." };
 }
