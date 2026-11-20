@@ -1,18 +1,33 @@
--- Content Studio schema. Run once in the Supabase SQL editor on a new project.
+-- Content Studio schema. Run this whole file in the Supabase SQL editor.
+-- Safe to run again if a previous attempt failed.
 -- Passwords stay in Supabase Auth. This app never stores them.
 
-create type public.content_platform as enum ('youtube', 'instagram', 'both');
-create type public.content_language as enum ('ml', 'en');
-create type public.content_status as enum (
-  'idea',
-  'planning',
-  'in_progress',
-  'ready',
-  'scheduled',
-  'published'
-);
+do $$ begin
+  create type public.content_platform as enum ('youtube', 'instagram', 'both');
+exception
+  when duplicate_object then null;
+end $$;
 
-create table public.profiles (
+do $$ begin
+  create type public.content_language as enum ('ml', 'en');
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.content_status as enum (
+    'idea',
+    'planning',
+    'in_progress',
+    'ready',
+    'scheduled',
+    'published'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   display_name text,
   created_at timestamptz not null default now(),
@@ -22,7 +37,7 @@ create table public.profiles (
   )
 );
 
-create table public.categories (
+create table if not exists public.categories (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   name text not null,
@@ -33,7 +48,7 @@ create table public.categories (
   constraint categories_user_name_unique unique (user_id, name)
 );
 
-create table public.contents (
+create table if not exists public.contents (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   category_id uuid references public.categories (id) on delete set null,
@@ -72,14 +87,8 @@ create table public.contents (
   constraint contents_notes_length check (notes is null or char_length(notes) <= 8000),
   constraint contents_video_url_https check (video_url is null or video_url ~ '^https://[^[:space:]]{1,2000}$'),
   constraint contents_published_url_https check (published_url is null or published_url ~ '^https://[^[:space:]]{1,2000}$'),
-  constraint contents_tags_bounds check (
-    cardinality(tags) <= 40
-    and not exists (select 1 from unnest(tags) as item where char_length(item) < 1 or char_length(item) > 80)
-  ),
-  constraint contents_hashtags_bounds check (
-    cardinality(hashtags) <= 40
-    and not exists (select 1 from unnest(hashtags) as item where char_length(item) < 1 or char_length(item) > 80)
-  ),
+  constraint contents_tags_bounds check (cardinality(tags) <= 40),
+  constraint contents_hashtags_bounds check (cardinality(hashtags) <= 40),
   constraint contents_reference_links_size check (jsonb_array_length(reference_links) <= 30),
   constraint contents_checklist_size check (jsonb_array_length(checklist) <= 30),
   constraint contents_views_nonnegative check (views is null or views >= 0),
@@ -89,7 +98,7 @@ create table public.contents (
   constraint contents_checklist_array check (jsonb_typeof(checklist) = 'array')
 );
 
-create table public.thumbnail_prompts (
+create table if not exists public.thumbnail_prompts (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   content_id uuid references public.contents (id) on delete set null,
@@ -104,7 +113,7 @@ create table public.thumbnail_prompts (
   constraint thumbnail_prompts_vertical_length check (char_length(vertical_prompt) between 1 and 20000)
 );
 
-create table public.hashtag_collections (
+create table if not exists public.hashtag_collections (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   name text not null,
@@ -113,19 +122,16 @@ create table public.hashtag_collections (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint hashtag_collections_name_length check (char_length(name) between 1 and 80),
-  constraint hashtag_collections_tags_bounds check (
-    cardinality(hashtags) between 1 and 40
-    and not exists (select 1 from unnest(hashtags) as item where char_length(item) < 1 or char_length(item) > 80)
-  )
+  constraint hashtag_collections_tags_bounds check (cardinality(hashtags) between 1 and 40)
 );
 
-create index contents_user_status_idx on public.contents (user_id, status);
-create index contents_user_planned_idx on public.contents (user_id, planned_date);
-create index contents_user_platform_idx on public.contents (user_id, platform);
-create index contents_user_updated_idx on public.contents (user_id, updated_at desc);
-create index categories_user_idx on public.categories (user_id);
-create index thumbnail_prompts_user_idx on public.thumbnail_prompts (user_id, created_at desc);
-create index hashtag_collections_user_idx on public.hashtag_collections (user_id);
+create index if not exists contents_user_status_idx on public.contents (user_id, status);
+create index if not exists contents_user_planned_idx on public.contents (user_id, planned_date);
+create index if not exists contents_user_platform_idx on public.contents (user_id, platform);
+create index if not exists contents_user_updated_idx on public.contents (user_id, updated_at desc);
+create index if not exists categories_user_idx on public.categories (user_id);
+create index if not exists thumbnail_prompts_user_idx on public.thumbnail_prompts (user_id, created_at desc);
+create index if not exists hashtag_collections_user_idx on public.hashtag_collections (user_id);
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -138,18 +144,22 @@ begin
 end;
 $$;
 
+drop trigger if exists profiles_set_updated_at on public.profiles;
 create trigger profiles_set_updated_at
 before update on public.profiles
 for each row execute function public.set_updated_at();
 
+drop trigger if exists contents_set_updated_at on public.contents;
 create trigger contents_set_updated_at
 before update on public.contents
 for each row execute function public.set_updated_at();
 
+drop trigger if exists thumbnail_prompts_set_updated_at on public.thumbnail_prompts;
 create trigger thumbnail_prompts_set_updated_at
 before update on public.thumbnail_prompts
 for each row execute function public.set_updated_at();
 
+drop trigger if exists hashtag_collections_set_updated_at on public.hashtag_collections;
 create trigger hashtag_collections_set_updated_at
 before update on public.hashtag_collections
 for each row execute function public.set_updated_at();
@@ -187,30 +197,36 @@ alter table public.contents enable row level security;
 alter table public.thumbnail_prompts enable row level security;
 alter table public.hashtag_collections enable row level security;
 
+drop policy if exists profiles_select_own on public.profiles;
 create policy profiles_select_own on public.profiles
 for select to authenticated
 using (id = auth.uid());
 
+drop policy if exists profiles_update_own on public.profiles;
 create policy profiles_update_own on public.profiles
 for update to authenticated
 using (id = auth.uid())
 with check (id = auth.uid());
 
+drop policy if exists categories_own on public.categories;
 create policy categories_own on public.categories
 for all to authenticated
 using (user_id = auth.uid())
 with check (user_id = auth.uid());
 
+drop policy if exists contents_own on public.contents;
 create policy contents_own on public.contents
 for all to authenticated
 using (user_id = auth.uid())
 with check (user_id = auth.uid());
 
+drop policy if exists thumbnail_prompts_own on public.thumbnail_prompts;
 create policy thumbnail_prompts_own on public.thumbnail_prompts
 for all to authenticated
 using (user_id = auth.uid())
 with check (user_id = auth.uid());
 
+drop policy if exists hashtag_collections_own on public.hashtag_collections;
 create policy hashtag_collections_own on public.hashtag_collections
 for all to authenticated
 using (user_id = auth.uid())
@@ -232,8 +248,10 @@ values (
   false,
   5242880,
   array['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-);
+)
+on conflict (id) do nothing;
 
+drop policy if exists thumbnails_read_own on storage.objects;
 create policy thumbnails_read_own on storage.objects
 for select to authenticated
 using (
@@ -242,6 +260,7 @@ using (
   and (storage.foldername(name))[1] = auth.uid()::text
 );
 
+drop policy if exists thumbnails_insert_own on storage.objects;
 create policy thumbnails_insert_own on storage.objects
 for insert to authenticated
 with check (
@@ -250,6 +269,7 @@ with check (
   and (storage.foldername(name))[1] = auth.uid()::text
 );
 
+drop policy if exists thumbnails_update_own on storage.objects;
 create policy thumbnails_update_own on storage.objects
 for update to authenticated
 using (
@@ -263,6 +283,7 @@ with check (
   and (storage.foldername(name))[1] = auth.uid()::text
 );
 
+drop policy if exists thumbnails_delete_own on storage.objects;
 create policy thumbnails_delete_own on storage.objects
 for delete to authenticated
 using (

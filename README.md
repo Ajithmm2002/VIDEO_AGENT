@@ -150,8 +150,8 @@ git push -u origin main
 
 1. Create a project at https://supabase.com/dashboard. The free plan is enough.
 2. Open **Project Settings → API**.
-3. Copy the project URL and the **anon public** key. Leave the service role key where it is.
-4. Open **SQL Editor**, paste the whole file `supabase/migrations/20261120120000_init.sql`, and run it once.
+3. Copy the project URL and the **publishable** key. Leave the secret / service role key where it is.
+4. Open **SQL Editor**, paste the whole file `supabase/migrations/20261120120000_init.sql`, and run it. If a previous run failed, run this updated file again.
 5. If the storage bucket line fails, create a **private** bucket named `thumbnails` in the dashboard, then run the four `storage.objects` policies at the bottom of that file.
 6. Open **Authentication → URL Configuration** and set the site URL and redirect after you know the Vercel address in step 4. Until then you can use `http://localhost:3000` and `http://localhost:3000/auth/callback`, then add the live URLs.
 
