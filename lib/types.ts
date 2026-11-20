@@ -1,5 +1,6 @@
 export const platforms = ["youtube", "instagram", "both"] as const;
 export const languages = ["en", "ml"] as const;
+export const tagCountOptions = [5, 8, 10, 12, 15, 20, 25, 30] as const;
 export const statuses = [
   "idea",
   "planning",

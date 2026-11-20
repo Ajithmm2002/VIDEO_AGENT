@@ -5,6 +5,21 @@ import { requireSession } from "@/lib/session";
 import type { ActionResult, ContentInput } from "@/lib/types";
 import { contentSchema, firstIssue } from "@/lib/validation";
 
+function saveError(error: { message?: string; code?: string } | null, fallback: string) {
+  const message = (error?.message ?? "").toLowerCase();
+  if (message.includes("https") || message.includes("url")) return "Links must start with https://";
+  if (message.includes("row-level") || message.includes("permission") || error?.code === "42501") {
+    return "Could not save. Sign in again, then try once more.";
+  }
+  if (message.includes("cardinality") || message.includes("too long") || message.includes("check")) {
+    return "One of the fields is too long or has too many tags.";
+  }
+  if (message.includes("does not exist") || error?.code === "42P01") {
+    return "The database tables are missing. Run the SQL setup file in Supabase, then try again.";
+  }
+  return fallback;
+}
+
 function isOwnThumbnailPath(userId: string, contentId: string, path: string) {
   const prefix = `${userId}/${contentId}/`;
   if (!path.startsWith(prefix) || path.includes("..") || path.length > 220) return false;
@@ -20,6 +35,7 @@ function refresh() {
   revalidatePath("/thumbnails");
   revalidatePath("/assistant");
   revalidatePath("/settings");
+  revalidatePath("/hashtags");
 }
 
 function contentRow(userId: string, input: ContentInput) {
@@ -69,15 +85,24 @@ export async function saveContent(id: string | null, input: ContentInput): Promi
   const row = contentRow(session.user.id, parsed.data);
   if (id) {
     const { error } = await session.supabase.from("contents").update(row).eq("id", id);
-    if (error) return { ok: false, error: "Could not save this content." };
+    if (error) {
+      console.error("saveContent update", error);
+      return { ok: false, error: saveError(error, "Could not save this content.") };
+    }
     refresh();
+    revalidatePath(`/content/${id}`);
     return { ok: true, id, message: "Content saved." };
   }
 
   const { data, error } = await session.supabase.from("contents").insert(row).select("id").single();
-  if (error || !data) return { ok: false, error: "Could not create this content." };
+  if (error || !data) {
+    console.error("saveContent insert", error);
+    return { ok: false, error: saveError(error, "Could not create this content.") };
+  }
+  const createdId = (data as { id: string }).id;
   refresh();
-  return { ok: true, id: (data as { id: string }).id, message: "Content created." };
+  revalidatePath(`/content/${createdId}`);
+  return { ok: true, id: createdId, message: "Content created." };
 }
 
 async function copyContent(id: string, asTemplate: boolean): Promise<ActionResult> {

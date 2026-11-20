@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui";
 import { WritingStudio } from "@/components/writing-studio";
-import { isSupabaseConfigured } from "@/lib/env";
+import { isSupabaseConfigured, remoteAiEnabled } from "@/lib/env";
 import { listContentOptions } from "@/lib/queries";
 import { languages, platforms, type Language, type Platform } from "@/lib/types";
 
@@ -30,6 +30,7 @@ export default async function AssistantPage({
       />
       <WritingStudio
         configured={isSupabaseConfigured()}
+        aiConnected={remoteAiEnabled()}
         contents={contents}
         initial={{
           topic: first(params.topic) ?? "",

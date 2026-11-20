@@ -125,6 +125,7 @@ To connect a model later, set `AI_PROVIDER` to `openai` or `gemini`, set `AI_API
 - Save categories, templates, notes, reference links, and hashtag collections.
 - Generate 16:9 and 9:16 thumbnail prompts, edit them, copy them, and open [Google Flow](https://labs.google/fx/tools/flow). The app does not generate images.
 - Generate titles, descriptions, captions, tags, hashtags, hooks, and a script outline, then edit, copy, or save them onto content.
+- On a content item, generate a description, YouTube tags, and hashtags from the topic, and choose how many tags to create.
 - Use a month or week calendar and move a planned date by dragging or with the date field.
 - Browse the library, export CSV, and download or restore a JSON backup of your rows.
 
@@ -166,9 +167,11 @@ git push -u origin main
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (`sb_publishable_...`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://your-app.vercel.app` after the first deploy, then redeploy |
-| `AI_PROVIDER` | `gemini` |
+| `AI_PROVIDER` | `gemini` (required for live writing and tags; without this the app uses local templates) |
 | `AI_API_KEY` | Your Gemini key |
 | `AI_MODEL` | `gemini-3.5-flash` |
+
+After you add or change these values, click **Redeploy**. `NEXT_PUBLIC_*` values are baked in at build time. `AI_API_KEY` is server-only and must not be prefixed with `NEXT_PUBLIC_`.
 
 4. Deploy. Copy the `https://….vercel.app` address.
 5. In Supabase **URL Configuration**, set Site URL to that address and add `https://….vercel.app/auth/callback` as a redirect URL. Remove any address you do not use.

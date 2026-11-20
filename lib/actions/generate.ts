@@ -1,11 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { generateThumbnailPrompts, generateWritingDraft } from "@/lib/ai";
+import { generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
 import { isSupabaseConfigured } from "@/lib/env";
 import { requireSession } from "@/lib/session";
 import type { ActionResult, ContentInput, Language, Platform } from "@/lib/types";
-import { contentSchema, firstIssue, thumbnailRequestSchema, writingApplySchema, writingRequestSchema } from "@/lib/validation";
+import {
+  contentSchema,
+  firstIssue,
+  thumbnailRequestSchema,
+  topicCopySchema,
+  writingApplySchema,
+  writingRequestSchema,
+} from "@/lib/validation";
 
 async function generationAllowed() {
   if (!isSupabaseConfigured()) {
@@ -46,6 +53,8 @@ export async function generateWriting(input: {
   language: Language;
   platform: Platform;
   tone?: string;
+  tagCount?: number;
+  hashtagCount?: number;
 }) {
   const parsed = writingRequestSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };
@@ -56,6 +65,25 @@ export async function generateWriting(input: {
     return { ok: true as const, result };
   } catch (error) {
     return { ok: false as const, error: aiError(error, "The connected AI provider could not write a draft. Check the API settings.") };
+  }
+}
+
+export async function generateFromTopic(input: {
+  topic: string;
+  language: Language;
+  platform: Platform;
+  tagCount: number;
+  hashtagCount: number;
+}) {
+  const parsed = topicCopySchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };
+  const blocked = await generationAllowed();
+  if (blocked) return blocked;
+  try {
+    const result = await generateTopicCopy(parsed.data);
+    return { ok: true as const, result };
+  } catch (error) {
+    return { ok: false as const, error: aiError(error, "The connected AI provider could not write tags for that topic.") };
   }
 }
 

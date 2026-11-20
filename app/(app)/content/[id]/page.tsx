@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContentForm } from "@/components/content-form";
 import { PageHeader } from "@/components/ui";
-import { isSupabaseConfigured } from "@/lib/env";
+import { isSupabaseConfigured, remoteAiEnabled } from "@/lib/env";
 import { getContent, listCategories, listCollections, signedThumbnailUrl } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Edit content" };
@@ -27,6 +27,7 @@ export default async function EditContentPage({ params }: { params: Promise<{ id
         collections={collections}
         thumbnailUrl={thumbnailUrl}
         configured={isSupabaseConfigured()}
+        aiConnected={remoteAiEnabled()}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import type { Language, Platform } from "@/lib/types";
-import { localThumbnail, type ThumbnailDraft, type WritingDraft } from "@/lib/ai/local";
+import { localThumbnail, type ThumbnailDraft, type TopicCopy, type WritingDraft } from "@/lib/ai/local";
 
 type RemoteThumbnail = Omit<ThumbnailDraft, "provider"> & { provider: "remote" };
 type RemoteWriting = Omit<WritingDraft, "provider"> & { provider: "remote" };
@@ -149,10 +149,14 @@ export async function remoteWriting(input: {
   language: Language;
   platform: Platform;
   tone?: string;
+  tagCount?: number;
+  hashtagCount?: number;
 }): Promise<RemoteWriting> {
+  const tagCount = input.tagCount ?? 12;
+  const hashtagCount = input.hashtagCount ?? 15;
   const data = await complete(
     "You draft social content for one creator. Reply with JSON only: {\"titles\": string[3], \"youtubeDescription\": string, \"instagramCaption\": string, \"tags\": string[], \"hashtags\": string[], \"hook\": string, \"scriptOutline\": string}. Write in the requested language. Hashtags must start with #. Keep the script as a short outline, not a full filmed script.",
-    `Topic: ${input.topic}\nLanguage: ${input.language}\nPlatform: ${input.platform}\nTone: ${input.tone || "clear and specific"}`,
+    `Topic: ${input.topic}\nLanguage: ${input.language}\nPlatform: ${input.platform}\nTone: ${input.tone || "clear and specific"}\nYouTube SEO tags wanted: ${tagCount}\nHashtags wanted: ${hashtagCount}`,
   );
   const titles = Array.isArray(data.titles) ? data.titles.filter((item) => typeof item === "string") : [];
   if (titles.length < 1 || typeof data.youtubeDescription !== "string" || typeof data.hook !== "string") {
@@ -164,10 +168,38 @@ export async function remoteWriting(input: {
     titles: titles.slice(0, 3),
     youtubeDescription: data.youtubeDescription,
     instagramCaption: typeof data.instagramCaption === "string" ? data.instagramCaption : "",
-    tags: stringList(data.tags).slice(0, 20),
-    hashtags: stringList(data.hashtags).map((tag) => (tag.startsWith("#") ? tag : `#${tag}`)).slice(0, 20),
+    tags: stringList(data.tags).slice(0, tagCount),
+    hashtags: stringList(data.hashtags).map((tag) => (tag.startsWith("#") ? tag : `#${tag}`)).slice(0, hashtagCount),
     hook: data.hook,
     scriptOutline: typeof data.scriptOutline === "string" ? data.scriptOutline : "",
+    provider: "remote",
+  };
+}
+
+export async function remoteTopicCopy(input: {
+  topic: string;
+  language: Language;
+  platform: Platform;
+  tagCount: number;
+  hashtagCount: number;
+}): Promise<TopicCopy> {
+  const data = await complete(
+    "You write YouTube and Instagram copy for one creator. Reply with JSON only: {\"description\": string, \"youtubeDescription\": string, \"instagramCaption\": string, \"tags\": string[], \"hashtags\": string[]}. Write in the requested language. tags are YouTube SEO tags without #. hashtags must start with #. Return exactly the requested counts. Make tags searchable and specific to the topic.",
+    `Topic: ${input.topic}\nLanguage: ${input.language}\nPlatform: ${input.platform}\nYouTube SEO tags wanted: ${input.tagCount}\nHashtags wanted: ${input.hashtagCount}`,
+  );
+  const stringList = (value: unknown) =>
+    Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
+  const youtubeDescription = typeof data.youtubeDescription === "string" ? data.youtubeDescription.trim() : "";
+  const description = typeof data.description === "string" ? data.description.trim() : youtubeDescription;
+  if (!youtubeDescription && !description) {
+    throw new Error("The connected AI provider returned an incomplete draft.");
+  }
+  return {
+    description: description || youtubeDescription,
+    youtubeDescription: youtubeDescription || description,
+    instagramCaption: typeof data.instagramCaption === "string" ? data.instagramCaption.trim() : "",
+    tags: stringList(data.tags).map((tag) => tag.replace(/^#/, "").trim()).filter(Boolean).slice(0, input.tagCount),
+    hashtags: stringList(data.hashtags).map((tag) => (tag.startsWith("#") ? tag : `#${tag.replace(/\s+/g, "")}`)).slice(0, input.hashtagCount),
     provider: "remote",
   };
 }

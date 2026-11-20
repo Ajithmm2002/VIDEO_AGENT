@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export default async function WorkspaceLayout({ children }: { children: ReactNode }) {
   const configured = isSupabaseConfigured();

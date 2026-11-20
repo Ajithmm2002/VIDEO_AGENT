@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { containsMalayalam, hashtagsFor, localThumbnail, localWriting } from "@/lib/ai/local";
+import { containsMalayalam, hashtagsFor, localThumbnail, localTopicCopy, localWriting } from "@/lib/ai/local";
 
 describe("thumbnail prompts", () => {
   it("builds landscape and vertical prompts with the required sections", () => {
@@ -45,5 +45,19 @@ describe("writing drafts", () => {
     expect(containsMalayalam(result.titles[0])).toBe(true);
     expect(result.hashtags).toContain("#Malayalam");
     expect(hashtagsFor("പുസ്തക നിർദേശം", "youtube", "ml").every((tag) => tag.startsWith("#"))).toBe(true);
+  });
+
+  it("honours requested YouTube tag and hashtag counts", () => {
+    const result = localTopicCopy({
+      topic: "Home coffee",
+      language: "en",
+      platform: "youtube",
+      tagCount: 8,
+      hashtagCount: 20,
+    });
+    expect(result.tags).toHaveLength(8);
+    expect(result.hashtags).toHaveLength(20);
+    expect(result.hashtags.every((tag) => tag.startsWith("#"))).toBe(true);
+    expect(result.description.length).toBeGreaterThan(10);
   });
 });

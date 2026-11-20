@@ -36,27 +36,60 @@ function unique(values: string[]) {
   });
 }
 
-export function hashtagsFor(topic: string, platform: Platform, language: Language) {
+function fillList(seed: string[], extras: string[], count: number) {
+  const filled = unique([...seed, ...extras]);
+  const bases = unique([...seed, ...extras].filter(Boolean));
+  const fallback = bases[0] || "topic";
+  let i = 1;
+  while (filled.length < count && i < 80) {
+    const base = bases[(i - 1) % Math.max(bases.length, 1)] || fallback;
+    const next = base.startsWith("#") ? `${base}${i}` : `${base} ${i}`;
+    if (!filled.some((item) => item.toLowerCase() === next.toLowerCase())) {
+      filled.push(next);
+    }
+    i += 1;
+  }
+  return filled.slice(0, count);
+}
+
+export function hashtagsFor(topic: string, platform: Platform, language: Language, count = 12) {
   const compact = topic.replace(/[^\p{L}\p{N}]+/gu, "");
-  const tags = words(topic).slice(0, 4).map((word) => `#${word}`);
-  return unique([
+  const tags = words(topic).slice(0, 8).map((word) => `#${word}`);
+  const extras = [
     compact ? `#${compact}` : "",
-    ...tags,
-    language === "ml" ? "#Malayalam" : "",
+    language === "ml" ? "#Malayalam" : "#Creator",
+    language === "ml" ? "#Kerala" : "#Tutorial",
     platform !== "instagram" ? "#YouTube" : "",
+    platform !== "instagram" ? "#YouTubeTips" : "",
     platform !== "youtube" ? "#Instagram" : "",
     platform !== "youtube" ? "#Reels" : "",
     "#Shorts",
-  ]).slice(0, 12);
+    "#Vlog",
+    "#HowTo",
+    "#Tips",
+    "#Guide",
+    "#Daily",
+    "#LearnOnYouTube",
+  ];
+  return fillList([...tags, ...extras], extras, count);
 }
 
-export function tagsFor(topic: string, platform: Platform, language: Language) {
-  return unique([
-    ...words(topic).slice(0, 6),
+export function tagsFor(topic: string, platform: Platform, language: Language, count = 12) {
+  const extras = [
     language === "ml" ? "Malayalam" : "English",
+    language === "ml" ? "Kerala" : "tutorial",
     platform !== "instagram" ? "YouTube" : "",
+    platform !== "instagram" ? "YouTube tags" : "",
     platform !== "youtube" ? "Instagram" : "",
-  ]).slice(0, 12);
+    "vlog",
+    "how to",
+    "beginner",
+    "explained",
+    "guide",
+    "tips",
+    topic.trim(),
+  ];
+  return fillList([...words(topic), ...extras], extras, count);
 }
 
 export function localThumbnail(input: {
@@ -129,17 +162,51 @@ function scriptOutline(topic: string, tone: string, malayalam: boolean) {
   ].join("\n");
 }
 
+export type TopicCopy = {
+  description: string;
+  youtubeDescription: string;
+  instagramCaption: string;
+  tags: string[];
+  hashtags: string[];
+  provider: "local" | "remote";
+};
+
+export function localTopicCopy(input: {
+  topic: string;
+  language: Language;
+  platform: Platform;
+  tagCount: number;
+  hashtagCount: number;
+}): TopicCopy {
+  const draft = localWriting({
+    topic: input.topic,
+    language: input.language,
+    platform: input.platform,
+  });
+  const language = containsMalayalam(input.topic) ? "ml" : input.language;
+  return {
+    description: draft.youtubeDescription,
+    youtubeDescription: draft.youtubeDescription,
+    instagramCaption: draft.instagramCaption,
+    tags: tagsFor(input.topic, input.platform, language, input.tagCount),
+    hashtags: hashtagsFor(input.topic, input.platform, language, input.hashtagCount),
+    provider: "local",
+  };
+}
+
 export function localWriting(input: {
   topic: string;
   language: Language;
   platform: Platform;
   tone?: string;
+  tagCount?: number;
+  hashtagCount?: number;
 }): WritingDraft {
   const topic = input.topic.trim();
   const malayalam = input.language === "ml" || containsMalayalam(topic);
   const tone = input.tone?.trim() ?? "";
-  const tags = tagsFor(topic, input.platform, malayalam ? "ml" : "en");
-  const hashtags = hashtagsFor(topic, input.platform, malayalam ? "ml" : "en");
+  const tags = tagsFor(topic, input.platform, malayalam ? "ml" : "en", input.tagCount ?? 12);
+  const hashtags = hashtagsFor(topic, input.platform, malayalam ? "ml" : "en", input.hashtagCount ?? 15);
 
   if (malayalam) {
     return {

@@ -6,7 +6,33 @@ import { sanitizeSearch } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
-const contentSelect = "*, categories(id, name, color)";
+function parseContents(rows: unknown[]) {
+  return (rows ?? []).flatMap((row) => {
+    try {
+      return [asContent(row)];
+    } catch (error) {
+      console.error("Skipped a content row that could not be read.", error);
+      return [];
+    }
+  });
+}
+
+async function attachCategories(supabase: SupabaseClient, rows: unknown[]) {
+  const contents = parseContents(rows);
+  const ids = [...new Set(contents.map((item) => item.category_id).filter((id): id is string => Boolean(id)))];
+  if (!ids.length) return contents;
+  const { data } = await supabase.from("categories").select("id, name, color").in("id", ids);
+  const map = new Map(
+    (data ?? []).flatMap((row) => {
+      const category = asCategory(row);
+      return category ? [[category.id, category] as const] : [];
+    }),
+  );
+  return contents.map((item) => ({
+    ...item,
+    category: item.category_id ? map.get(item.category_id) ?? null : null,
+  }));
+}
 
 async function client() {
   if (!isSupabaseConfigured()) return null;
@@ -65,7 +91,7 @@ export type ContentFilters = {
 export async function listContents(filters: ContentFilters) {
   const supabase = await client();
   if (!supabase) return [];
-  let query = supabase.from("contents").select(contentSelect);
+  let query = supabase.from("contents").select("*");
   const q = sanitizeSearch(filters.q ?? "");
   if (q) {
     query = query.or(`title.ilike.%${q}%,topic.ilike.%${q}%,description.ilike.%${q}%`);
@@ -86,16 +112,24 @@ export async function listContents(filters: ContentFilters) {
   else query = query.order("updated_at", { ascending: false });
 
   const { data, error } = await query.limit(200);
-  if (error) throw new Error("Could not load content.");
-  return (data ?? []).map(asContent);
+  if (error) {
+    console.error("listContents", error);
+    throw new Error("Could not load content.");
+  }
+  return attachCategories(supabase, data ?? []);
 }
 
 export async function getContent(id: string) {
   const supabase = await client();
   if (!supabase) return null;
-  const { data, error } = await supabase.from("contents").select(contentSelect).eq("id", id).maybeSingle();
-  if (error) throw new Error("Could not load this content.");
-  return data ? asContent(data) : null;
+  const { data, error } = await supabase.from("contents").select("*").eq("id", id).maybeSingle();
+  if (error) {
+    console.error("getContent", error);
+    throw new Error("Could not load this content.");
+  }
+  if (!data) return null;
+  const [content] = await attachCategories(supabase, [data]);
+  return content ?? null;
 }
 
 export async function signedThumbnailUrl(path: string | null) {
@@ -174,13 +208,13 @@ export async function dashboardData() {
       countContents(supabase, { platforms: ["instagram", "both"] }),
       supabase
         .from("contents")
-        .select(contentSelect)
+        .select("*")
         .eq("is_template", false)
         .order("updated_at", { ascending: false })
         .limit(6),
       supabase
         .from("contents")
-        .select(contentSelect)
+        .select("*")
         .eq("is_template", false)
         .gte("planned_date", today)
         .neq("status", "published")
@@ -189,6 +223,7 @@ export async function dashboardData() {
     ]);
 
   if (recentResult.error || upcomingResult.error) {
+    console.error("dashboardData", recentResult.error ?? upcomingResult.error);
     throw new Error("Could not load the dashboard.");
   }
 
@@ -200,8 +235,8 @@ export async function dashboardData() {
     published,
     youtube,
     instagram,
-    recent: (recentResult.data ?? []).map(asContent),
-    upcoming: (upcomingResult.data ?? []).map(asContent),
+    recent: await attachCategories(supabase, recentResult.data ?? []),
+    upcoming: await attachCategories(supabase, upcomingResult.data ?? []),
   };
 }
 
@@ -210,13 +245,13 @@ export async function calendarContents(start: string, end: string, platform?: st
   if (!supabase) return { dated: [] as Content[], undated: [] as Content[] };
   let dated = supabase
     .from("contents")
-    .select(contentSelect)
+    .select("*")
     .eq("is_template", false)
     .gte("planned_date", start)
     .lte("planned_date", end);
   let undated = supabase
     .from("contents")
-    .select(contentSelect)
+    .select("*")
     .eq("is_template", false)
     .is("planned_date", null)
     .order("updated_at", { ascending: false })
@@ -232,10 +267,13 @@ export async function calendarContents(start: string, end: string, platform?: st
   }
 
   const [datedResult, undatedResult] = await Promise.all([dated, undated]);
-  if (datedResult.error || undatedResult.error) throw new Error("Could not load the calendar.");
+  if (datedResult.error || undatedResult.error) {
+    console.error("calendarContents", datedResult.error ?? undatedResult.error);
+    throw new Error("Could not load the calendar.");
+  }
   return {
-    dated: (datedResult.data ?? []).map(asContent),
-    undated: (undatedResult.data ?? []).map(asContent),
+    dated: await attachCategories(supabase, datedResult.data ?? []),
+    undated: await attachCategories(supabase, undatedResult.data ?? []),
   };
 }
 
@@ -244,12 +282,15 @@ export async function libraryContents() {
   if (!supabase) return [] as Content[];
   const { data, error } = await supabase
     .from("contents")
-    .select(contentSelect)
+    .select("*")
     .eq("is_template", false)
     .order("updated_at", { ascending: false })
     .limit(500);
-  if (error) throw new Error("Could not load the library.");
-  return (data ?? []).map(asContent);
+  if (error) {
+    console.error("libraryContents", error);
+    throw new Error("Could not load the library.");
+  }
+  return attachCategories(supabase, data ?? []);
 }
 
 export async function getProfile() {

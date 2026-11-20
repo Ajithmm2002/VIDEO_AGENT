@@ -107,6 +107,16 @@ export const writingRequestSchema = z.object({
   language: z.enum(languages),
   platform: z.enum(platforms),
   tone: z.string().trim().max(200).optional().default(""),
+  tagCount: z.number().int().min(1).max(30).optional().default(12),
+  hashtagCount: z.number().int().min(1).max(30).optional().default(15),
+});
+
+export const topicCopySchema = z.object({
+  topic: z.string().trim().min(1, "Enter a topic").max(500),
+  language: z.enum(languages),
+  platform: z.enum(platforms),
+  tagCount: z.number().int().min(1).max(30),
+  hashtagCount: z.number().int().min(1).max(30),
 });
 
 export const passwordSchema = z

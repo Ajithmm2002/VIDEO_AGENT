@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { applyWriting, createFromWriting, generateWriting } from "@/lib/actions/generate";
 import { CopyButton } from "@/components/copy-button";
-import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels } from "@/lib/labels";
 import type { ContentInput, ContentOption, Language, Platform } from "@/lib/types";
 import { languages, platforms } from "@/lib/types";
@@ -15,10 +15,12 @@ export function WritingStudio({
   configured,
   contents,
   initial,
+  aiConnected,
 }: {
   configured: boolean;
   contents: ContentOption[];
   initial: { topic: string; language: Language; platform: Platform; contentId: string };
+  aiConnected: boolean;
 }) {
   const router = useRouter();
   const [topic, setTopic] = useState(initial.topic);
@@ -26,6 +28,8 @@ export function WritingStudio({
   const [platform, setPlatform] = useState<Platform>(initial.platform);
   const [tone, setTone] = useState("");
   const [contentId, setContentId] = useState(initial.contentId);
+  const [tagCount, setTagCount] = useState(12);
+  const [hashtagCount, setHashtagCount] = useState(15);
   const [pending, setPending] = useState(false);
   const [provider, setProvider] = useState<"local" | "remote" | null>(null);
   const [titles, setTitles] = useState<string[]>(["", "", ""]);
@@ -38,21 +42,24 @@ export function WritingStudio({
 
   async function onGenerate() {
     setPending(true);
-    const result = await generateWriting({ topic, language, platform, tone });
-    setPending(false);
-    if (!result.ok) {
-      toast.error(result.error);
-      return;
+    try {
+      const result = await generateWriting({ topic, language, platform, tone, tagCount, hashtagCount });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      const draft = result.result;
+      setProvider(draft.provider);
+      setTitles([draft.titles[0] ?? "", draft.titles[1] ?? "", draft.titles[2] ?? ""]);
+      setYoutubeDescription(draft.youtubeDescription);
+      setInstagramCaption(draft.instagramCaption);
+      setTags(draft.tags.join(", "));
+      setHashtags(draft.hashtags.join(" "));
+      setHook(draft.hook);
+      setScriptOutline(draft.scriptOutline);
+    } finally {
+      setPending(false);
     }
-    const draft = result.result;
-    setProvider(draft.provider);
-    setTitles([draft.titles[0] ?? "", draft.titles[1] ?? "", draft.titles[2] ?? ""]);
-    setYoutubeDescription(draft.youtubeDescription);
-    setInstagramCaption(draft.instagramCaption);
-    setTags(draft.tags.join(", "));
-    setHashtags(draft.hashtags.join(" "));
-    setHook(draft.hook);
-    setScriptOutline(draft.scriptOutline);
   }
 
   function payload(): ContentInput {
@@ -89,8 +96,10 @@ export function WritingStudio({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm leading-6 text-muted">
             {provider === "remote"
-              ? "Generated with your connected AI provider. Every field stays editable."
-              : "Template generator. No paid API is required. The drafts are a starting point you can edit and copy."}
+              ? "Generated with Gemini. Every field stays editable."
+              : aiConnected
+                ? "Gemini is connected. If a request is busy, a local draft is used instead."
+                : "Template generator. Add AI_PROVIDER=gemini and AI_API_KEY on the host to use Gemini."}
           </p>
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${provider === "remote" ? "bg-accent/12 text-accent" : "bg-surface-2 text-muted"}`}>
             {provider === "remote" ? "Gemini" : "Local templates"}
@@ -113,6 +122,8 @@ export function WritingStudio({
               {platforms.map((item) => <option key={item} value={item}>{platformLabels[item]}</option>)}
             </SelectInput>
           </Field>
+          <CountSelect label="Number of YouTube tags" value={tagCount} onChange={setTagCount} />
+          <CountSelect label="Number of hashtags" value={hashtagCount} onChange={setHashtagCount} />
         </div>
         <Button className="w-fit" onClick={onGenerate} disabled={pending}>
           {pending ? "Writing…" : "Generate draft"}
@@ -136,7 +147,7 @@ export function WritingStudio({
       <DraftField label="Hook" value={hook} onChange={setHook} />
       <DraftField label="YouTube description" value={youtubeDescription} onChange={setYoutubeDescription} />
       <DraftField label="Instagram caption" value={instagramCaption} onChange={setInstagramCaption} />
-      <DraftField label="SEO tags" value={tags} onChange={setTags} />
+      <DraftField label="YouTube tags" value={tags} onChange={setTags} />
       <DraftField label="Hashtags" value={hashtags} onChange={setHashtags} />
       <DraftField label="Script outline" value={scriptOutline} onChange={setScriptOutline} tall />
 

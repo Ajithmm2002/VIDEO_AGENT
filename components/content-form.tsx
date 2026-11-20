@@ -4,16 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteContent, duplicateContent, saveAsTemplate, saveContent, setThumbnailPath } from "@/lib/actions/content";
+import { generateFromTopic } from "@/lib/actions/generate";
 import { ConfirmButton } from "@/components/confirm-button";
-import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
 import type { Category, Content, ContentInput, HashtagCollection } from "@/lib/types";
 import { languages, platforms, statuses } from "@/lib/types";
 import { defaultChecklist, newId, safeFileName } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
-function splitList(value: string) {
+function splitTags(value: string) {
   return value.split(/[\n,]/).map((item) => item.trim()).filter(Boolean);
+}
+
+function splitHashtags(value: string) {
+  return value.split(/[\s,]+/).map((item) => item.trim()).filter(Boolean);
 }
 
 function toInput(content?: Content): ContentInput {
@@ -83,12 +88,14 @@ export function ContentForm({
   collections,
   thumbnailUrl,
   configured,
+  aiConnected,
 }: {
   content?: Content;
   categories: Category[];
   collections: HashtagCollection[];
   thumbnailUrl: string | null;
   configured: boolean;
+  aiConnected: boolean;
 }) {
   const router = useRouter();
   const initial = toInput(content);
@@ -97,10 +104,56 @@ export function ContentForm({
   const [hashText, setHashText] = useState(initial.hashtags.join(" "));
   const [file, setFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [collectionId, setCollectionId] = useState("");
+  const [tagCount, setTagCount] = useState(12);
+  const [hashtagCount, setHashtagCount] = useState(15);
+  const [generator, setGenerator] = useState<"local" | "remote" | null>(null);
 
   function patch(partial: Partial<ContentInput>) {
     setForm((current) => ({ ...current, ...partial }));
+  }
+
+  async function onGenerateCopy() {
+    const topic = (form.topic ?? form.title).trim();
+    if (!topic) {
+      toast.error("Enter a topic or title first.");
+      return;
+    }
+    setGenerating(true);
+    try {
+      const result = await generateFromTopic({
+        topic,
+        language: form.language,
+        platform: form.platform,
+        tagCount,
+        hashtagCount,
+      });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      const draft = result.result;
+      setGenerator(draft.provider);
+      patch({
+        description: draft.description,
+        youtube_description: draft.youtubeDescription,
+        instagram_caption: draft.instagramCaption,
+        tags: draft.tags,
+        hashtags: draft.hashtags,
+      });
+      setTagsText(draft.tags.join(", "));
+      setHashText(draft.hashtags.join(" "));
+      toast.success(
+        draft.provider === "remote"
+          ? "Description, YouTube tags, and hashtags filled in. Edit anything, then save."
+          : aiConnected
+            ? "Gemini was busy, so a local draft was used. Edit anything, then save."
+            : "Local draft filled in. Add AI_PROVIDER=gemini and AI_API_KEY on the host to use Gemini.",
+      );
+    } finally {
+      setGenerating(false);
+    }
   }
 
   async function onSubmit(event: React.FormEvent) {
@@ -115,8 +168,8 @@ export function ContentForm({
     const payload: ContentInput = {
       ...form,
       title: form.title,
-      tags: splitList(tagsText),
-      hashtags: splitList(hashText),
+      tags: splitTags(tagsText),
+      hashtags: splitHashtags(hashText),
       views,
       likes,
       comments,
@@ -214,6 +267,28 @@ export function ContentForm({
       </Card>
 
       <Card className="grid gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold">Generate from topic</h2>
+            <p className="mt-1 text-sm leading-6 text-muted">
+              Fills the description, YouTube description, Instagram caption, YouTube tags, and hashtags from the topic.
+              You can change the counts, then edit the text before saving.
+            </p>
+          </div>
+          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${generator === "remote" ? "bg-accent/12 text-accent" : "bg-surface-2 text-muted"}`}>
+            {generator === "remote" ? "Gemini" : aiConnected ? "Gemini when available" : "Local templates"}
+          </span>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <CountSelect label="Number of YouTube tags" value={tagCount} onChange={setTagCount} />
+          <CountSelect label="Number of hashtags" value={hashtagCount} onChange={setHashtagCount} />
+        </div>
+        <Button onClick={onGenerateCopy} disabled={generating}>
+          {generating ? "Writing…" : "Generate description and tags"}
+        </Button>
+      </Card>
+
+      <Card className="grid gap-4">
         <Field label="Content description">
           <TextArea value={form.description ?? ""} onChange={(event) => patch({ description: event.target.value || null })} />
         </Field>
@@ -226,10 +301,10 @@ export function ContentForm({
       </Card>
 
       <Card className="grid gap-4 md:grid-cols-2">
-        <Field label="Tags" hint="Separate tags with commas.">
+        <Field label="YouTube tags" hint="Separate tags with commas. These are SEO tags, not hashtags.">
           <TextArea value={tagsText} onChange={(event) => setTagsText(event.target.value)} />
         </Field>
-        <Field label="Hashtags" hint="Commas or new lines. A hash is added if you leave it off.">
+        <Field label="Hashtags" hint="Spaces, commas, or new lines. A hash is added if you leave it off.">
           <TextArea value={hashText} onChange={(event) => setHashText(event.target.value)} />
         </Field>
         {collections.length ? (

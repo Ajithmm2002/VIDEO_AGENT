@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { tagCountOptions } from "@/lib/types";
 
 export function PageHeader({
   title,
@@ -83,6 +84,30 @@ export function Field({
       {children}
       {hint ? <span className="text-xs leading-5 text-muted">{hint}</span> : null}
     </label>
+  );
+}
+
+export function CountSelect({
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  hint?: string;
+}) {
+  return (
+    <Field label={label} hint={hint}>
+      <SelectInput value={String(value)} onChange={(event) => onChange(Number(event.target.value))}>
+        {tagCountOptions.map((count) => (
+          <option key={count} value={count}>
+            {count}
+          </option>
+        ))}
+      </SelectInput>
+    </Field>
   );
 }
 
