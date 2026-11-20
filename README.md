@@ -116,7 +116,7 @@ Some projects want the bucket created in the dashboard. Create a **private** buc
 
 Leave `AI_PROVIDER=local` and `AI_API_KEY` empty. The thumbnail and writing tools then use the built-in templates. Image prompts are written in English so Google Flow can follow them. A Malayalam topic is quoted as the exact words to place on the thumbnail. Writing drafts follow the language you select.
 
-To connect a model later, set `AI_PROVIDER` to `openai` or `gemini`, set `AI_API_KEY`, and optionally `AI_MODEL`. Gemini uses `gemini-3.5-flash` unless you set `AI_MODEL`. Redeploy or restart. The same buttons call the provider. If the provider is unset or has no key, the app stays on the local generator. The API key stays on the server.
+To connect a model later, set `AI_PROVIDER` to `openai` or `gemini`, set `AI_API_KEY`, and optionally `AI_MODEL`. Gemini tries `AI_MODEL` first, then `gemini-3.8-flash`, `gemini-3.6-flash`, and Flash Lite models if one is busy, over quota, or missing. Redeploy or restart. The same buttons call the provider. If the provider is unset or has no key, the app stays on the local generator. The API key stays on the server.
 
 ## What you can do
 
@@ -171,7 +171,7 @@ git push -u origin main
 | `NEXT_PUBLIC_SITE_URL` | `https://your-app.vercel.app` after the first deploy, then redeploy |
 | `AI_PROVIDER` | `gemini` (required for live writing and tags; without this the app uses local templates) |
 | `AI_API_KEY` | Your Gemini key |
-| `AI_MODEL` | `gemini-3.5-flash` |
+| `AI_MODEL` | `gemini-3.8-flash` (optional; the app falls back to other Flash and Flash Lite models) |
 
 After you add or change these values, click **Redeploy**. `NEXT_PUBLIC_*` values are baked in at build time. `AI_API_KEY` is server-only and must not be prefixed with `NEXT_PUBLIC_`.
 

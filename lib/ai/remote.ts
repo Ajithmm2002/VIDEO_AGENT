@@ -13,7 +13,20 @@ import {
 type RemoteThumbnail = Omit<ThumbnailDraft, "provider"> & { provider: "remote" };
 type RemoteWriting = Omit<WritingDraft, "provider"> & { provider: "remote" };
 
-const geminiModels = ["gemini-3.5-flash", "gemini-flash-lite-latest"];
+export const geminiFallbackModels = [
+  "gemini-3.8-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-flash-lite-latest",
+];
+
+export const geminiLiteModels = [
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-flash-lite-latest",
+];
 
 function endpoint() {
   if (process.env.AI_BASE_URL) return process.env.AI_BASE_URL.replace(/\/$/, "");
@@ -24,9 +37,21 @@ function model() {
   return process.env.AI_MODEL || "gpt-4o-mini";
 }
 
-function geminiModelOrder() {
+export function geminiModelOrder() {
   const preferred = process.env.AI_MODEL?.trim();
-  return [...new Set([preferred, ...geminiModels].filter((name): name is string => Boolean(name)))];
+  return [...new Set([preferred, ...geminiFallbackModels].filter((name): name is string => Boolean(name)))];
+}
+
+export function geminiLiteModelOrder() {
+  return [...new Set([...geminiLiteModels, ...geminiModelOrder()])];
+}
+
+function geminiFailureKind(status: number, body: string) {
+  if (status === 429 || status === 503 || status === 500) return "busy" as const;
+  if (status === 404) return "missing" as const;
+  if (/RESOURCE_EXHAUSTED|quota exceeded|rate limit/i.test(body)) return "busy" as const;
+  if (/NOT_FOUND|not found|is not available|unknown model/i.test(body)) return "missing" as const;
+  return "other" as const;
 }
 
 function readGeminiText(payload: unknown) {
@@ -54,7 +79,8 @@ async function geminiComplete(system: string, user: string, options: CompleteOpt
   const timeoutMs = options.timeoutMs ?? 50000;
   const maxOutputTokens = options.maxOutputTokens ?? 4096;
   const temperature = options.temperature ?? 0.7;
-  for (const modelName of models) {
+  for (const [index, modelName] of models.entries()) {
+    const attemptTimeout = index === 0 ? timeoutMs : Math.min(timeoutMs, 18000);
     let response: Response;
     try {
       response = await fetch(
@@ -74,7 +100,7 @@ async function geminiComplete(system: string, user: string, options: CompleteOpt
               responseMimeType: "application/json",
             },
           }),
-          signal: AbortSignal.timeout(timeoutMs),
+          signal: AbortSignal.timeout(attemptTimeout),
         },
       );
     } catch {
@@ -82,11 +108,11 @@ async function geminiComplete(system: string, user: string, options: CompleteOpt
       continue;
     }
 
-    if (response.status === 429 || response.status === 503) {
-      sawBusy = true;
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      if (geminiFailureKind(response.status, body) === "busy") sawBusy = true;
       continue;
     }
-    if (!response.ok) continue;
 
     const text = readGeminiText(await response.json());
     if (!text) continue;
@@ -164,7 +190,7 @@ export async function remoteThumbnail(input: {
       maxOutputTokens: wantLandscape && wantVertical ? 1600 : 900,
       timeoutMs: wantLandscape && wantVertical ? 20000 : 12000,
       temperature: 0.6,
-      models: [...new Set(["gemini-flash-lite-latest", ...geminiModelOrder()])],
+      models: geminiLiteModelOrder(),
     },
   );
   const landscape = wantLandscape && typeof data.landscape === "string" ? data.landscape.trim() : "";
