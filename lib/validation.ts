@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { languages, planHorizons, platforms, statuses, type ContentInput } from "@/lib/types";
+import { languages, platforms, statuses, videoDurations, type ContentInput, type VideoDuration } from "@/lib/types";
 import { uniqueLimited } from "@/lib/utils";
 
 function isHttpsUrl(value: string) {
@@ -143,18 +143,33 @@ export const authSchema = z.object({
   displayName: z.string().trim().min(1, "Enter your name").max(80).optional(),
 });
 
+const durationSchema = z
+  .number()
+  .int()
+  .refine((value): value is VideoDuration => (videoDurations as readonly number[]).includes(value), {
+    message: "Choose a video length.",
+  });
+
 export const planRequestSchema = z
   .object({
     language: z.enum(languages),
     platform: z.enum(platforms),
     themes: z.array(z.string().trim().min(1).max(40)).max(12),
     description: z.string().trim().max(2000),
-    horizon: z.enum(planHorizons),
+    days: z.number().int().min(1, "Plan at least one day.").max(7, "Plans can be at most one week."),
+    durationSeconds: durationSchema,
     startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a valid start date"),
   })
   .refine((value) => value.themes.length > 0 || value.description.length > 0, {
-    message: "Choose a category or write a short description.",
+    message: "Choose a category or write a short brief.",
   });
+
+export const audioScriptSchema = z.object({
+  title: z.string().trim().min(1, "Enter a video title").max(200),
+  description: z.string().trim().max(8000),
+  language: z.enum(languages),
+  durationSeconds: durationSchema,
+});
 
 export const planSaveSchema = z.object({
   language: z.enum(languages),
@@ -172,11 +187,13 @@ export const planSaveSchema = z.object({
         title: z.string().trim().min(1, "Each idea needs a title").max(200),
         topic: z.string().trim().max(500),
         description: z.string().trim().max(8000),
+        script: z.string().trim().max(20000),
+        durationSeconds: durationSchema,
         planned_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a valid date"),
       }),
     )
     .min(1, "Keep at least one idea.")
-    .max(16),
+    .max(7),
 });
 
 export const writingApplySchema = z.object({

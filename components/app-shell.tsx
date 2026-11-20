@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Library,
   Lightbulb,
+  Loader2,
   Menu,
   PenLine,
   Search,
@@ -21,6 +22,7 @@ import { signOut } from "@/lib/actions/auth";
 import { BrandMark } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, SubmitButton } from "@/components/ui";
+import { useGenerationJobs } from "@/lib/background-generate";
 import { cn } from "@/lib/utils";
 
 const groups = [
@@ -55,8 +57,10 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const jobs = useGenerationJobs();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const activeJobs = Object.values(jobs).filter((job) => job.pending);
 
   const nav = (
     <nav className="grid gap-5">
@@ -164,6 +168,29 @@ export function AppShell({
               className="h-11 w-full rounded-2xl border border-line bg-surface/80 pl-10 pr-3 text-sm shadow-[var(--shadow)]"
             />
           </form>
+          {activeJobs.length ? (
+            <>
+              <Link
+                href={activeJobs[0].href}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent/12 text-accent sm:hidden"
+                aria-label={activeJobs[0].label}
+              >
+                <Loader2 className="h-4 w-4 animate-spin" />
+              </Link>
+              <div className="hidden items-center gap-2 sm:flex">
+                {activeJobs.map((job) => (
+                  <Link
+                    key={job.href}
+                    href={job.href}
+                    className="inline-flex items-center gap-2 rounded-full bg-accent/12 px-3 py-1.5 text-xs font-semibold text-accent"
+                  >
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                    {job.label}
+                  </Link>
+                ))}
+              </div>
+            </>
+          ) : null}
           <ThemeToggle />
           {email ? (
             <form action={signOut}>

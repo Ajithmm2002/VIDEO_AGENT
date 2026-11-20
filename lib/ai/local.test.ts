@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { containsMalayalam, hashtagsFor, localContentPlan, localThumbnail, localTopicCopy, localWriting } from "@/lib/ai/local";
+import { containsMalayalam, hashtagsFor, localAudioScript, localContentPlan, localThumbnail, localTopicCopy, localWriting } from "@/lib/ai/local";
 
 describe("thumbnail prompts", () => {
   it("builds landscape and vertical prompts with the required sections", () => {
@@ -78,17 +78,36 @@ describe("writing drafts", () => {
 });
 
 describe("content plans", () => {
-  it("builds a week of editable ideas from a brief", () => {
+  it("builds one video idea per day with a how-to and a timed script", () => {
     const result = localContentPlan({
       language: "en",
       platform: "both",
       themes: ["comedy", "nostalgia"],
       description: "power cuts at home",
       count: 7,
+      durationSeconds: 30,
     });
     expect(result.items).toHaveLength(7);
     expect(result.items[0].title.toLowerCase()).toContain("power cuts");
-    expect(result.items.every((item) => item.description.length > 10)).toBe(true);
+    expect(result.items.every((item) => item.description.toLowerCase().includes("how to shoot"))).toBe(true);
+    expect(result.items.every((item) => item.script.includes("[0:00]"))).toBe(true);
+    expect(result.items[0].durationSeconds).toBe(30);
+  });
+
+  it("writes a longer audio script for a 2 minute video than a 30 second one", () => {
+    const shortScript = localAudioScript({
+      title: "Power cuts at home",
+      description: "Film the first reaction.",
+      language: "en",
+      durationSeconds: 30,
+    }).script;
+    const longScript = localAudioScript({
+      title: "Power cuts at home",
+      description: "Film the first reaction.",
+      language: "en",
+      durationSeconds: 120,
+    }).script;
+    expect(longScript.split(/\s+/).length).toBeGreaterThan(shortScript.split(/\s+/).length);
   });
 
   it("writes Malayalam titles from a Malayalam brief", () => {
@@ -97,10 +116,12 @@ describe("content plans", () => {
       platform: "youtube",
       themes: ["nostalgia"],
       description: "വീട്ടിൽ കറന്റ് പോകുമ്പോൾ",
-      count: 12,
+      count: 3,
+      durationSeconds: 60,
     });
-    expect(result.items).toHaveLength(12);
+    expect(result.items).toHaveLength(3);
     expect(containsMalayalam(result.items[0].title)).toBe(true);
     expect(containsMalayalam(result.items[0].description)).toBe(true);
+    expect(containsMalayalam(result.items[0].script)).toBe(true);
   });
 });

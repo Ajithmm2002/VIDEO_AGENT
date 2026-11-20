@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { generateThumbnails, savePrompt } from "@/lib/actions/generate";
+import { savePrompt } from "@/lib/actions/generate";
+import { onGenerationResult, startThumbnailGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyButton } from "@/components/copy-button";
 import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { googleFlowUrl, languageLabels } from "@/lib/labels";
@@ -23,6 +24,8 @@ export function ThumbnailStudio({
   initial: { topic: string; language: Language; contentId: string };
 }) {
   const router = useRouter();
+  const jobs = useGenerationJobs();
+  const pending = jobs.thumbnail.pending;
   const [topic, setTopic] = useState(initial.topic);
   const [language, setLanguage] = useState<Language>(initial.language);
   const [styleNotes, setStyleNotes] = useState("");
@@ -32,7 +35,6 @@ export function ThumbnailStudio({
   const [contentId, setContentId] = useState(initial.contentId);
   const [wantLandscape, setWantLandscape] = useState(true);
   const [wantVertical, setWantVertical] = useState(true);
-  const [pending, setPending] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
 
@@ -65,7 +67,29 @@ export function ThumbnailStudio({
   }, [initial.contentId, initial.topic]);
 
   useEffect(() => {
-    if (!draftReady) return;
+    return onGenerationResult<{
+      landscape: string;
+      vertical: string;
+      language: Language;
+      provider: "local" | "remote";
+    }>("thumbnail", (result) => {
+      const stored = readDraft<{
+        landscape?: string;
+        vertical?: string;
+        language?: Language;
+        provider?: "local" | "remote" | null;
+        wantLandscape?: boolean;
+        wantVertical?: boolean;
+      }>("thumbnail-draft");
+      if (stored?.wantLandscape !== false) setLandscape(stored?.landscape ?? result.landscape);
+      if (stored?.wantVertical !== false) setVertical(stored?.vertical ?? result.vertical);
+      setProvider(result.provider);
+      if (result.language) setLanguage(result.language);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!draftReady || pending) return;
     writeDraft("thumbnail-draft", {
       topic,
       language,
@@ -77,33 +101,20 @@ export function ThumbnailStudio({
       wantLandscape,
       wantVertical,
     });
-  }, [draftReady, topic, language, styleNotes, landscape, vertical, provider, contentId, wantLandscape, wantVertical]);
+  }, [draftReady, pending, topic, language, styleNotes, landscape, vertical, provider, contentId, wantLandscape, wantVertical]);
 
-  async function onGenerate() {
+  function onGenerate() {
     if (!wantLandscape && !wantVertical) {
       toast.error("Choose at least one thumbnail format.");
       return;
     }
-    setPending(true);
-    try {
-      const result = await generateThumbnails({
-        topic,
-        language,
-        styleNotes,
-        landscape: wantLandscape,
-        vertical: wantVertical,
-      });
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-      if (wantLandscape) setLandscape(result.result.landscape);
-      if (wantVertical) setVertical(result.result.vertical);
-      setProvider(result.result.provider);
-      if (result.result.language !== language) setLanguage(result.result.language);
-    } finally {
-      setPending(false);
-    }
+    startThumbnailGeneration({
+      topic,
+      language,
+      styleNotes,
+      landscape: wantLandscape,
+      vertical: wantVertical,
+    });
   }
 
   async function onSave() {
@@ -162,7 +173,7 @@ export function ThumbnailStudio({
               Vertical 9:16 (Reels / Shorts)
             </label>
           </div>
-          <p className="text-xs leading-5 text-muted">Unchecked formats are left as they are. Generating one format is faster than generating both.</p>
+          <p className="text-xs leading-5 text-muted">Unchecked formats are left as they are. You can leave this page while a prompt is writing; it keeps going in the background.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={onGenerate} loading={pending} disabled={saving || (!wantLandscape && !wantVertical)}>

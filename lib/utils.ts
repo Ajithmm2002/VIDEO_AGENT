@@ -1,5 +1,5 @@
 import { addDays, format, parseISO } from "date-fns";
-import type { ChecklistItem, PlanHorizon } from "@/lib/types";
+import type { ChecklistItem, VideoDuration } from "@/lib/types";
 
 export function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -111,14 +111,18 @@ export function storedPrompt(value: string) {
   return value.trim() || " ";
 }
 
-export function planItemCount(horizon: PlanHorizon) {
-  return horizon === "week" ? 7 : 12;
+export function spokenWordTarget(seconds: number) {
+  return Math.max(24, Math.round(seconds * 2.2));
 }
 
-export function spreadPlanDates(startDate: string, horizon: PlanHorizon, count = planItemCount(horizon)) {
+export function spreadPlanDates(startDate: string, days: number) {
+  const count = Math.min(7, Math.max(1, Math.round(days)));
   const start = /^\d{4}-\d{2}-\d{2}$/.test(startDate) ? parseISO(startDate) : new Date();
-  const step = horizon === "week" ? 1 : 2;
-  return Array.from({ length: count }, (_, index) => format(addDays(start, index * step), "yyyy-MM-dd"));
+  return Array.from({ length: count }, (_, index) => format(addDays(start, index), "yyyy-MM-dd"));
+}
+
+export function isVideoDuration(value: number): value is VideoDuration {
+  return [15, 30, 45, 60, 90, 120, 180, 300].includes(value);
 }
 
 export function safeFileName(name: string) {

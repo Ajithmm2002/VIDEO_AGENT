@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteContent, duplicateContent, saveAsTemplate, saveContent, setThumbnailPath } from "@/lib/actions/content";
-import { generateFromTopic } from "@/lib/actions/generate";
+import { onGenerationResult, startTopicGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
@@ -99,13 +99,14 @@ export function ContentForm({
   aiConnected: boolean;
 }) {
   const router = useRouter();
+  const jobs = useGenerationJobs();
+  const generating = jobs.topic.pending;
   const initial = toInput(content);
   const [form, setForm] = useState(initial);
   const [tagsText, setTagsText] = useState(initial.tags.join(", "));
   const [hashText, setHashText] = useState(initial.hashtags.join(" "));
   const [file, setFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const [busy, setBusy] = useState<"duplicate" | "template" | null>(null);
   const [collectionId, setCollectionId] = useState("");
   const [tagCount, setTagCount] = useState(12);
@@ -137,36 +138,16 @@ export function ContentForm({
   }, [draftKey]);
 
   useEffect(() => {
-    if (!draftReady) return;
-    writeDraft(draftKey, { form, tagsText, hashText, tagCount, hashtagCount, generator });
-  }, [draftKey, draftReady, form, tagsText, hashText, tagCount, hashtagCount, generator]);
-
-  function patch(partial: Partial<ContentInput>) {
-    setForm((current) => ({ ...current, ...partial }));
-  }
-
-  async function onGenerateCopy() {
-    const topic = (form.topic ?? form.title).trim();
-    if (!topic) {
-      toast.error("Enter a topic or title first.");
-      return;
-    }
-    setGenerating(true);
-    try {
-      const result = await generateFromTopic({
-        topic,
-        title: form.title,
-        notes: [form.script_notes, form.description].filter(Boolean).join("\n\n"),
-        language: form.language,
-        platform: form.platform,
-        tagCount,
-        hashtagCount,
-      });
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-      const draft = result.result;
+    return onGenerationResult<{
+      description: string;
+      youtubeDescription: string;
+      instagramCaption: string;
+      tags: string[];
+      hashtags: string[];
+      provider: "local" | "remote";
+      draftKey: string;
+    }>("topic", (draft) => {
+      if (draft.draftKey !== draftKey) return;
       setGenerator(draft.provider);
       patch({
         description: draft.description,
@@ -177,16 +158,34 @@ export function ContentForm({
       });
       setTagsText(draft.tags.join(", "));
       setHashText(draft.hashtags.join(" "));
-      toast.success(
-        draft.provider === "remote"
-          ? "Description, YouTube tags, and hashtags filled in. Edit anything, then save."
-          : aiConnected
-            ? "Gemini was busy, so a local draft was used. Edit anything, then save."
-            : "Local draft filled in. Add AI_PROVIDER=gemini and AI_API_KEY on the host to use Gemini.",
-      );
-    } finally {
-      setGenerating(false);
+    });
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftReady || generating) return;
+    writeDraft(draftKey, { form, tagsText, hashText, tagCount, hashtagCount, generator });
+  }, [draftKey, draftReady, form, tagsText, hashText, tagCount, hashtagCount, generator, generating]);
+
+  function patch(partial: Partial<ContentInput>) {
+    setForm((current) => ({ ...current, ...partial }));
+  }
+
+  function onGenerateCopy() {
+    const topic = (form.topic ?? form.title).trim();
+    if (!topic) {
+      toast.error("Enter a topic or title first.");
+      return;
     }
+    startTopicGeneration({
+      draftKey,
+      topic,
+      title: form.title,
+      notes: [form.script_notes, form.description].filter(Boolean).join("\n\n"),
+      language: form.language,
+      platform: form.platform,
+      tagCount,
+      hashtagCount,
+    });
   }
 
   async function onSubmit(event: React.FormEvent) {

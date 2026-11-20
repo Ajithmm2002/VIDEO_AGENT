@@ -1,14 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { generateContentPlan, generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
+import { generateAudioScript, generateContentPlan, generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
 import { isSupabaseConfigured } from "@/lib/env";
 import { requireSession } from "@/lib/session";
-import type { ActionResult, ContentInput, Language, PlanHorizon, Platform } from "@/lib/types";
+import type { ActionResult, ContentInput, Language, Platform, VideoDuration } from "@/lib/types";
 import { defaultChecklist, storedPrompt } from "@/lib/utils";
 import {
   contentSchema,
   firstIssue,
+  audioScriptSchema,
   planRequestSchema,
   planSaveSchema,
   thumbnailRequestSchema,
@@ -188,7 +189,8 @@ export async function generatePlan(input: {
   platform: Platform;
   themes: string[];
   description: string;
-  horizon: PlanHorizon;
+  days: number;
+  durationSeconds: VideoDuration;
   startDate: string;
 }) {
   const parsed = planRequestSchema.safeParse(input);
@@ -203,11 +205,36 @@ export async function generatePlan(input: {
   }
 }
 
+export async function generateScript(input: {
+  title: string;
+  description: string;
+  language: Language;
+  durationSeconds: VideoDuration;
+}) {
+  const parsed = audioScriptSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };
+  const blocked = await generationAllowed();
+  if (blocked) return blocked;
+  try {
+    const result = await generateAudioScript(parsed.data);
+    return { ok: true as const, result };
+  } catch (error) {
+    return { ok: false as const, error: aiError(error, "Could not write an audio script.") };
+  }
+}
+
 export async function saveContentPlan(input: {
   language: Language;
   platform: Platform;
   category_id: string | null;
-  items: Array<{ title: string; topic: string; description: string; planned_date: string }>;
+  items: Array<{
+    title: string;
+    topic: string;
+    description: string;
+    script: string;
+    durationSeconds: VideoDuration;
+    planned_date: string;
+  }>;
 }): Promise<ActionResult> {
   const parsed = planSaveSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
@@ -237,7 +264,9 @@ export async function saveContentPlan(input: {
       instagram_caption: null,
       tags: [],
       hashtags: [],
-      script_notes: null,
+      script_notes: item.script
+        ? `${item.durationSeconds < 90 ? `${item.durationSeconds} sec` : `${item.durationSeconds / 60} min`}\n\n${item.script}`
+        : null,
       thumbnail_prompt: null,
       video_url: null,
       published_url: null,

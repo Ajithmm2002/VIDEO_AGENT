@@ -19,6 +19,11 @@ export function writeDraft(key: string, value: unknown) {
   }
 }
 
+export function mergeDraft<T extends Record<string, unknown>>(key: string, partial: Partial<T>) {
+  const current = readDraft<T>(key);
+  writeDraft(key, { ...(current ?? {}), ...partial });
+}
+
 export function clearDraft(key: string) {
   try {
     sessionStorage.removeItem(key);

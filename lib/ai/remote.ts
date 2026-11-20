@@ -1,4 +1,6 @@
-import type { ContentPlan, Language, Platform } from "@/lib/types";
+import type { ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import { spokenWordTarget } from "@/lib/utils";
+import { localAudioScript } from "@/lib/ai/local";
 import {
   localThumbnail,
   toEnglishHashtags,
@@ -255,31 +257,72 @@ export async function remoteTopicCopy(input: {
   };
 }
 
+export async function remoteAudioScript(input: {
+  title: string;
+  description: string;
+  language: Language;
+  durationSeconds: VideoDuration;
+}) {
+  const words = spokenWordTarget(input.durationSeconds);
+  const data = await complete(
+    `Write a spoken audio script for one short video. JSON only: {"script": string}.
+
+Rules:
+- Language: the requested language (Malayalam or English).
+- Length: about ${words} spoken words, for a ${input.durationSeconds}-second video. Do not write a much longer or much shorter script.
+- Mark time beats like [0:00], [0:08].
+- This is what the creator says out loud, not camera directions.
+- Sound specific to the title and how-to notes. No generic filler.`,
+    `Title: ${input.title}
+How to shoot: ${input.description || "(none)"}
+Language: ${input.language}
+Duration seconds: ${input.durationSeconds}
+Spoken-word target: ${words}`,
+    {
+      maxOutputTokens: Math.min(2500, Math.max(600, words * 3)),
+      timeoutMs: 25000,
+      temperature: 0.7,
+    },
+  );
+  const script = typeof data.script === "string" ? data.script.trim() : "";
+  if (script.length < 20) {
+    throw new Error("The connected AI provider returned an incomplete audio script.");
+  }
+  return { script: script.slice(0, 20000), provider: "remote" as const, durationSeconds: input.durationSeconds };
+}
+
 export async function remoteContentPlan(input: {
   language: Language;
   platform: Platform;
   themes: string[];
   description: string;
   count: number;
+  durationSeconds: VideoDuration;
 }): Promise<Omit<ContentPlan, "items"> & { items: Array<Omit<ContentPlan["items"][number], "planned_date">> }> {
+  const words = spokenWordTarget(input.durationSeconds);
   const data = await complete(
-    `You plan a personal YouTube and Instagram calendar for one creator. Reply with JSON only: {"items":[{"title":string,"topic":string,"description":string}]}.
+    `You plan a personal YouTube and Instagram calendar. Reply with JSON only: {"items":[{"title":string,"topic":string,"description":string,"script":string}]}.
 
 Rules:
 - Return exactly ${input.count} items. No extra keys.
-- Titles, topics, and descriptions in the requested language (Malayalam or English). Match the brief.
-- Mix the selected categories. Each idea must feel related to the brief, not a generic filler list.
-- Vary the format: story, reaction, list, then-vs-now, how-to, family moment, short Reel, follow-up question.
-- title: under 90 characters, specific, no numbering.
-- topic: a short phrase for the creator's notes.
-- description: 2-4 short lines with a few relevant emojis. Say what the video is, not "this is a great video".
-- Do not copy the same title twice.`,
+- Language for every field: the requested language (Malayalam or English).
+- title: a specific video title, under 90 characters, no numbering. This is the idea.
+- topic: a short note for the creator.
+- description: how to execute the video. Shot order, what to film, props, and where to stand. 4-7 short lines. Not a synopsis.
+- script: the spoken audio script for a ${input.durationSeconds}-second video, about ${words} words, with times like [0:00]. What they say out loud.
+- Mix the selected categories. Related to the brief. Do not repeat titles.`,
     `Language: ${input.language}
 Platform: ${input.platform}
 Categories: ${input.themes.join(", ") || "(none)"}
 Brief: ${input.description || "(none)"}
-Items wanted: ${input.count}`,
-    { maxOutputTokens: input.count > 8 ? 3500 : 2200, timeoutMs: 45000, temperature: 0.8 },
+Days / ideas: ${input.count}
+Video length seconds: ${input.durationSeconds}
+Spoken-word target per script: ${words}`,
+    {
+      maxOutputTokens: Math.min(8000, 900 + input.count * Math.max(500, words * 2)),
+      timeoutMs: 50000,
+      temperature: 0.8,
+    },
   );
   const raw = Array.isArray(data.items) ? data.items : [];
   const items = raw.flatMap((item) => {
@@ -288,10 +331,22 @@ Items wanted: ${input.count}`,
     const title = typeof row.title === "string" ? row.title.trim() : "";
     const topic = typeof row.topic === "string" ? row.topic.trim() : title;
     const description = typeof row.description === "string" ? row.description.trim() : "";
+    const script = typeof row.script === "string" ? row.script.trim() : "";
     if (!title || !description) return [];
-    return [{ title: title.slice(0, 200), topic: (topic || title).slice(0, 500), description: description.slice(0, 8000) }];
+    return [{
+      title: title.slice(0, 200),
+      topic: (topic || title).slice(0, 500),
+      description: description.slice(0, 8000),
+      script: (script || localAudioScript({
+        title,
+        description,
+        language: input.language,
+        durationSeconds: input.durationSeconds,
+      }).script).slice(0, 20000),
+      durationSeconds: input.durationSeconds,
+    }];
   });
-  if (items.length < Math.min(3, input.count)) {
+  if (items.length < Math.min(1, input.count)) {
     throw new Error("The connected AI provider returned an incomplete plan.");
   }
   return { provider: "remote", items: items.slice(0, input.count) };

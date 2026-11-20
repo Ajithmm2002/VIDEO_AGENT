@@ -1,4 +1,5 @@
-import type { ContentPlan, Language, Platform } from "@/lib/types";
+import type { ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import { spokenWordTarget } from "@/lib/utils";
 
 export type ThumbnailDraft = {
   landscape: string;
@@ -360,12 +361,110 @@ const malayalamAngles = [
   ["അടുത്ത ചോദ്യം", "ഈ വിഷയം ഉണ്ടാക്കുന്ന അടുത്ത സംശയത്തിന് ഉത്തരം."],
 ];
 
+function howToShoot(title: string, theme: string, note: string, malayalam: boolean, platform: Platform) {
+  if (malayalam) {
+    return [
+      `എങ്ങനെ ചെയ്യാം`,
+      `1. ആദ്യ ഷോട്ട്: ${title} എന്ന ഐഡിയയുടെ ഹുക്ക് — മുഖം അല്ലെങ്കിൽ പ്രധാന വസ്തു ക്ലോസ്-അപ്പിൽ.`,
+      `2. ${theme} ആംഗിൾ: ${note}`,
+      "3. ഒരു വ്യക്തമായ ഉദാഹരണം അല്ലെങ്കിൽ റിയാക്ഷൻ കാണിക്കുക.",
+      "4. അവസാനം ഒരു ചോദ്യം അല്ലെങ്കിൽ CTA.",
+      platform === "instagram" ? "ക്യാമറ: ഫോൺ വെർട്ടിക്കൽ, സ്ഥിരമായ ലൈറ്റ്." : "ക്യാമറ: 16:9 അല്ലെങ്കിൽ വെർട്ടിക്കൽ ഷോർട്സ്.",
+    ].join("\n");
+  }
+  return [
+    "How to shoot this",
+    `1. Opening shot: hook the idea “${title}” with a close face or object.`,
+    `2. ${theme} angle: ${note}`,
+    "3. Show one clear example, reaction, or step. Keep cuts short.",
+    "4. Close on a question or a one-line CTA.",
+    platform === "instagram" ? "Camera: phone vertical, steady light, one location." : "Camera: 16:9 or a vertical Short, one location.",
+  ].join("\n");
+}
+
+function padSpoken(lines: string[], targetWords: number) {
+  const extra = [
+    "Stay on the same thought. Do not rush the last line.",
+    "Leave a short pause before the next beat.",
+    "Keep your voice close to the mic and speak clearly.",
+    "Look at the camera for the last sentence.",
+  ];
+  const spoken = [...lines];
+  let words = spoken.join(" ").split(/\s+/).length;
+  let i = 0;
+  while (words < targetWords && i < 12) {
+    spoken.push(extra[i % extra.length]);
+    words = spoken.join(" ").split(/\s+/).length;
+    i += 1;
+  }
+  return spoken;
+}
+
+export function localAudioScript(input: {
+  title: string;
+  description: string;
+  language: Language;
+  durationSeconds: VideoDuration;
+}) {
+  const malayalam = input.language === "ml" || containsMalayalam(input.title) || containsMalayalam(input.description);
+  const seconds = input.durationSeconds;
+  const target = spokenWordTarget(seconds);
+  const title = input.title.trim() || (malayalam ? "ഈ വീഡിയോ" : "this video");
+
+  const englishBeats = [
+    `[0:00] ${title}. Watch this till the end.`,
+    `[0:04] Here is the situation in one line.`,
+    "[0:10] Most people get this part wrong.",
+    "[0:16] Do this instead, step by step.",
+    "[0:24] That small change is the whole point.",
+    `[0:32] If you have lived ${title.toLowerCase()}, you already know this feeling.`,
+    "[0:42] Show the example on camera. Keep it real.",
+    "[0:55] Recap the one thing they should remember.",
+    "[1:10] Add the next detail only if you still have time.",
+    "[1:30] Repeat the hook in a calmer voice.",
+    "[2:00] Give one practical takeaway they can try today.",
+    "[2:40] Ask a comment question they can answer in three words.",
+    "[3:20] Hold the last shot. Do not add a new topic.",
+    "[4:20] Thank them, then repeat the CTA once.",
+  ];
+
+  const malayalamBeats = [
+    `[0:00] ${title}. അവസാനം വരെ കാണൂ.`,
+    "[0:04] സാഹചര്യം ഒരു വാചകത്തിൽ.",
+    "[0:10] മിക്ക ആളുകളും ഇവിടെ തെറ്റ് ചെയ്യും.",
+    "[0:16] ഇങ്ങനെ ചെയ്യൂ, ഘട്ടം ഘട്ടമായി.",
+    "[0:24] ആ ചെറിയ മാറ്റമാണ് കാര്യം.",
+    "[0:32] ഇത് നിങ്ങൾക്ക് അറിയാവുന്ന ഒരു അനുഭവമാണ്.",
+    "[0:42] ക്യാമറയിൽ ഉദാഹരണം കാണിക്കൂ.",
+    "[0:55] ഓർമ്മിക്കേണ്ട ഒരു കാര്യം മാത്രം ആവർത്തിക്കൂ.",
+    "[1:10] സമയമുണ്ടെങ്കിൽ അടുത്ത വിശദാംശം ചേർക്കൂ.",
+    "[1:30] ഹുക്ക് ശാന്തമായി വീണ്ടും പറയൂ.",
+    "[2:00] ഇന്ന് ചെയ്യാവുന്ന ഒരു കാര്യം പറയൂ.",
+    "[2:40] മൂന്ന് വാക്കിൽ ഉത്തരം പറയാവുന്ന ഒരു ചോദ്യം.",
+    "[3:20] അവസാന ഷോട്ട് നിർത്തി വയ്ക്കൂ. പുതിയ വിഷയം വേണ്ട.",
+    "[4:20] നന്ദി പറഞ്ഞ് CTA ഒരിക്കൽ കൂടി.",
+  ];
+
+  const beats = malayalam ? malayalamBeats : englishBeats;
+  const take = seconds <= 15 ? 2 : seconds <= 30 ? 4 : seconds <= 45 ? 5 : seconds <= 60 ? 6 : seconds <= 90 ? 8 : seconds <= 120 ? 10 : seconds <= 180 ? 12 : 14;
+  const lines = padSpoken(beats.slice(0, take), target);
+  const header = malayalam
+    ? `ഓഡിയോ സ്ക്രിപ്റ്റ് · ${seconds < 90 ? `${seconds} സെക്കൻഡ്` : `${seconds / 60} മിനിറ്റ്`} · ഏകദേശം ${target} വാക്ക്`
+    : `Audio script · ${seconds < 90 ? `${seconds} sec` : `${seconds / 60} min`} · about ${target} spoken words`;
+  return {
+    script: [header, "", ...lines].join("\n"),
+    provider: "local" as const,
+    durationSeconds: seconds,
+  };
+}
+
 export function localContentPlan(input: {
   language: Language;
   platform: Platform;
   themes: string[];
   description: string;
   count: number;
+  durationSeconds: VideoDuration;
 }): Omit<ContentPlan, "items"> & { items: Array<Omit<ContentPlan["items"][number], "planned_date">> } {
   const brief = input.description.trim() || input.themes[0] || "everyday content";
   const malayalam = input.language === "ml" || containsMalayalam(brief) || input.themes.some((theme) => containsMalayalam(theme));
@@ -374,24 +473,22 @@ export function localContentPlan(input: {
   const items = Array.from({ length: input.count }, (_, index) => {
     const theme = themes[index % themes.length];
     const [angle, note] = angles[index % angles.length];
-    const title = malayalam
-      ? `${brief}: ${angle}`.slice(0, 200)
-      : `${brief}: ${angle}`.slice(0, 200);
+    const title = `${brief}: ${angle}`.slice(0, 200);
     const topic = `${theme} · ${brief}`.slice(0, 500);
-    const description = malayalam
-      ? [
-          `✨ ${brief}`,
-          `🎭 ${theme} ആംഗിളിൽ: ${angle}.`,
-          `📌 ${note}`,
-          input.platform === "instagram" ? "📱 റീൽ ആയി ചുരുക്കി തുടങ്ങാം." : "🎥 യൂട്യൂബ് അല്ലെങ്കിൽ ഷോർട്സ് ആയി പ്ലാൻ ചെയ്യാം.",
-        ].join("\n")
-      : [
-          `✨ ${brief}`,
-          `🎭 ${theme} angle: ${angle}.`,
-          `📌 ${note}`,
-          input.platform === "instagram" ? "📱 Keep this short enough for a Reel." : "🎥 Plan it as a video or a Short.",
-        ].join("\n");
-    return { title, topic, description };
+    const description = howToShoot(title, theme, note, malayalam, input.platform);
+    const audio = localAudioScript({
+      title,
+      description,
+      language: malayalam ? "ml" : "en",
+      durationSeconds: input.durationSeconds,
+    });
+    return {
+      title,
+      topic,
+      description,
+      script: audio.script,
+      durationSeconds: input.durationSeconds,
+    };
   });
   return { provider: "local", items };
 }

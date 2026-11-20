@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { applyWriting, createFromWriting, generateWriting } from "@/lib/actions/generate";
+import { applyWriting, createFromWriting } from "@/lib/actions/generate";
+import { onGenerationResult, startWritingGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyButton } from "@/components/copy-button";
 import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels } from "@/lib/labels";
@@ -24,6 +25,8 @@ export function WritingStudio({
   aiConnected: boolean;
 }) {
   const router = useRouter();
+  const jobs = useGenerationJobs();
+  const pending = jobs.writing.pending;
   const [topic, setTopic] = useState(initial.topic);
   const [language, setLanguage] = useState<Language>(initial.language);
   const [platform, setPlatform] = useState<Platform>(initial.platform);
@@ -31,7 +34,6 @@ export function WritingStudio({
   const [contentId, setContentId] = useState(initial.contentId);
   const [tagCount, setTagCount] = useState(12);
   const [hashtagCount, setHashtagCount] = useState(15);
-  const [pending, setPending] = useState(false);
   const [saving, setSaving] = useState<"apply" | "create" | null>(null);
   const [provider, setProvider] = useState<"local" | "remote" | null>(null);
   const [titles, setTitles] = useState<string[]>(["", "", ""]);
@@ -87,7 +89,29 @@ export function WritingStudio({
   }, [initial.contentId, initial.language, initial.platform, initial.topic]);
 
   useEffect(() => {
-    if (!draftReady) return;
+    return onGenerationResult<{
+      titles: string[];
+      youtubeDescription: string;
+      instagramCaption: string;
+      tags: string[];
+      hashtags: string[];
+      hook: string;
+      scriptOutline: string;
+      provider: "local" | "remote";
+    }>("writing", (draft) => {
+      setProvider(draft.provider);
+      setTitles([draft.titles[0] ?? "", draft.titles[1] ?? "", draft.titles[2] ?? ""]);
+      setYoutubeDescription(draft.youtubeDescription);
+      setInstagramCaption(draft.instagramCaption);
+      setTags(draft.tags.join(", "));
+      setHashtags(draft.hashtags.join(" "));
+      setHook(draft.hook);
+      setScriptOutline(draft.scriptOutline);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!draftReady || pending) return;
     writeDraft("writing-draft", {
       topic,
       language,
@@ -105,28 +129,10 @@ export function WritingStudio({
       provider,
       contentId,
     });
-  }, [draftReady, topic, language, platform, tone, tagCount, hashtagCount, titles, youtubeDescription, instagramCaption, tags, hashtags, hook, scriptOutline, provider, contentId]);
+  }, [draftReady, pending, topic, language, platform, tone, tagCount, hashtagCount, titles, youtubeDescription, instagramCaption, tags, hashtags, hook, scriptOutline, provider, contentId]);
 
-  async function onGenerate() {
-    setPending(true);
-    try {
-      const result = await generateWriting({ topic, language, platform, tone, tagCount, hashtagCount, title: titles[0], notes: scriptOutline });
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-      const draft = result.result;
-      setProvider(draft.provider);
-      setTitles([draft.titles[0] ?? "", draft.titles[1] ?? "", draft.titles[2] ?? ""]);
-      setYoutubeDescription(draft.youtubeDescription);
-      setInstagramCaption(draft.instagramCaption);
-      setTags(draft.tags.join(", "));
-      setHashtags(draft.hashtags.join(" "));
-      setHook(draft.hook);
-      setScriptOutline(draft.scriptOutline);
-    } finally {
-      setPending(false);
-    }
+  function onGenerate() {
+    startWritingGeneration({ topic, language, platform, tone, tagCount, hashtagCount, title: titles[0], notes: scriptOutline });
   }
 
   function payload(): ContentInput {

@@ -3,22 +3,55 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { generatePlan, saveContentPlan } from "@/lib/actions/generate";
+import { saveContentPlan } from "@/lib/actions/generate";
+import { onGenerationResult, startPlanGeneration, startScriptGeneration, useGenerationJobs } from "@/lib/background-generate";
+import { CopyButton } from "@/components/copy-button";
 import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
-import { ideaThemeLabels, languageLabels, planHorizonLabels, platformLabels } from "@/lib/labels";
-import type { Category, IdeaTheme, Language, PlanHorizon, Platform } from "@/lib/types";
-import { ideaThemes, languages, planHorizons, platforms } from "@/lib/types";
+import { ideaThemeLabels, languageLabels, planDayLabel, platformLabels, videoDurationLabels } from "@/lib/labels";
+import type { Category, IdeaTheme, Language, Platform, VideoDuration } from "@/lib/types";
+import { ideaThemes, languages, planDays, platforms, videoDurations } from "@/lib/types";
 import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
-import { newId, planItemCount, todayISO } from "@/lib/utils";
+import { isVideoDuration, newId, todayISO } from "@/lib/utils";
 
 type DraftItem = {
   id: string;
   title: string;
   topic: string;
   description: string;
+  script: string;
+  durationSeconds: VideoDuration;
   planned_date: string;
   included: boolean;
 };
+
+function DurationPills({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: VideoDuration;
+  onChange: (value: VideoDuration) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {videoDurations.map((seconds) => {
+        const on = value === seconds;
+        return (
+          <button
+            key={seconds}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(seconds)}
+            className={`rounded-full px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-60 ${on ? "bg-accent text-accent-ink" : "border border-line bg-surface text-ink"}`}
+          >
+            {videoDurationLabels[seconds]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function PlannerStudio({
   configured,
@@ -30,17 +63,20 @@ export function PlannerStudio({
   categories: Category[];
 }) {
   const router = useRouter();
+  const jobs = useGenerationJobs();
+  const generating = jobs.plan.pending;
+  const scriptingId = jobs.script.pending ? jobs.script.itemId : null;
   const [language, setLanguage] = useState<Language>("en");
   const [platform, setPlatform] = useState<Platform>("both");
   const [themes, setThemes] = useState<IdeaTheme[]>(["comedy", "nostalgia"]);
   const [extraThemes, setExtraThemes] = useState("");
   const [description, setDescription] = useState("");
-  const [horizon, setHorizon] = useState<PlanHorizon>("week");
+  const [days, setDays] = useState<number>(7);
+  const [durationSeconds, setDurationSeconds] = useState<VideoDuration>(30);
   const [startDate, setStartDate] = useState(todayISO());
   const [categoryId, setCategoryId] = useState("");
   const [items, setItems] = useState<DraftItem[]>([]);
   const [provider, setProvider] = useState<"local" | "remote" | null>(null);
-  const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
 
@@ -52,7 +88,9 @@ export function PlannerStudio({
       themes: IdeaTheme[];
       extraThemes: string;
       description: string;
-      horizon: PlanHorizon;
+      days?: number;
+      horizon?: string;
+      durationSeconds?: number;
       startDate: string;
       categoryId: string;
       items: DraftItem[];
@@ -64,10 +102,21 @@ export function PlannerStudio({
       if (stored.themes?.length) setThemes(stored.themes);
       setExtraThemes(stored.extraThemes ?? "");
       setDescription(stored.description ?? "");
-      if (stored.horizon) setHorizon(stored.horizon);
+      if (stored.days && stored.days >= 1 && stored.days <= 7) setDays(stored.days);
+      else if (stored.horizon === "week" || stored.horizon === "month") setDays(7);
+      if (stored.durationSeconds && isVideoDuration(stored.durationSeconds)) setDurationSeconds(stored.durationSeconds);
       if (stored.startDate) setStartDate(stored.startDate);
       setCategoryId(stored.categoryId ?? "");
-      if (stored.items?.length) setItems(stored.items);
+      if (stored.items?.length) {
+        setItems(
+          stored.items.map((item) => ({
+            ...item,
+            script: item.script ?? "",
+            durationSeconds: isVideoDuration(item.durationSeconds) ? item.durationSeconds : 30,
+            included: item.included !== false,
+          })),
+        );
+      }
       setProvider(stored.provider ?? null);
     }
     setDraftReady(true);
@@ -75,20 +124,61 @@ export function PlannerStudio({
   }, []);
 
   useEffect(() => {
-    if (!draftReady) return;
+    return onGenerationResult<{
+      provider: "local" | "remote";
+      items: Array<{
+        title: string;
+        topic: string;
+        description: string;
+        script: string;
+        durationSeconds: VideoDuration;
+        planned_date: string;
+      }>;
+    }>("plan", (result) => {
+      setProvider(result.provider);
+      setItems(
+        result.items.map((item) => ({
+          id: newId(),
+          title: item.title,
+          topic: item.topic,
+          description: item.description,
+          script: item.script ?? "",
+          durationSeconds: isVideoDuration(item.durationSeconds) ? item.durationSeconds : durationSeconds,
+          planned_date: item.planned_date,
+          included: true,
+        })),
+      );
+    });
+  }, [durationSeconds]);
+
+  useEffect(() => {
+    return onGenerationResult<{ itemId: string; script: string; durationSeconds: VideoDuration }>("script", (result) => {
+      setItems((current) =>
+        current.map((item) =>
+          item.id === result.itemId
+            ? { ...item, script: result.script, durationSeconds: result.durationSeconds }
+            : item,
+        ),
+      );
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!draftReady || generating) return;
     writeDraft("planner-draft", {
       language,
       platform,
       themes,
       extraThemes,
       description,
-      horizon,
+      days,
+      durationSeconds,
       startDate,
       categoryId,
       items,
       provider,
     });
-  }, [draftReady, language, platform, themes, extraThemes, description, horizon, startDate, categoryId, items, provider]);
+  }, [draftReady, generating, language, platform, themes, extraThemes, description, days, durationSeconds, startDate, categoryId, items, provider]);
 
   function allThemes() {
     const extra = extraThemes.split(/[,/]+/).map((item) => item.trim()).filter(Boolean);
@@ -103,42 +193,16 @@ export function PlannerStudio({
     setItems((current) => current.map((item) => (item.id === id ? { ...item, ...partial } : item)));
   }
 
-  async function onGenerate() {
-    setGenerating(true);
-    try {
-      const result = await generatePlan({
-        language,
-        platform,
-        themes: allThemes(),
-        description,
-        horizon,
-        startDate,
-      });
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-      setProvider(result.result.provider);
-      setItems(
-        result.result.items.map((item) => ({
-          id: newId(),
-          title: item.title,
-          topic: item.topic,
-          description: item.description,
-          planned_date: item.planned_date,
-          included: true,
-        })),
-      );
-      toast.success(
-        result.result.provider === "remote"
-          ? `${result.result.items.length} ideas ready. Edit anything, then save.`
-          : aiConnected
-            ? "Gemini was busy, so a local plan was used. Edit anything, then save."
-            : "Local plan ready. Edit anything, then save.",
-      );
-    } finally {
-      setGenerating(false);
-    }
+  function onGenerate() {
+    startPlanGeneration({
+      language,
+      platform,
+      themes: allThemes(),
+      description,
+      days,
+      durationSeconds,
+      startDate,
+    });
   }
 
   async function onSave() {
@@ -157,6 +221,8 @@ export function PlannerStudio({
           title: item.title,
           topic: item.topic,
           description: item.description,
+          script: item.script,
+          durationSeconds: item.durationSeconds,
           planned_date: item.planned_date,
         })),
       });
@@ -178,7 +244,7 @@ export function PlannerStudio({
       <Card className="grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm leading-6 text-muted">
-            Choose language, categories, and a short brief. The planner fills a week or a month. You can edit every idea before it hits the calendar.
+            Get video titles, how-to-shoot notes, and a spoken audio script. Plans run from 1 day to 1 week. You can edit everything before saving.
           </p>
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${provider === "remote" ? "bg-accent/12 text-accent" : "bg-surface-2 text-muted"}`}>
             {provider === "remote" ? "Gemini" : aiConnected ? "Gemini when available" : "Local templates"}
@@ -217,19 +283,34 @@ export function PlannerStudio({
         <Field label="Other categories" hint="Optional. Comma-separated, for example travel, gaming.">
           <TextInput value={extraThemes} onChange={(event) => setExtraThemes(event.target.value)} maxLength={200} />
         </Field>
-        <Field label="What should this plan be about?" hint="A topic, a feeling, or a few lines. Malayalam or English.">
+        <Field label="What should these videos be about?" hint="A topic or a few lines. Malayalam or English. Each idea becomes a video title.">
           <TextArea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={2000} />
         </Field>
-        <div className="grid gap-4 md:grid-cols-3">
-          <Field label="Plan length">
-            <SelectInput value={horizon} onChange={(event) => setHorizon(event.target.value as PlanHorizon)}>
-              {planHorizons.map((item) => (
-                <option key={item} value={item}>
-                  {planHorizonLabels[item]} · {planItemCount(item)} ideas
-                </option>
-              ))}
-            </SelectInput>
-          </Field>
+        <div className="grid gap-2">
+          <p className="text-sm font-medium">Plan length</p>
+          <div className="flex flex-wrap gap-2">
+            {planDays.map((count) => {
+              const on = days === count;
+              return (
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => setDays(count)}
+                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "bg-accent text-accent-ink" : "border border-line bg-surface text-ink"}`}
+                >
+                  {planDayLabel(count)}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs leading-5 text-muted">One video idea per day, up to one week.</p>
+        </div>
+        <div className="grid gap-2">
+          <p className="text-sm font-medium">Video length</p>
+          <DurationPills value={durationSeconds} onChange={setDurationSeconds} />
+          <p className="text-xs leading-5 text-muted">Audio scripts are written to this length. You can change it on any idea later.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
           <Field label="Start date">
             <TextInput type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
           </Field>
@@ -241,15 +322,15 @@ export function PlannerStudio({
           </Field>
         </div>
         <Button className="w-fit" onClick={onGenerate} loading={generating} disabled={saving}>
-          {generating ? "Planning…" : horizon === "week" ? "Suggest a week of ideas" : "Suggest a month of ideas"}
+          {generating ? "Planning…" : `Suggest ${planDayLabel(days)} of video ideas`}
         </Button>
       </Card>
 
       {items.length ? (
         <div className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-semibold">Suggested plan</h2>
-            <p className="text-sm text-muted">Uncheck ideas to skip them. Change titles, copy, and dates.</p>
+            <h2 className="font-semibold">Suggested videos</h2>
+            <p className="text-sm text-muted">Title is the idea. Description is how to shoot it. Edit the audio script or rewrite it for another length.</p>
           </div>
           {items.map((item, index) => (
             <Card key={item.id} className="grid gap-3">
@@ -267,19 +348,46 @@ export function PlannerStudio({
                 </Button>
               </div>
               <div className="grid gap-3 md:grid-cols-[1fr_10rem]">
-                <Field label="Title">
+                <Field label="Video title">
                   <TextInput value={item.title} onChange={(event) => patchItem(item.id, { title: event.target.value })} maxLength={200} />
                 </Field>
                 <Field label="Date">
                   <TextInput type="date" value={item.planned_date} onChange={(event) => patchItem(item.id, { planned_date: event.target.value })} />
                 </Field>
               </div>
-              <Field label="Topic">
-                <TextInput value={item.topic} onChange={(event) => patchItem(item.id, { topic: event.target.value })} maxLength={500} />
-              </Field>
-              <Field label="Description">
+              <Field label="How to execute" hint="Shot order, what to film, and how to perform it.">
                 <TextArea value={item.description} onChange={(event) => patchItem(item.id, { description: event.target.value })} />
               </Field>
+              <div className="grid gap-2">
+                <p className="text-sm font-medium">Audio length</p>
+                <DurationPills
+                  value={item.durationSeconds}
+                  onChange={(value) => patchItem(item.id, { durationSeconds: value })}
+                  disabled={scriptingId === item.id}
+                />
+              </div>
+              <Field label="Audio script" hint="Spoken words for this length. Edit freely, or rewrite after you change the time.">
+                <TextArea className="min-h-40" value={item.script} onChange={(event) => patchItem(item.id, { script: event.target.value })} />
+              </Field>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  loading={scriptingId === item.id}
+                  disabled={!item.title.trim() || generating || (Boolean(scriptingId) && scriptingId !== item.id)}
+                  onClick={() =>
+                    startScriptGeneration({
+                      itemId: item.id,
+                      title: item.title,
+                      description: item.description,
+                      language,
+                      durationSeconds: item.durationSeconds,
+                    })
+                  }
+                >
+                  {scriptingId === item.id ? "Writing script…" : `Write ${videoDurationLabels[item.durationSeconds]} audio script`}
+                </Button>
+                <CopyButton text={item.script} label="Copy script" />
+              </div>
             </Card>
           ))}
           <div className="flex flex-wrap gap-2">
@@ -293,6 +401,8 @@ export function PlannerStudio({
                     title: "",
                     topic: "",
                     description: "",
+                    script: "",
+                    durationSeconds,
                     planned_date: current.at(-1)?.planned_date || startDate,
                     included: true,
                   },

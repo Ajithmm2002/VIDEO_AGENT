@@ -1,7 +1,8 @@
 export const platforms = ["youtube", "instagram", "both"] as const;
 export const languages = ["en", "ml"] as const;
 export const tagCountOptions = [5, 8, 10, 12, 15, 20, 25, 30] as const;
-export const planHorizons = ["week", "month"] as const;
+export const planDays = [1, 2, 3, 4, 5, 6, 7] as const;
+export const videoDurations = [15, 30, 45, 60, 90, 120, 180, 300] as const;
 export const ideaThemes = ["comedy", "nostalgia", "tech", "education", "food", "lifestyle", "family"] as const;
 export const statuses = [
   "idea",
@@ -15,7 +16,8 @@ export const statuses = [
 export type Platform = (typeof platforms)[number];
 export type Language = (typeof languages)[number];
 export type Status = (typeof statuses)[number];
-export type PlanHorizon = (typeof planHorizons)[number];
+export type PlanDays = (typeof planDays)[number];
+export type VideoDuration = (typeof videoDurations)[number];
 export type IdeaTheme = (typeof ideaThemes)[number];
 
 export type ChecklistItem = {
@@ -135,6 +137,8 @@ export type PlanIdea = {
   title: string;
   topic: string;
   description: string;
+  script: string;
+  durationSeconds: VideoDuration;
   planned_date: string;
 };
 

@@ -1,6 +1,7 @@
-import type { ContentPlan, Language, PlanHorizon, Platform } from "@/lib/types";
+import type { ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
 import { remoteAiEnabled } from "@/lib/env";
 import {
+  localAudioScript,
   localContentPlan,
   localThumbnail,
   localTopicCopy,
@@ -11,8 +12,8 @@ import {
   type TopicCopy,
   type WritingDraft,
 } from "@/lib/ai/local";
-import { remoteContentPlan, remoteThumbnail, remoteTopicCopy, remoteWriting } from "@/lib/ai/remote";
-import { planItemCount, spreadPlanDates } from "@/lib/utils";
+import { remoteAudioScript, remoteContentPlan, remoteThumbnail, remoteTopicCopy, remoteWriting } from "@/lib/ai/remote";
+import { spreadPlanDates } from "@/lib/utils";
 
 export type ThumbnailResult = Omit<ThumbnailDraft, "provider"> & { provider: "local" | "remote" };
 export type WritingResult = Omit<WritingDraft, "provider"> & { provider: "local" | "remote" };
@@ -104,11 +105,12 @@ export async function generateContentPlan(input: {
   platform: Platform;
   themes: string[];
   description: string;
-  horizon: PlanHorizon;
+  days: number;
+  durationSeconds: VideoDuration;
   startDate: string;
 }): Promise<ContentPlan> {
-  const count = planItemCount(input.horizon);
-  const dates = spreadPlanDates(input.startDate, input.horizon, count);
+  const count = Math.min(7, Math.max(1, Math.round(input.days)));
+  const dates = spreadPlanDates(input.startDate, count);
   const local = localContentPlan({ ...input, count });
   let items = local.items;
   let provider: "local" | "remote" = "local";
@@ -136,4 +138,19 @@ export async function generateContentPlan(input: {
       planned_date: dates[index] ?? dates[dates.length - 1],
     })),
   };
+}
+
+export async function generateAudioScript(input: {
+  title: string;
+  description: string;
+  language: Language;
+  durationSeconds: VideoDuration;
+}) {
+  const local = localAudioScript(input);
+  if (!remoteAiEnabled()) return local;
+  try {
+    return await remoteAudioScript(input);
+  } catch {
+    return local;
+  }
 }

@@ -1,4 +1,4 @@
-import type { IdeaTheme, Language, PlanHorizon, Platform, Status } from "@/lib/types";
+import type { IdeaTheme, Language, Platform, Status, VideoDuration } from "@/lib/types";
 
 export const statusLabels: Record<Status, string> = {
   idea: "Idea",
@@ -50,9 +50,21 @@ export const ideaThemeLabels: Record<IdeaTheme, string> = {
   family: "Family",
 };
 
-export const planHorizonLabels: Record<PlanHorizon, string> = {
-  week: "One week",
-  month: "One month",
+export const videoDurationLabels: Record<VideoDuration, string> = {
+  15: "15 sec",
+  30: "30 sec",
+  45: "45 sec",
+  60: "60 sec",
+  90: "90 sec",
+  120: "2 min",
+  180: "3 min",
+  300: "5 min",
 };
+
+export function planDayLabel(days: number) {
+  if (days === 1) return "1 day";
+  if (days === 7) return "1 week";
+  return `${days} days`;
+}
 
 export const draftStatuses: Status[] = ["idea", "planning", "in_progress"];
