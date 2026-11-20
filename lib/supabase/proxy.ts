@@ -12,6 +12,7 @@ const protectedPrefixes = [
   "/thumbnails",
   "/assistant",
   "/hashtags",
+  "/affiliate",
   "/settings",
   "/api",
 ];

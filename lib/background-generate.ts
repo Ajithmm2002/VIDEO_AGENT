@@ -4,9 +4,9 @@ import { useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { mergeDraft, readDraft, writeDraft } from "@/lib/draft";
 import { newId } from "@/lib/utils";
-import type { Language, Platform, VideoDuration } from "@/lib/types";
+import type { AffiliateProductType, Language, Platform, VideoDuration } from "@/lib/types";
 
-export type GenerationKind = "thumbnail" | "writing" | "topic" | "plan" | "script";
+export type GenerationKind = "thumbnail" | "writing" | "topic" | "plan" | "script" | "affiliate";
 
 type JobMeta = {
   pending: boolean;
@@ -21,6 +21,7 @@ const jobs: Record<GenerationKind, JobMeta> = {
   topic: { pending: false, label: "Writing description and tags…", href: "/content" },
   plan: { pending: false, label: "Planning ideas…", href: "/planner" },
   script: { pending: false, label: "Writing audio script…", href: "/planner" },
+  affiliate: { pending: false, label: "Writing product ad…", href: "/affiliate" },
 };
 
 const listeners = new Set<() => void>();
@@ -30,6 +31,7 @@ const resultListeners: Record<GenerationKind, Set<(payload: unknown) => void>> =
   topic: new Set(),
   plan: new Set(),
   script: new Set(),
+  affiliate: new Set(),
 };
 
 let snapshotCache = { ...jobs };
@@ -41,6 +43,7 @@ function emit() {
     topic: jobs.topic,
     plan: jobs.plan,
     script: jobs.script,
+    affiliate: jobs.affiliate,
   };
   for (const listener of listeners) listener();
 }
@@ -308,4 +311,45 @@ export function startScriptGeneration(input: {
     "/planner",
     input.itemId,
   );
+}
+
+export function startAffiliateGeneration(input: {
+  productType: AffiliateProductType;
+  productName: string;
+  productUrl: string;
+  notes: string;
+  language: Language;
+  platform: Platform;
+  hashtagCount: number;
+}) {
+  void runJob("affiliate", input, "gen-affiliate", (result) => {
+    if (!result || typeof result !== "object") return;
+    const data = result as {
+      title: string;
+      postDescription: string;
+      instagramCaption: string;
+      hashtags: string[];
+      imagePrompt: string;
+      videoPrompt: string;
+      provider: "local" | "remote";
+    };
+    mergeDraft("affiliate-draft", {
+      productType: input.productType,
+      productName: input.productName,
+      productUrl: input.productUrl,
+      notes: input.notes,
+      language: input.language,
+      platform: input.platform,
+      hashtagCount: input.hashtagCount,
+      title: data.title,
+      postDescription: data.postDescription,
+      instagramCaption: data.instagramCaption,
+      hashtags: data.hashtags,
+      imagePrompt: data.imagePrompt,
+      videoPrompt: data.videoPrompt,
+      provider: data.provider,
+    });
+    toast.success("Product ad ready. Open Affiliate ads to copy the caption and prompts.", { id: "gen-affiliate" });
+    for (const listener of resultListeners.affiliate) listener(data);
+  }, "/affiliate");
 }

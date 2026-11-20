@@ -1,4 +1,4 @@
-import type { IdeaTheme, Language, Platform, Status, VideoDuration } from "@/lib/types";
+import type { AffiliateProductType, IdeaTheme, Language, Platform, Status, VideoDuration } from "@/lib/types";
 
 export const statusLabels: Record<Status, string> = {
   idea: "Idea",
@@ -48,6 +48,16 @@ export const ideaThemeLabels: Record<IdeaTheme, string> = {
   food: "Food",
   lifestyle: "Lifestyle",
   family: "Family",
+};
+
+export const affiliateProductTypeLabels: Record<AffiliateProductType, string> = {
+  clothing: "Clothing",
+  jewellery: "Jewellery",
+  shoes: "Shoes",
+  electronics: "Electronics",
+  beauty: "Beauty",
+  home: "Home",
+  other: "Other",
 };
 
 export const videoDurationLabels: Record<VideoDuration, string> = {

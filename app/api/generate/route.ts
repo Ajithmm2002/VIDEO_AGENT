@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateFromTopic, generatePlan, generateScript, generateThumbnails, generateWriting } from "@/lib/actions/generate";
+import { generateAffiliate, generateFromTopic, generatePlan, generateScript, generateThumbnails, generateWriting } from "@/lib/actions/generate";
 
 export const maxDuration = 60;
 
@@ -46,6 +46,9 @@ export async function POST(request: Request) {
   }
   if (kind === "script") {
     return NextResponse.json(await generateScript(input as Parameters<typeof generateScript>[0]));
+  }
+  if (kind === "affiliate") {
+    return NextResponse.json(await generateAffiliate(input as Parameters<typeof generateAffiliate>[0]));
   }
 
   return NextResponse.json({ ok: false, error: "Unknown generator." }, { status: 400 });

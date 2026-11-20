@@ -1,4 +1,5 @@
-import type { ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import type { AffiliateAd, AffiliateProductType, ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import { localAffiliateAd } from "@/lib/ai/affiliate";
 import { spokenWordTarget } from "@/lib/utils";
 import {
   localThumbnail,
@@ -370,4 +371,60 @@ Video length seconds: ${input.durationSeconds}`,
     throw new Error("The connected AI provider returned an incomplete plan.");
   }
   return { provider: "remote", items: items.slice(0, input.count) };
+}
+
+export async function remoteAffiliateAd(input: {
+  productType: AffiliateProductType;
+  productName: string;
+  productUrl: string;
+  notes: string;
+  language: Language;
+  platform: Platform;
+  hashtagCount: number;
+}): Promise<AffiliateAd> {
+  const fallback = localAffiliateAd(input);
+  const data = await complete(
+    `You write professional affiliate product ads. JSON only: {"title":string,"postDescription":string,"instagramCaption":string,"hashtags":string[],"imagePrompt":string,"videoPrompt":string}.
+
+Rules:
+- This is a paid-looking product advertisement for clothing, jewellery, shoes, electronics, or similar retail, not a comedy skit.
+- title: under 80 characters, names the product.
+- postDescription and instagramCaption: requested language. Selling copy, 4-8 short lines, emojis sparingly, include an affiliate disclosure, and include the product URL if one was given.
+- hashtags: ENGLISH only, start with #, exactly ${input.hashtagCount} items. Mix product, shop, and affiliate tags. No Malayalam script.
+- imagePrompt: English Google Flow prompt for a studio catalogue still. Mention 16:9 and 9:16. No logos, no watermarks, no fake UI.
+- videoPrompt: English prompt for a 15-30s professional product video ad. Camera moves, lighting, end card. No meme style.
+- Be specific to the product type and notes.`,
+    `Product type: ${input.productType}
+Product name: ${input.productName || "(from listing)"}
+Product URL: ${input.productUrl || "(none)"}
+Notes: ${input.notes || "(none)"}
+Language: ${input.language}
+Platform: ${input.platform}
+Hashtag count: ${input.hashtagCount}`,
+    {
+      maxOutputTokens: 2200,
+      timeoutMs: 25000,
+      temperature: 0.6,
+      models: geminiLiteModelOrder(),
+    },
+  );
+  const title = typeof data.title === "string" ? data.title.trim() : "";
+  const postDescription = typeof data.postDescription === "string" ? data.postDescription.trim() : "";
+  const instagramCaption = typeof data.instagramCaption === "string" ? data.instagramCaption.trim() : postDescription;
+  const imagePrompt = typeof data.imagePrompt === "string" ? data.imagePrompt.trim() : "";
+  const videoPrompt = typeof data.videoPrompt === "string" ? data.videoPrompt.trim() : "";
+  const hashtags = Array.isArray(data.hashtags) ? data.hashtags.filter((item): item is string => typeof item === "string") : [];
+  if (!title || !postDescription || !imagePrompt || !videoPrompt) {
+    throw new Error("The connected AI provider returned an incomplete product ad.");
+  }
+  const mergedHashtags = toEnglishHashtags([...hashtags, ...fallback.hashtags], input.hashtagCount);
+  return {
+    title: title.slice(0, 80),
+    postDescription: postDescription.slice(0, 8000),
+    instagramCaption: (instagramCaption || postDescription).slice(0, 5000),
+    hashtags: mergedHashtags.length ? mergedHashtags : fallback.hashtags,
+    imagePrompt: imagePrompt.slice(0, 8000),
+    videoPrompt: videoPrompt.slice(0, 8000),
+    provider: "remote",
+  };
 }

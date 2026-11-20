@@ -84,6 +84,12 @@ export default async function DashboardPage() {
                   Plan a week of ideas
                 </Link>
                 <Link
+                  href="/affiliate"
+                  className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold"
+                >
+                  Affiliate product ad
+                </Link>
+                <Link
                   href="/content/new"
                   className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold"
                 >

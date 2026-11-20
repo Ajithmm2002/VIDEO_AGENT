@@ -1,12 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { generateAudioScript, generateContentPlan, generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
+import { generateAffiliateAd, generateAudioScript, generateContentPlan, generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
 import { isSupabaseConfigured } from "@/lib/env";
 import { requireSession } from "@/lib/session";
-import type { ActionResult, ContentInput, Language, Platform, VideoDuration } from "@/lib/types";
+import type { ActionResult, AffiliateProductType, ContentInput, Language, Platform, VideoDuration } from "@/lib/types";
 import { defaultChecklist, storedPrompt } from "@/lib/utils";
 import {
+  affiliateRequestSchema,
   contentSchema,
   firstIssue,
   audioScriptSchema,
@@ -221,6 +222,27 @@ export async function generateScript(input: {
     return { ok: true as const, result };
   } catch (error) {
     return { ok: false as const, error: aiError(error, "Could not write an audio script.") };
+  }
+}
+
+export async function generateAffiliate(input: {
+  productType: AffiliateProductType;
+  productName: string;
+  productUrl: string;
+  notes: string;
+  language: Language;
+  platform: Platform;
+  hashtagCount: number;
+}) {
+  const parsed = affiliateRequestSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };
+  const blocked = await generationAllowed();
+  if (blocked) return blocked;
+  try {
+    const result = await generateAffiliateAd(parsed.data);
+    return { ok: true as const, result };
+  } catch (error) {
+    return { ok: false as const, error: aiError(error, "Could not write that product ad.") };
   }
 }
 

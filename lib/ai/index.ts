@@ -1,5 +1,6 @@
-import type { ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import type { AffiliateAd, AffiliateProductType, ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
 import { remoteAiEnabled } from "@/lib/env";
+import { localAffiliateAd } from "@/lib/ai/affiliate";
 import {
   localAudioScript,
   localContentPlan,
@@ -13,7 +14,7 @@ import {
   type TopicCopy,
   type WritingDraft,
 } from "@/lib/ai/local";
-import { remoteAudioScript, remoteContentPlan, remoteThumbnail, remoteTopicCopy, remoteWriting } from "@/lib/ai/remote";
+import { remoteAffiliateAd, remoteAudioScript, remoteContentPlan, remoteThumbnail, remoteTopicCopy, remoteWriting } from "@/lib/ai/remote";
 import { spreadPlanDates } from "@/lib/utils";
 
 export type ThumbnailResult = Omit<ThumbnailDraft, "provider"> & { provider: "local" | "remote" };
@@ -161,6 +162,28 @@ export async function generateAudioScript(input: {
   if (!remoteAiEnabled()) return local;
   try {
     return await remoteAudioScript(input);
+  } catch {
+    return local;
+  }
+}
+
+export async function generateAffiliateAd(input: {
+  productType: AffiliateProductType;
+  productName: string;
+  productUrl: string;
+  notes: string;
+  language: Language;
+  platform: Platform;
+  hashtagCount: number;
+}): Promise<AffiliateAd> {
+  const local = localAffiliateAd(input);
+  if (!remoteAiEnabled()) return local;
+  try {
+    const remote = await remoteAffiliateAd(input);
+    return {
+      ...remote,
+      hashtags: toEnglishHashtags([...remote.hashtags, ...local.hashtags], input.hashtagCount),
+    };
   } catch {
     return local;
   }

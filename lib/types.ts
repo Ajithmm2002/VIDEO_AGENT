@@ -4,6 +4,7 @@ export const tagCountOptions = [5, 8, 10, 12, 15, 20, 25, 30] as const;
 export const planDays = [1, 2, 3, 4, 5, 6, 7] as const;
 export const videoDurations = [15, 30, 45, 60, 90, 120, 180, 300] as const;
 export const ideaThemes = ["comedy", "nostalgia", "tech", "education", "food", "lifestyle", "family"] as const;
+export const affiliateProductTypes = ["clothing", "jewellery", "shoes", "electronics", "beauty", "home", "other"] as const;
 export const statuses = [
   "idea",
   "planning",
@@ -19,6 +20,7 @@ export type Status = (typeof statuses)[number];
 export type PlanDays = (typeof planDays)[number];
 export type VideoDuration = (typeof videoDurations)[number];
 export type IdeaTheme = (typeof ideaThemes)[number];
+export type AffiliateProductType = (typeof affiliateProductTypes)[number];
 
 export type ChecklistItem = {
   id: string;
@@ -147,4 +149,22 @@ export type PlanIdea = {
 export type ContentPlan = {
   provider: "local" | "remote";
   items: PlanIdea[];
+};
+
+export type AffiliateAd = {
+  title: string;
+  postDescription: string;
+  instagramCaption: string;
+  hashtags: string[];
+  imagePrompt: string;
+  videoPrompt: string;
+  provider: "local" | "remote";
+};
+
+export type ProductPreview = {
+  url: string;
+  title: string;
+  description: string;
+  image: string | null;
+  siteName: string;
 };

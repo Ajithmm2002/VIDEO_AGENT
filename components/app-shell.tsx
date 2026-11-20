@@ -13,6 +13,7 @@ import {
   Lightbulb,
   Loader2,
   Menu,
+  BadgePercent,
   PenLine,
   Search,
   Settings,
@@ -42,6 +43,7 @@ const groups = [
       { href: "/thumbnails", label: "Thumbnails", icon: ImageIcon },
       { href: "/assistant", label: "Writing", icon: PenLine },
       { href: "/hashtags", label: "Hashtags", icon: Hash },
+      { href: "/affiliate", label: "Affiliate ads", icon: BadgePercent },
     ],
   },
 ];

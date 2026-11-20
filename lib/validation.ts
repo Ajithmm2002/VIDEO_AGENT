@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { languages, platforms, statuses, videoDurations, type ContentInput, type VideoDuration } from "@/lib/types";
+import { affiliateProductTypes, languages, platforms, statuses, videoDurations, type ContentInput, type VideoDuration } from "@/lib/types";
 import { uniqueLimited } from "@/lib/utils";
 
 function isHttpsUrl(value: string) {
@@ -94,6 +94,37 @@ export const contentSchema = z.object({
     )
     .max(30),
   is_template: z.boolean(),
+});
+
+export const affiliateRequestSchema = z
+  .object({
+    productType: z.enum(affiliateProductTypes),
+    productName: z.string().trim().max(200).optional().default(""),
+    productUrl: z
+      .string()
+      .trim()
+      .max(2000)
+      .optional()
+      .default("")
+      .refine((value) => !value || isHttpsUrl(value), {
+        message: "Enter a valid product URL starting with https://",
+      }),
+    notes: z.string().trim().max(1000).optional().default(""),
+    language: z.enum(languages),
+    platform: z.enum(platforms),
+    hashtagCount: z.number().int().min(5).max(30).optional().default(15),
+  })
+  .refine((value) => value.productName.trim().length > 0 || value.productUrl.trim().length > 0, {
+    message: "Add a product name or paste a product link.",
+  });
+
+export const productPreviewSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .min(1, "Paste a product link.")
+    .max(2000)
+    .refine(isHttpsUrl, "Enter a valid product URL starting with https://"),
 });
 
 export const thumbnailRequestSchema = z
