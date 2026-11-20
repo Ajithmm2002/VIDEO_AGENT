@@ -15,16 +15,20 @@ export async function getCurrentUser() {
 }
 
 export async function requestOrigin() {
+  const headerStore = await headers();
+  const host = (headerStore.get("x-forwarded-host") ?? headerStore.get("host") ?? "").split(",")[0]?.trim() ?? "";
+  const proto = headerStore.get("x-forwarded-proto") === "http" ? "http" : "https";
+  const localHost = /^(localhost|127\.0\.0\.1)(?::\d+)?$/i.test(host);
+
+  if (process.env.NODE_ENV === "production" && host && !localHost && /^[a-z0-9.-]+(?::\d+)?$/i.test(host)) {
+    return `https://${host}`;
+  }
+
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
   if (configured && isHttpsUrl(configured)) return configured;
   if (configured === "http://localhost:3000" || configured === "http://127.0.0.1:3000") return configured;
 
-  const headerStore = await headers();
-  const host = (headerStore.get("x-forwarded-host") ?? headerStore.get("host") ?? "").split(",")[0]?.trim() ?? "";
-  const proto = headerStore.get("x-forwarded-proto") === "http" ? "http" : "https";
-  if (/^[a-z0-9.-]+(?::\d+)?$/i.test(host) && (host.startsWith("localhost") || host.startsWith("127.0.0.1"))) {
-    return `http://${host}`;
-  }
+  if (localHost) return `http://${host}`;
   if (proto === "https" && /^[a-z0-9.-]+(?::\d+)?$/i.test(host)) return `https://${host}`;
   return "http://localhost:3000";
 }
