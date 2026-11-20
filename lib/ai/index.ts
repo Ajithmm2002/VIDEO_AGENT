@@ -20,6 +20,8 @@ export async function generateThumbnailPrompts(input: {
   topic: string;
   language: Language;
   styleNotes?: string;
+  landscape?: boolean;
+  vertical?: boolean;
 }): Promise<ThumbnailResult> {
   if (!remoteAiEnabled()) return localThumbnail(input);
   try {

@@ -39,9 +39,20 @@ function readGeminiText(payload: unknown) {
     .trim();
 }
 
-async function geminiComplete(system: string, user: string) {
+type CompleteOptions = {
+  maxOutputTokens?: number;
+  timeoutMs?: number;
+  temperature?: number;
+  models?: string[];
+};
+
+async function geminiComplete(system: string, user: string, options: CompleteOptions = {}) {
   let sawBusy = false;
-  for (const modelName of geminiModelOrder()) {
+  const models = options.models?.length ? options.models : geminiModelOrder();
+  const timeoutMs = options.timeoutMs ?? 50000;
+  const maxOutputTokens = options.maxOutputTokens ?? 4096;
+  const temperature = options.temperature ?? 0.7;
+  for (const modelName of models) {
     let response: Response;
     try {
       response = await fetch(
@@ -56,12 +67,12 @@ async function geminiComplete(system: string, user: string) {
             systemInstruction: { parts: [{ text: system }] },
             contents: [{ role: "user", parts: [{ text: user }] }],
             generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 4096,
+              temperature,
+              maxOutputTokens,
               responseMimeType: "application/json",
             },
           }),
-          signal: AbortSignal.timeout(50000),
+          signal: AbortSignal.timeout(timeoutMs),
         },
       );
     } catch {
@@ -92,9 +103,9 @@ async function geminiComplete(system: string, user: string) {
   );
 }
 
-async function complete(system: string, user: string) {
+async function complete(system: string, user: string, options: CompleteOptions = {}) {
   if (process.env.AI_PROVIDER === "gemini" && !process.env.AI_BASE_URL) {
-    return geminiComplete(system, user);
+    return geminiComplete(system, user, options);
   }
 
   const response = await fetch(`${endpoint()}/chat/completions`, {
@@ -105,14 +116,15 @@ async function complete(system: string, user: string) {
     },
     body: JSON.stringify({
       model: model(),
-      temperature: 0.7,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.maxOutputTokens ?? 4096,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: system },
         { role: "user", content: user },
       ],
     }),
-    signal: AbortSignal.timeout(25000),
+    signal: AbortSignal.timeout(options.timeoutMs ?? 25000),
   });
 
   if (!response.ok) {
@@ -132,20 +144,34 @@ export async function remoteThumbnail(input: {
   topic: string;
   language: Language;
   styleNotes?: string;
+  landscape?: boolean;
+  vertical?: boolean;
 }): Promise<RemoteThumbnail> {
+  const wantLandscape = input.landscape !== false;
+  const wantVertical = input.vertical !== false;
   const fallback = localThumbnail(input);
+  const keys = [
+    wantLandscape ? '"landscape": string' : "",
+    wantVertical ? '"vertical": string' : "",
+  ].filter(Boolean);
   const data = await complete(
-    "You write image-generation prompts for Google Flow. Reply with JSON only: {\"landscape\": string, \"vertical\": string}. Landscape is 16:9 YouTube. Vertical is 9:16 Reels or Shorts. Each prompt must include subject, background, lighting, composition, colours, text placement, and visual style. Write the instructions in English. If the topic is Malayalam, quote the Malayalam text exactly as the words to render. Do not describe an image you generated.",
-    `Topic: ${input.topic}\nLanguage: ${input.language}\nStyle notes: ${input.styleNotes || "none"}`,
+    `Write Google Flow image prompts. JSON only: {${keys.join(", ")}}. English instructions, under 110 words each. Include subject, background, lighting, composition, colours, on-image text, and style. If the topic is Malayalam, quote that exact text on the image. Do not describe an image you generated.`,
+    `Topic: ${input.topic}\nLanguage: ${input.language}\nStyle notes: ${input.styleNotes || "none"}\nFormats: ${[wantLandscape ? "16:9 YouTube" : "", wantVertical ? "9:16 Reels/Shorts" : ""].filter(Boolean).join(", ")}`,
+    {
+      maxOutputTokens: wantLandscape && wantVertical ? 1600 : 900,
+      timeoutMs: wantLandscape && wantVertical ? 20000 : 12000,
+      temperature: 0.6,
+      models: [...new Set(["gemini-flash-lite-latest", ...geminiModelOrder()])],
+    },
   );
-  const landscape = typeof data.landscape === "string" ? data.landscape.trim() : "";
-  const vertical = typeof data.vertical === "string" ? data.vertical.trim() : "";
-  if (!landscape || !vertical) {
+  const landscape = wantLandscape && typeof data.landscape === "string" ? data.landscape.trim() : "";
+  const vertical = wantVertical && typeof data.vertical === "string" ? data.vertical.trim() : "";
+  if ((wantLandscape && !landscape) || (wantVertical && !vertical)) {
     throw new Error("The connected AI provider returned an incomplete prompt.");
   }
   return {
-    landscape,
-    vertical,
+    landscape: wantLandscape ? landscape : fallback.landscape,
+    vertical: wantVertical ? vertical : fallback.vertical,
     language: fallback.language,
     provider: "remote",
   };

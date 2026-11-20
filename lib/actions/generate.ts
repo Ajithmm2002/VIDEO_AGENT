@@ -35,6 +35,8 @@ export async function generateThumbnails(input: {
   topic: string;
   language: Language;
   styleNotes?: string;
+  landscape?: boolean;
+  vertical?: boolean;
 }) {
   const parsed = thumbnailRequestSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };
@@ -99,9 +101,9 @@ export async function savePrompt(input: {
   contentId: string | null;
 }): Promise<ActionResult> {
   const topic = input.topic.trim();
-  const landscape = input.landscape.trim();
-  const vertical = input.vertical.trim();
-  if (!topic || !landscape || !vertical) {
+  const landscape = input.landscape.trim() || "Not generated.";
+  const vertical = input.vertical.trim() || "Not generated.";
+  if (!topic || (landscape === "Not generated." && vertical === "Not generated.")) {
     return { ok: false, error: "Generate a prompt before saving." };
   }
   if (landscape.length > 20000 || vertical.length > 20000) {
@@ -126,7 +128,12 @@ export async function savePrompt(input: {
   if (error) return { ok: false, error: "Could not save the prompt." };
 
   if (input.contentId) {
-    const combined = `Landscape (16:9)\n${landscape}\n\nVertical (9:16)\n${vertical}`;
+    const combined = [
+      landscape !== "Not generated." ? `Landscape (16:9)\n${landscape}` : "",
+      vertical !== "Not generated." ? `Vertical (9:16)\n${vertical}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
     await session.supabase.from("contents").update({ thumbnail_prompt: combined, topic }).eq("id", input.contentId);
   }
 

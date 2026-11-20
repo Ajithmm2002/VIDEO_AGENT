@@ -96,11 +96,17 @@ export const contentSchema = z.object({
   is_template: z.boolean(),
 });
 
-export const thumbnailRequestSchema = z.object({
-  topic: z.string().trim().min(1, "Enter a topic").max(500),
-  language: z.enum(languages),
-  styleNotes: z.string().trim().max(500).optional().default(""),
-});
+export const thumbnailRequestSchema = z
+  .object({
+    topic: z.string().trim().min(1, "Enter a topic").max(500),
+    language: z.enum(languages),
+    styleNotes: z.string().trim().max(500).optional().default(""),
+    landscape: z.boolean().optional().default(true),
+    vertical: z.boolean().optional().default(true),
+  })
+  .refine((value) => value.landscape || value.vertical, {
+    message: "Choose at least one thumbnail format.",
+  });
 
 export const writingRequestSchema = z.object({
   topic: z.string().trim().min(1, "Enter a topic").max(500),

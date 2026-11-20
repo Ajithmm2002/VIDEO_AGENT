@@ -127,8 +127,12 @@ export function localThumbnail(input: {
   topic: string;
   language: Language;
   styleNotes?: string;
+  landscape?: boolean;
+  vertical?: boolean;
 }): ThumbnailDraft {
   const topic = input.topic.trim();
+  const wantLandscape = input.landscape !== false;
+  const wantVertical = input.vertical !== false;
   const malayalam = input.language === "ml" || containsMalayalam(topic);
   const style =
     input.styleNotes?.trim() ||
@@ -137,29 +141,33 @@ export function localThumbnail(input: {
     ? `Render this exact Malayalam text on the image, spelled correctly, in a heavy rounded sans-serif with a solid plate or strong outline so it stays readable: "${topic}". Do not translate it.`
     : `Render this short title in large readable type, in a heavy sans-serif with a contrasting plate or outline: "${topic.slice(0, 80)}".`;
 
-  const landscape = [
-    "Format: landscape 16:9 YouTube thumbnail, composed for a 1280x720 frame.",
-    `Subject: one clear hero for "${topic}", shown close to the camera as a person, object, or symbol that is recognisable at small size.`,
-    "Background: a simple layered background with a soft gradient and one supporting shape. Leave it uncluttered so the subject and title win.",
-    "Lighting: bright key light from the front-left and a gentle rim light that separates the subject from the background.",
-    "Composition: subject on the right third, open space on the left for the title, with about 6% safe margin on every edge.",
-    "Colours: deep teal, warm sand, and one amber accent. Use high contrast and no more than three dominant colours.",
-    `Text placement: title block on the left third, vertically centred, two lines maximum. ${textInstruction}`,
-    `Visual style: ${style}. Sharp edges, no watermark, no logo, no extra captions, no collage.`,
-    "Avoid: warped letters, tiny text, cluttered backgrounds, extra objects, and muddy shadows.",
-  ].join("\n");
+  const landscape = wantLandscape
+    ? [
+        "Format: landscape 16:9 YouTube thumbnail, composed for a 1280x720 frame.",
+        `Subject: one clear hero for "${topic}", shown close to the camera as a person, object, or symbol that is recognisable at small size.`,
+        "Background: a simple layered background with a soft gradient and one supporting shape. Leave it uncluttered so the subject and title win.",
+        "Lighting: bright key light from the front-left and a gentle rim light that separates the subject from the background.",
+        "Composition: subject on the right third, open space on the left for the title, with about 6% safe margin on every edge.",
+        "Colours: deep teal, warm sand, and one amber accent. Use high contrast and no more than three dominant colours.",
+        `Text placement: title block on the left third, vertically centred, two lines maximum. ${textInstruction}`,
+        `Visual style: ${style}. Sharp edges, no watermark, no logo, no extra captions, no collage.`,
+        "Avoid: warped letters, tiny text, cluttered backgrounds, extra objects, and muddy shadows.",
+      ].join("\n")
+    : "";
 
-  const vertical = [
-    "Format: vertical 9:16 thumbnail for Instagram Reels and YouTube Shorts, composed for a 1080x1920 frame.",
-    `Subject: the same hero for "${topic}", centred and large, with the important detail in the upper-middle of the frame.`,
-    "Background: a tall simple gradient with one bold shape behind the subject. Keep the lower fifth quiet because the app interface covers it.",
-    "Lighting: bright frontal key light and a slim rim light, with the main subject evenly lit.",
-    "Composition: centred vertical stack. Keep important details inside the central safe area, away from the top 12% and the bottom 20%.",
-    "Colours: the same deep teal, warm sand, and amber accent, with stronger contrast for a phone screen.",
-    `Text placement: short title in the upper third, centred, one or two lines. ${textInstruction}`,
-    `Visual style: ${style}. Bold silhouette for a phone screen, no watermark, no logo, no tiny text, no busy collage.`,
-    "Avoid: warped letters, edge-cropped faces, clutter, and details hidden by Reels controls.",
-  ].join("\n");
+  const vertical = wantVertical
+    ? [
+        "Format: vertical 9:16 thumbnail for Instagram Reels and YouTube Shorts, composed for a 1080x1920 frame.",
+        `Subject: the same hero for "${topic}", centred and large, with the important detail in the upper-middle of the frame.`,
+        "Background: a tall simple gradient with one bold shape behind the subject. Keep the lower fifth quiet because the app interface covers it.",
+        "Lighting: bright frontal key light and a slim rim light, with the main subject evenly lit.",
+        "Composition: centred vertical stack. Keep important details inside the central safe area, away from the top 12% and the bottom 20%.",
+        "Colours: the same deep teal, warm sand, and amber accent, with stronger contrast for a phone screen.",
+        `Text placement: short title in the upper third, centred, one or two lines. ${textInstruction}`,
+        `Visual style: ${style}. Bold silhouette for a phone screen, no watermark, no logo, no tiny text, no busy collage.`,
+        "Avoid: warped letters, edge-cropped faces, clutter, and details hidden by Reels controls.",
+      ].join("\n")
+    : "";
 
   return {
     landscape,

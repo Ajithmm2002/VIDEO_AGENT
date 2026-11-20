@@ -30,6 +30,8 @@ export function ThumbnailStudio({
   const [vertical, setVertical] = useState("");
   const [provider, setProvider] = useState<"local" | "remote" | null>(null);
   const [contentId, setContentId] = useState(initial.contentId);
+  const [wantLandscape, setWantLandscape] = useState(true);
+  const [wantVertical, setWantVertical] = useState(true);
   const [pending, setPending] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
 
@@ -43,6 +45,8 @@ export function ThumbnailStudio({
       vertical: string;
       provider: "local" | "remote" | null;
       contentId: string;
+      wantLandscape?: boolean;
+      wantVertical?: boolean;
     }>("thumbnail-draft");
     if (stored) {
       if (!initial.topic) setTopic(stored.topic);
@@ -51,6 +55,8 @@ export function ThumbnailStudio({
       setLandscape(stored.landscape ?? "");
       setVertical(stored.vertical ?? "");
       setProvider(stored.provider ?? null);
+      if (typeof stored.wantLandscape === "boolean") setWantLandscape(stored.wantLandscape);
+      if (typeof stored.wantVertical === "boolean") setWantVertical(stored.wantVertical);
       if (!initial.contentId && stored.contentId) setContentId(stored.contentId);
     }
     setDraftReady(true);
@@ -59,21 +65,44 @@ export function ThumbnailStudio({
 
   useEffect(() => {
     if (!draftReady) return;
-    writeDraft("thumbnail-draft", { topic, language, styleNotes, landscape, vertical, provider, contentId });
-  }, [draftReady, topic, language, styleNotes, landscape, vertical, provider, contentId]);
+    writeDraft("thumbnail-draft", {
+      topic,
+      language,
+      styleNotes,
+      landscape,
+      vertical,
+      provider,
+      contentId,
+      wantLandscape,
+      wantVertical,
+    });
+  }, [draftReady, topic, language, styleNotes, landscape, vertical, provider, contentId, wantLandscape, wantVertical]);
 
   async function onGenerate() {
-    setPending(true);
-    const result = await generateThumbnails({ topic, language, styleNotes });
-    setPending(false);
-    if (!result.ok) {
-      toast.error(result.error);
+    if (!wantLandscape && !wantVertical) {
+      toast.error("Choose at least one thumbnail format.");
       return;
     }
-    setLandscape(result.result.landscape);
-    setVertical(result.result.vertical);
-    setProvider(result.result.provider);
-    if (result.result.language !== language) setLanguage(result.result.language);
+    setPending(true);
+    try {
+      const result = await generateThumbnails({
+        topic,
+        language,
+        styleNotes,
+        landscape: wantLandscape,
+        vertical: wantVertical,
+      });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      if (wantLandscape) setLandscape(result.result.landscape);
+      if (wantVertical) setVertical(result.result.vertical);
+      setProvider(result.result.provider);
+      if (result.result.language !== language) setLanguage(result.result.language);
+    } finally {
+      setPending(false);
+    }
   }
 
   async function onSave() {
@@ -115,8 +144,24 @@ export function ThumbnailStudio({
             <TextInput value={styleNotes} onChange={(event) => setStyleNotes(event.target.value)} maxLength={500} />
           </Field>
         </div>
+        <div className="grid gap-2">
+          <p className="text-sm font-medium">Formats to generate</p>
+          <div className="flex flex-wrap gap-4 text-sm">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={wantLandscape} onChange={(event) => setWantLandscape(event.target.checked)} />
+              Landscape 16:9 (YouTube)
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={wantVertical} onChange={(event) => setWantVertical(event.target.checked)} />
+              Vertical 9:16 (Reels / Shorts)
+            </label>
+          </div>
+          <p className="text-xs leading-5 text-muted">Unchecked formats are left as they are. Generating one format is faster than generating both.</p>
+        </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onGenerate} disabled={pending}>{pending ? "Writing prompt…" : "Generate prompts"}</Button>
+          <Button onClick={onGenerate} disabled={pending || (!wantLandscape && !wantVertical)}>
+            {pending ? "Writing prompt…" : wantLandscape && wantVertical ? "Generate both prompts" : wantLandscape ? "Generate 16:9 prompt" : wantVertical ? "Generate 9:16 prompt" : "Generate prompts"}
+          </Button>
           <a
             href={googleFlowUrl}
             target="_blank"

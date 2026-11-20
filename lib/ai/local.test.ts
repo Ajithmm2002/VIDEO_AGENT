@@ -17,6 +17,15 @@ describe("thumbnail prompts", () => {
     }
   });
 
+  it("can build only the selected format", () => {
+    const landscapeOnly = localThumbnail({ topic: "Home coffee", language: "en", landscape: true, vertical: false });
+    expect(landscapeOnly.landscape).toContain("16:9");
+    expect(landscapeOnly.vertical).toBe("");
+    const verticalOnly = localThumbnail({ topic: "Home coffee", language: "en", landscape: false, vertical: true });
+    expect(verticalOnly.vertical).toContain("9:16");
+    expect(verticalOnly.landscape).toBe("");
+  });
+
   it("quotes a Malayalam topic as on-image text", () => {
     const topic = "മഴക്കാല പ്രഭാതം";
     const result = localThumbnail({ topic, language: "ml" });
