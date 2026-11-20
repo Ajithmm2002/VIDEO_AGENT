@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "@/lib/env";
+import { isSupabaseConfigured, supabasePublicKey, supabaseUrl } from "@/lib/env";
 import { safeNextPath } from "@/lib/utils";
 
 const protectedPrefixes = [
@@ -33,7 +33,7 @@ export async function updateSession(request: NextRequest) {
   if (!isSupabaseConfigured()) {
     if (process.env.NODE_ENV === "production") {
       return new NextResponse(
-        "<!doctype html><html lang=\"en\"><body style=\"font-family:sans-serif;padding:2rem\"><h1>Content Studio is not ready</h1><p>Add the Supabase URL and anon key in the host environment, then redeploy.</p></body></html>",
+        "<!doctype html><html lang=\"en\"><body style=\"font-family:sans-serif;padding:2rem\"><h1>Content Studio is not ready</h1><p>Add the Supabase URL and publishable key in the host environment, then redeploy.</p></body></html>",
         { status: 503, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } },
       );
     }
@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   let response = NextResponse.next({ request });
-  const supabase = createServerClient(supabaseUrl(), supabaseAnonKey(), {
+  const supabase = createServerClient(supabaseUrl(), supabasePublicKey(), {
     cookies: {
       getAll() {
         return request.cookies.getAll();

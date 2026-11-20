@@ -44,7 +44,7 @@ npm install
 cp .env.example .env.local
 ```
 
-4. Create a Supabase project and paste its URL and anon key into `.env.local`. The steps are in the next section. You can run the app before that. Thumbnail prompts and writing drafts work without keys. Saving content, accounts, and the calendar need Supabase. A production deploy refuses to start until those two values are set, so a public site cannot run as an open workspace.
+4. Create a Supabase project and paste its URL and publishable key into `.env.local`. The steps are in the next section. You can run the app before that. Thumbnail prompts and writing drafts work without keys. Saving content, accounts, and the calendar need Supabase. A production deploy refuses to start until those two values are set, so a public site cannot run as an open workspace.
 
 5. Start the app:
 
@@ -64,8 +64,8 @@ npm test
 
 1. Create a free project at https://supabase.com/dashboard.
 2. Open **Project Settings → API**.
-3. Copy the project URL into `NEXT_PUBLIC_SUPABASE_URL`.
-4. Copy the **anon public** key into `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Do not put the service role key in this app. Row Level Security is the privacy boundary, and the service role bypasses it.
+3. Copy the project URL into `NEXT_PUBLIC_SUPABASE_URL` (example: `https://your-project-id.supabase.co`).
+4. Copy the **publishable** key (`sb_publishable_...`) into `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. The older JWT **anon** key still works in `NEXT_PUBLIC_SUPABASE_ANON_KEY` if that is all the dashboard shows. Do not put a secret or service-role key in this app. Row Level Security is the privacy boundary, and those keys bypass it.
 5. Open **SQL Editor**, paste the full file `supabase/migrations/20261120120000_init.sql`, and run it once. It creates:
    - `profiles`, `categories`, `contents`, `thumbnail_prompts`, `hashtag_collections`
    - a private `thumbnails` storage bucket
@@ -86,7 +86,7 @@ In the Supabase dashboard, also set:
 - **Authentication → Sign In / Providers → Email:** leave Email on. For a site on the internet, leave **Confirm email** on.
 - **Authentication → URL Configuration:** only your real site URL and `/auth/callback`. Do not add a wildcard.
 - **Authentication → Attack Protection:** leave the built-in rate limits on.
-- Never copy the **service role** key into this app or into Vercel. The anon key is the only key the app should have.
+- Never copy a **secret** or **service role** key into this app or into Vercel. The publishable (or legacy anon) key is the only key the app should have.
 
 ## Security
 
@@ -105,7 +105,8 @@ Some projects want the bucket created in the dashboard. Create a **private** buc
 | Name | Required | Purpose |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | To save data | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | To save data | Public anon key. Safe in the browser because RLS is on |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | To save data | Public `sb_publishable_` key. Safe in the browser because RLS is on |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Alternate | Legacy JWT anon key. Used only if the publishable key is empty |
 | `NEXT_PUBLIC_SITE_URL` | No | Used for password-reset links when a request has no origin |
 | `AI_PROVIDER` | No | `local` (default), `openai`, or `gemini` |
 | `AI_API_KEY` | Only for a remote model | Secret. Server only |
@@ -163,7 +164,7 @@ git push -u origin main
 | Name | Value |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (`sb_publishable_...`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://your-app.vercel.app` after the first deploy, then redeploy |
 | `AI_PROVIDER` | `gemini` |
 | `AI_API_KEY` | Your Gemini key |
@@ -174,7 +175,7 @@ git push -u origin main
 6. In Vercel, set `NEXT_PUBLIC_SITE_URL` to the same `https://….vercel.app` address and redeploy. Password-reset emails use that value.
 7. Open the live site. It should show **Sign in**, not the open dashboard. Create an account, confirm the email if you left confirmation on, then sign in. That account is the only one that can see what it saves.
 
-If the live site says it is not ready, the Supabase URL or anon key is missing from Vercel. Add both and redeploy. Do not turn off the production check to browse the app without a database. That would publish the generators to anyone on the internet.
+If the live site says it is not ready, the Supabase URL or publishable key is missing from Vercel. Add both and redeploy. Do not turn off the production check to browse the app without a database. That would publish the generators to anyone on the internet.
 
 ### 4. Custom domain later
 
