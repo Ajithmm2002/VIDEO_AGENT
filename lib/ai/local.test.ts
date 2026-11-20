@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { containsMalayalam, hashtagsFor, localThumbnail, localTopicCopy, localWriting } from "@/lib/ai/local";
+import { containsMalayalam, hashtagsFor, localContentPlan, localThumbnail, localTopicCopy, localWriting } from "@/lib/ai/local";
 
 describe("thumbnail prompts", () => {
   it("builds landscape and vertical prompts with the required sections", () => {
@@ -74,5 +74,33 @@ describe("writing drafts", () => {
     expect(result.hashtags.every((tag) => tag.startsWith("#"))).toBe(true);
     expect(result.description).toContain("🔥");
     expect(result.description.length).toBeGreaterThan(10);
+  });
+});
+
+describe("content plans", () => {
+  it("builds a week of editable ideas from a brief", () => {
+    const result = localContentPlan({
+      language: "en",
+      platform: "both",
+      themes: ["comedy", "nostalgia"],
+      description: "power cuts at home",
+      count: 7,
+    });
+    expect(result.items).toHaveLength(7);
+    expect(result.items[0].title.toLowerCase()).toContain("power cuts");
+    expect(result.items.every((item) => item.description.length > 10)).toBe(true);
+  });
+
+  it("writes Malayalam titles from a Malayalam brief", () => {
+    const result = localContentPlan({
+      language: "ml",
+      platform: "youtube",
+      themes: ["nostalgia"],
+      description: "വീട്ടിൽ കറന്റ് പോകുമ്പോൾ",
+      count: 12,
+    });
+    expect(result.items).toHaveLength(12);
+    expect(containsMalayalam(result.items[0].title)).toBe(true);
+    expect(containsMalayalam(result.items[0].description)).toBe(true);
   });
 });

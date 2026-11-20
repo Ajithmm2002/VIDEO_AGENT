@@ -11,6 +11,7 @@ app/
   (app)/                Signed-in workspace
     dashboard/          Counts, recent edits, upcoming dates
     content/            List, create, and edit content
+    planner/            Idea suggestions and week/month auto-planning
     calendar/           Month and week planning
     library/            Links, thumbnails, descriptions, ideas, references
     thumbnails/         Thumbnail prompt generator
@@ -126,6 +127,7 @@ To connect a model later, set `AI_PROVIDER` to `openai` or `gemini`, set `AI_API
 - Generate 16:9 and 9:16 thumbnail prompts, edit them, copy them, and open [Google Flow](https://labs.google/fx/tools/flow). The app does not generate images.
 - Generate titles, descriptions, captions, tags, hashtags, hooks, and a script outline, then edit, copy, or save them onto content.
 - On a content item, generate a description, YouTube tags, and hashtags from the topic, and choose how many tags to create.
+- Generate a week or month of content ideas from language, categories, and a short brief, then edit dates and save them to the calendar.
 - Use a month or week calendar and move a planned date by dragging or with the date field.
 - Browse the library, export CSV, and download or restore a JSON backup of your rows.
 

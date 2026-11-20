@@ -6,6 +6,7 @@ import { safeNextPath } from "@/lib/utils";
 const protectedPrefixes = [
   "/dashboard",
   "/content",
+  "/planner",
   "/calendar",
   "/library",
   "/thumbnails",

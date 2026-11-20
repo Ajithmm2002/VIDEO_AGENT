@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { addDays, addMonths, addWeeks, endOfMonth, endOfWeek, format, parseISO, startOfMonth, startOfWeek } from "date-fns";
 import { CalendarBoard } from "@/components/calendar-board";
-import { Button, Card, PageHeader, SelectInput } from "@/components/ui";
+import { Card, PageHeader, SelectInput, SubmitButton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { platformLabels, statusLabels } from "@/lib/labels";
 import { calendarContents } from "@/lib/queries";
@@ -73,7 +73,7 @@ export default async function CalendarPage({
               {statuses.map((item) => <option key={item} value={item}>{statusLabels[item]}</option>)}
             </SelectInput>
           </label>
-          <Button type="submit">Filter</Button>
+          <SubmitButton pendingLabel="Filtering…">Filter</SubmitButton>
         </form>
         <div className="flex flex-wrap items-center gap-2">
           <Link href={query(format(anchor, "yyyy-MM-dd"), "month")} className={cn("rounded-full px-3 py-1.5 text-sm", view === "month" ? "bg-accent text-accent-ink" : "border border-line bg-surface")}>Month</Link>

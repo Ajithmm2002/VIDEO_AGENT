@@ -6,6 +6,7 @@ import { CopyButton } from "@/components/copy-button";
 import { StatusBadge } from "@/components/badges";
 import { Card, EmptyState } from "@/components/ui";
 import type { Content, HashtagCollection } from "@/lib/types";
+import { visiblePrompt } from "@/lib/utils";
 
 const tabs = [
   ["published", "Published"],
@@ -94,7 +95,7 @@ export function LibraryBrowser({
                   <img src={images[item.thumbnail_path]} alt="" className="max-h-48 rounded-xl object-cover" />
                 </>
               ) : null}
-              {view === "thumbnails" && item.thumbnail_prompt ? <p className="line-clamp-4 whitespace-pre-wrap text-sm text-muted">{item.thumbnail_prompt}</p> : null}
+              {view === "thumbnails" && visiblePrompt(item.thumbnail_prompt) ? <p className="whitespace-pre-wrap text-sm text-muted">{visiblePrompt(item.thumbnail_prompt)}</p> : null}
               {view === "descriptions" ? <p className="whitespace-pre-wrap text-sm text-muted">{item.youtube_description || item.instagram_caption || item.description}</p> : null}
               {view === "ideas" ? <p className="text-sm text-muted">{item.topic || "No topic yet"}</p> : null}
               {view === "references" ? (

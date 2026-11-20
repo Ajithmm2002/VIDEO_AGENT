@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { languages, platforms, statuses, type ContentInput } from "@/lib/types";
+import { languages, planHorizons, platforms, statuses, type ContentInput } from "@/lib/types";
 import { uniqueLimited } from "@/lib/utils";
 
 function isHttpsUrl(value: string) {
@@ -141,6 +141,42 @@ export const authSchema = z.object({
   email: z.email("Enter a valid email"),
   password: passwordSchema,
   displayName: z.string().trim().min(1, "Enter your name").max(80).optional(),
+});
+
+export const planRequestSchema = z
+  .object({
+    language: z.enum(languages),
+    platform: z.enum(platforms),
+    themes: z.array(z.string().trim().min(1).max(40)).max(12),
+    description: z.string().trim().max(2000),
+    horizon: z.enum(planHorizons),
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a valid start date"),
+  })
+  .refine((value) => value.themes.length > 0 || value.description.length > 0, {
+    message: "Choose a category or write a short description.",
+  });
+
+export const planSaveSchema = z.object({
+  language: z.enum(languages),
+  platform: z.enum(platforms),
+  category_id: z
+    .string()
+    .nullable()
+    .transform((value) => (value ? value : null))
+    .refine((value) => value === null || z.uuid().safeParse(value).success, {
+      message: "Choose a valid category",
+    }),
+  items: z
+    .array(
+      z.object({
+        title: z.string().trim().min(1, "Each idea needs a title").max(200),
+        topic: z.string().trim().max(500),
+        description: z.string().trim().max(8000),
+        planned_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a valid date"),
+      }),
+    )
+    .min(1, "Keep at least one idea.")
+    .max(16),
 });
 
 export const writingApplySchema = z.object({

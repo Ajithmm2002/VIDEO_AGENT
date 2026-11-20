@@ -24,6 +24,8 @@ export function SettingsManager({
   const [categoryName, setCategoryName] = useState("");
   const [color, setColor] = useState(categoryColors[0]);
   const [restoreText, setRestoreText] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [addingCategory, setAddingCategory] = useState(false);
 
   return (
     <div className="grid gap-4">
@@ -34,18 +36,24 @@ export function SettingsManager({
         </Field>
         <Button
           className="w-fit"
+          loading={savingName}
           disabled={!configured}
           onClick={async () => {
-            const result = await updateDisplayName(name);
-            if (!result.ok) {
-              toast.error(result.error);
-              return;
+            setSavingName(true);
+            try {
+              const result = await updateDisplayName(name);
+              if (!result.ok) {
+                toast.error(result.error);
+                return;
+              }
+              toast.success("Name saved");
+              router.refresh();
+            } finally {
+              setSavingName(false);
             }
-            toast.success("Name saved");
-            router.refresh();
           }}
         >
-          Save name
+          {savingName ? "Saving…" : "Save name"}
         </Button>
       </Card>
 
@@ -68,19 +76,25 @@ export function SettingsManager({
             ))}
           </div>
           <Button
+            loading={addingCategory}
             disabled={!configured}
             onClick={async () => {
-              const result = await saveCategory(null, { name: categoryName, color });
-              if (!result.ok) {
-                toast.error(result.error);
-                return;
+              setAddingCategory(true);
+              try {
+                const result = await saveCategory(null, { name: categoryName, color });
+                if (!result.ok) {
+                  toast.error(result.error);
+                  return;
+                }
+                setCategoryName("");
+                toast.success("Category saved");
+                router.refresh();
+              } finally {
+                setAddingCategory(false);
               }
-              setCategoryName("");
-              toast.success("Category saved");
-              router.refresh();
             }}
           >
-            Add category
+            {addingCategory ? "Adding…" : "Add category"}
           </Button>
         </div>
         <div className="grid gap-2">
@@ -95,6 +109,7 @@ export function SettingsManager({
                 title="Delete this category?"
                 message="Content in this category stays. It will just have no category."
                 confirmLabel="Delete"
+                pendingLabel="Deleting…"
                 onConfirm={async () => {
                   const result = await deleteCategory(category.id);
                   if (!result.ok) {
@@ -139,6 +154,7 @@ export function SettingsManager({
           title="Restore this backup?"
           message="Imported content is added to your account. Current content stays where it is."
           confirmLabel="Restore"
+          pendingLabel="Restoring…"
           disabled={!configured || !restoreText}
           onConfirm={async () => {
             const result = await restoreBackup(restoreText);

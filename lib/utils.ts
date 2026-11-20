@@ -1,5 +1,5 @@
-import { format, parseISO } from "date-fns";
-import type { ChecklistItem } from "@/lib/types";
+import { addDays, format, parseISO } from "date-fns";
+import type { ChecklistItem, PlanHorizon } from "@/lib/types";
 
 export function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -99,6 +99,26 @@ export function todayISO() {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
+}
+
+export function visiblePrompt(value: string | null | undefined) {
+  const text = value?.trim() ?? "";
+  if (!text || text === "Not generated.") return "";
+  return text;
+}
+
+export function storedPrompt(value: string) {
+  return value.trim() || " ";
+}
+
+export function planItemCount(horizon: PlanHorizon) {
+  return horizon === "week" ? 7 : 12;
+}
+
+export function spreadPlanDates(startDate: string, horizon: PlanHorizon, count = planItemCount(horizon)) {
+  const start = /^\d{4}-\d{2}-\d{2}$/.test(startDate) ? parseISO(startDate) : new Date();
+  const step = horizon === "week" ? 1 : 2;
+  return Array.from({ length: count }, (_, index) => format(addDays(start, index * step), "yyyy-MM-dd"));
 }
 
 export function safeFileName(name: string) {

@@ -10,6 +10,7 @@ import {
   ImageIcon,
   LayoutDashboard,
   Library,
+  Lightbulb,
   Menu,
   PenLine,
   Search,
@@ -19,7 +20,7 @@ import {
 import { signOut } from "@/lib/actions/auth";
 import { BrandMark } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui";
+import { Button, SubmitButton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 const groups = [
@@ -28,6 +29,7 @@ const groups = [
     links: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/content", label: "Content", icon: Clapperboard },
+      { href: "/planner", label: "Planner", icon: Lightbulb },
       { href: "/calendar", label: "Calendar", icon: CalendarDays },
       { href: "/library", label: "Library", icon: Library },
     ],
@@ -165,7 +167,7 @@ export function AppShell({
           <ThemeToggle />
           {email ? (
             <form action={signOut}>
-              <Button variant="secondary" type="submit">Sign out</Button>
+              <SubmitButton variant="secondary" pendingLabel="Signing out…">Sign out</SubmitButton>
             </form>
           ) : (
             <Link href="/login" className="inline-flex h-11 items-center rounded-xl bg-accent px-3.5 text-sm font-semibold text-accent-ink shadow-[0_10px_24px_-12px_rgb(var(--glow)/0.9)]">

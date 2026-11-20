@@ -24,7 +24,7 @@ export function LoginForm({ next }: { next: string }) {
       <Field label="Email"><TextInput name="email" type="email" autoComplete="email" required /></Field>
       <Field label="Password"><TextInput name="password" type="password" autoComplete="current-password" required /></Field>
       <Notice state={state} />
-      <Button type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</Button>
+      <Button type="submit" loading={pending}>{pending ? "Signing in…" : "Sign in"}</Button>
     </form>
   );
 }
@@ -39,7 +39,7 @@ export function RegisterForm() {
         <TextInput name="password" type="password" autoComplete="new-password" required minLength={8} />
       </Field>
       <Notice state={state} />
-      <Button type="submit" disabled={pending}>{pending ? "Creating account…" : "Create account"}</Button>
+      <Button type="submit" loading={pending}>{pending ? "Creating account…" : "Create account"}</Button>
     </form>
   );
 }
@@ -50,7 +50,7 @@ export function ForgotForm() {
     <form action={action} className="grid gap-4">
       <Field label="Email"><TextInput name="email" type="email" autoComplete="email" required /></Field>
       <Notice state={state} />
-      <Button type="submit" disabled={pending}>{pending ? "Sending…" : "Send reset link"}</Button>
+      <Button type="submit" loading={pending}>{pending ? "Sending…" : "Send reset link"}</Button>
     </form>
   );
 }
@@ -63,7 +63,7 @@ export function UpdatePasswordForm() {
         <TextInput name="password" type="password" autoComplete="new-password" required minLength={8} />
       </Field>
       <Notice state={state} />
-      <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Update password"}</Button>
+      <Button type="submit" loading={pending}>{pending ? "Saving…" : "Update password"}</Button>
     </form>
   );
 }

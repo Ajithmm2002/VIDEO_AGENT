@@ -8,6 +8,7 @@ export function ConfirmButton({
   title,
   message,
   confirmLabel,
+  pendingLabel = "Working…",
   onConfirm,
   disabled,
 }: {
@@ -15,6 +16,7 @@ export function ConfirmButton({
   title: string;
   message: string;
   confirmLabel: string;
+  pendingLabel?: string;
   onConfirm: () => void | Promise<void>;
   disabled?: boolean;
 }) {
@@ -31,8 +33,8 @@ export function ConfirmButton({
 
   return (
     <>
-      <Button variant="danger" onClick={() => setOpen(true)} disabled={disabled}>
-        {label}
+      <Button variant="danger" onClick={() => setOpen(true)} disabled={disabled || pending} loading={pending}>
+        {pending ? pendingLabel : label}
       </Button>
       <dialog
         ref={dialogRef}
@@ -47,7 +49,7 @@ export function ConfirmButton({
           </Button>
           <Button
             variant="danger"
-            disabled={pending}
+            loading={pending}
             onClick={async () => {
               setPending(true);
               try {
@@ -58,7 +60,7 @@ export function ConfirmButton({
               }
             }}
           >
-            {pending ? "Working…" : confirmLabel}
+            {pending ? pendingLabel : confirmLabel}
           </Button>
         </div>
       </dialog>

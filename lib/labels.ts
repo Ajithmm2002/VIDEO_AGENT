@@ -1,4 +1,4 @@
-import type { Language, Platform, Status } from "@/lib/types";
+import type { IdeaTheme, Language, PlanHorizon, Platform, Status } from "@/lib/types";
 
 export const statusLabels: Record<Status, string> = {
   idea: "Idea",
@@ -39,5 +39,20 @@ export const statusColors: Record<Status, string> = {
 };
 
 export const googleFlowUrl = "https://labs.google/fx/tools/flow";
+
+export const ideaThemeLabels: Record<IdeaTheme, string> = {
+  comedy: "Comedy",
+  nostalgia: "Nostalgia",
+  tech: "Tech",
+  education: "Education",
+  food: "Food",
+  lifestyle: "Lifestyle",
+  family: "Family",
+};
+
+export const planHorizonLabels: Record<PlanHorizon, string> = {
+  week: "One week",
+  month: "One month",
+};
 
 export const draftStatuses: Status[] = ["idea", "planning", "in_progress"];

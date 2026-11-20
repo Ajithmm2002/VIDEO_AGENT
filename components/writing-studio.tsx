@@ -32,6 +32,7 @@ export function WritingStudio({
   const [tagCount, setTagCount] = useState(12);
   const [hashtagCount, setHashtagCount] = useState(15);
   const [pending, setPending] = useState(false);
+  const [saving, setSaving] = useState<"apply" | "create" | null>(null);
   const [provider, setProvider] = useState<"local" | "remote" | null>(null);
   const [titles, setTitles] = useState<string[]>(["", "", ""]);
   const [youtubeDescription, setYoutubeDescription] = useState("");
@@ -191,7 +192,7 @@ export function WritingStudio({
           <CountSelect label="Number of YouTube tags" value={tagCount} onChange={setTagCount} />
           <CountSelect label="Number of hashtags" value={hashtagCount} onChange={setHashtagCount} />
         </div>
-        <Button className="w-fit" onClick={onGenerate} disabled={pending}>
+        <Button className="w-fit" onClick={onGenerate} loading={pending} disabled={saving !== null}>
           {pending ? "Writing…" : "Generate draft"}
         </Button>
       </Card>
@@ -226,46 +227,58 @@ export function WritingStudio({
         </Field>
         <Button
           variant="secondary"
-          disabled={!configured}
+          loading={saving === "apply"}
+          disabled={!configured || pending || saving === "create"}
           onClick={async () => {
             if (!contentId) {
               toast.error("Choose a content item.");
               return;
             }
-            const result = await applyWriting(contentId, {
-              title: titles[0] || undefined,
-              youtube_description: youtubeDescription,
-              instagram_caption: instagramCaption,
-              description: youtubeDescription,
-              tags: tags.split(",").map((item) => item.trim()).filter(Boolean),
-              hashtags: hashtags.split(/[\s,]+/).map((item) => item.trim()).filter(Boolean),
-              script_notes: [hook, scriptOutline].filter(Boolean).join("\n\n"),
-            });
-            if (!result.ok) {
-              toast.error(result.error);
-              return;
+            setSaving("apply");
+            try {
+              const result = await applyWriting(contentId, {
+                title: titles[0] || undefined,
+                youtube_description: youtubeDescription,
+                instagram_caption: instagramCaption,
+                description: youtubeDescription,
+                tags: tags.split(",").map((item) => item.trim()).filter(Boolean),
+                hashtags: hashtags.split(/[\s,]+/).map((item) => item.trim()).filter(Boolean),
+                script_notes: [hook, scriptOutline].filter(Boolean).join("\n\n"),
+              });
+              if (!result.ok) {
+                toast.error(result.error);
+                return;
+              }
+              toast.success("Draft applied");
+              clearDraft("writing-draft");
+              router.push(`/content/${contentId}`);
+            } finally {
+              setSaving(null);
             }
-            toast.success("Draft applied");
-            clearDraft("writing-draft");
-            router.push(`/content/${contentId}`);
           }}
         >
-          Update content
+          {saving === "apply" ? "Updating…" : "Update content"}
         </Button>
         <Button
-          disabled={!configured}
+          loading={saving === "create"}
+          disabled={!configured || pending || saving === "apply"}
           onClick={async () => {
-            const result = await createFromWriting(payload());
-            if (!result.ok || !result.id) {
-              toast.error(result.ok ? "Could not create content." : result.error);
-              return;
+            setSaving("create");
+            try {
+              const result = await createFromWriting(payload());
+              if (!result.ok || !result.id) {
+                toast.error(result.ok ? "Could not create content." : result.error);
+                return;
+              }
+              toast.success("Content created");
+              clearDraft("writing-draft");
+              router.push(`/content/${result.id}`);
+            } finally {
+              setSaving(null);
             }
-            toast.success("Content created");
-            clearDraft("writing-draft");
-            router.push(`/content/${result.id}`);
           }}
         >
-          Save as new content
+          {saving === "create" ? "Saving…" : "Save as new content"}
         </Button>
       </Card>
     </div>

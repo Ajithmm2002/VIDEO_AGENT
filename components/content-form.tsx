@@ -106,6 +106,7 @@ export function ContentForm({
   const [file, setFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [busy, setBusy] = useState<"duplicate" | "template" | null>(null);
   const [collectionId, setCollectionId] = useState("");
   const [tagCount, setTagCount] = useState(12);
   const [hashtagCount, setHashtagCount] = useState(15);
@@ -317,7 +318,7 @@ export function ContentForm({
           <CountSelect label="Number of YouTube tags" value={tagCount} onChange={setTagCount} />
           <CountSelect label="Number of hashtags" value={hashtagCount} onChange={setHashtagCount} />
         </div>
-        <Button onClick={onGenerateCopy} disabled={generating}>
+        <Button onClick={onGenerateCopy} loading={generating} disabled={pending || busy !== null}>
           {generating ? "Writing…" : "Generate description and tags"}
         </Button>
       </Card>
@@ -540,44 +541,60 @@ export function ContentForm({
       </Card>
 
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={pending || !configured}>
+        <Button type="submit" loading={pending} disabled={!configured || generating || busy !== null}>
           {pending ? "Saving…" : "Save content"}
         </Button>
         {content ? (
           <>
             <Button
               variant="secondary"
+              loading={busy === "duplicate"}
+              disabled={pending || generating || busy === "template"}
               onClick={async () => {
-                const result = await duplicateContent(content.id);
-                if (!result.ok || !result.id) {
-                  toast.error(result.ok ? "Could not duplicate." : result.error);
-                  return;
+                setBusy("duplicate");
+                try {
+                  const result = await duplicateContent(content.id);
+                  if (!result.ok || !result.id) {
+                    toast.error(result.ok ? "Could not duplicate." : result.error);
+                    return;
+                  }
+                  toast.success("Copy created");
+                  router.push(`/content/${result.id}`);
+                } finally {
+                  setBusy(null);
                 }
-                toast.success("Copy created");
-                router.push(`/content/${result.id}`);
               }}
             >
-              Duplicate
+              {busy === "duplicate" ? "Duplicating…" : "Duplicate"}
             </Button>
             <Button
               variant="secondary"
+              loading={busy === "template"}
+              disabled={pending || generating || busy === "duplicate"}
               onClick={async () => {
-                const result = await saveAsTemplate(content.id);
-                if (!result.ok || !result.id) {
-                  toast.error(result.ok ? "Could not save a template." : result.error);
-                  return;
+                setBusy("template");
+                try {
+                  const result = await saveAsTemplate(content.id);
+                  if (!result.ok || !result.id) {
+                    toast.error(result.ok ? "Could not save a template." : result.error);
+                    return;
+                  }
+                  toast.success("Template saved");
+                  router.push(`/content/${result.id}`);
+                } finally {
+                  setBusy(null);
                 }
-                toast.success("Template saved");
-                router.push(`/content/${result.id}`);
               }}
             >
-              Save as template
+              {busy === "template" ? "Saving template…" : "Save as template"}
             </Button>
             <ConfirmButton
               label="Delete"
               title="Delete this content?"
               message="This removes the content item and its thumbnail file. Saved prompts stay in your account."
               confirmLabel="Delete"
+              pendingLabel="Deleting…"
+              disabled={pending || generating || busy !== null}
               onConfirm={async () => {
                 const result = await deleteContent(content.id);
                 if (!result.ok) {

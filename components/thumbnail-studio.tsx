@@ -33,6 +33,7 @@ export function ThumbnailStudio({
   const [wantLandscape, setWantLandscape] = useState(true);
   const [wantVertical, setWantVertical] = useState(true);
   const [pending, setPending] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
 
   useEffect(() => {
@@ -106,14 +107,19 @@ export function ThumbnailStudio({
   }
 
   async function onSave() {
-    const result = await savePrompt({ topic, language, landscape, vertical, contentId: contentId || null });
-    if (!result.ok) {
-      toast.error(result.error);
-      return;
+    setSaving(true);
+    try {
+      const result = await savePrompt({ topic, language, landscape, vertical, contentId: contentId || null });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(contentId ? "Prompt saved on the content item" : "Prompt saved");
+      clearDraft("thumbnail-draft");
+      router.refresh();
+    } finally {
+      setSaving(false);
     }
-    toast.success(contentId ? "Prompt saved on the content item" : "Prompt saved");
-    clearDraft("thumbnail-draft");
-    router.refresh();
   }
 
   return (
@@ -159,7 +165,7 @@ export function ThumbnailStudio({
           <p className="text-xs leading-5 text-muted">Unchecked formats are left as they are. Generating one format is faster than generating both.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onGenerate} disabled={pending || (!wantLandscape && !wantVertical)}>
+          <Button onClick={onGenerate} loading={pending} disabled={saving || (!wantLandscape && !wantVertical)}>
             {pending ? "Writing prompt…" : wantLandscape && wantVertical ? "Generate both prompts" : wantLandscape ? "Generate 16:9 prompt" : wantVertical ? "Generate 9:16 prompt" : "Generate prompts"}
           </Button>
           <a
@@ -201,7 +207,9 @@ export function ThumbnailStudio({
             ))}
           </SelectInput>
         </Field>
-        <Button onClick={onSave} disabled={!configured}>Save prompt</Button>
+        <Button onClick={onSave} loading={saving} disabled={!configured || pending}>
+          {saving ? "Saving…" : "Save prompt"}
+        </Button>
       </Card>
       <p className="text-sm text-muted">
         This app does not generate images. Copy a prompt and open <Link className="underline" href={googleFlowUrl} target="_blank">Google Flow</Link>.

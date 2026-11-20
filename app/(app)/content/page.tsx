@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentActions } from "@/components/content-actions";
 import { LanguageBadge, PlatformBadge, StatusBadge } from "@/components/badges";
-import { Button, Card, EmptyState, PageHeader, SelectInput, TextInput } from "@/components/ui";
+import { Card, EmptyState, PageHeader, SelectInput, SubmitButton, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
 import { listCategories, listContents, type ContentFilters } from "@/lib/queries";
 import { checklistProgress, formatDate } from "@/lib/utils";
@@ -69,7 +69,7 @@ export default async function ContentPage({
             <option value="only">Templates only</option>
             <option value="all">Content and templates</option>
           </SelectInput>
-          <Button type="submit" className="w-fit">Apply</Button>
+          <SubmitButton className="w-fit" pendingLabel="Applying…">Apply</SubmitButton>
         </form>
       </Card>
       <div className="grid gap-3">

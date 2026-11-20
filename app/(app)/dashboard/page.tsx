@@ -76,12 +76,20 @@ export default async function DashboardPage() {
             title="Start with one idea"
             body="Write a topic, generate a thumbnail prompt, and keep the draft in this workspace. Everything you save stays on your account."
             action={
-              <Link
-                href="/content/new"
-                className="inline-flex items-center rounded-xl bg-accent px-3.5 py-2 text-sm font-semibold text-accent-ink"
-              >
-                Create the first item
-              </Link>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Link
+                  href="/planner"
+                  className="inline-flex items-center rounded-xl bg-accent px-3.5 py-2 text-sm font-semibold text-accent-ink"
+                >
+                  Plan a week of ideas
+                </Link>
+                <Link
+                  href="/content/new"
+                  className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold"
+                >
+                  Create one item
+                </Link>
+              </div>
             }
           />
         </Card>

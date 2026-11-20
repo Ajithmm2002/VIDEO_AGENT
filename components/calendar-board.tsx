@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { updatePlannedDate } from "@/lib/actions/content";
+import { Loader2 } from "lucide-react";
 import { StatusBadge } from "@/components/badges";
 import { TextInput } from "@/components/ui";
 import type { Content } from "@/lib/types";
@@ -39,7 +40,13 @@ export function CalendarBoard({
   }
 
   return (
-    <div className={cn("grid gap-4", pending && "opacity-70")}>
+    <div className={cn("grid gap-4", pending && "pointer-events-none opacity-70")} aria-busy={pending || undefined}>
+      {pending ? (
+        <p className="flex items-center gap-2 text-sm font-medium text-accent">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+          Updating calendar…
+        </p>
+      ) : null}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-7">
         {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
           <div key={label} className="hidden px-2 text-xs font-medium text-muted sm:block">{label}</div>

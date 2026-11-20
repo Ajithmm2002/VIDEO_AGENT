@@ -1,6 +1,7 @@
-import type { Language, Platform } from "@/lib/types";
+import type { ContentPlan, Language, PlanHorizon, Platform } from "@/lib/types";
 import { remoteAiEnabled } from "@/lib/env";
 import {
+  localContentPlan,
   localThumbnail,
   localTopicCopy,
   localWriting,
@@ -10,7 +11,8 @@ import {
   type TopicCopy,
   type WritingDraft,
 } from "@/lib/ai/local";
-import { remoteThumbnail, remoteTopicCopy, remoteWriting } from "@/lib/ai/remote";
+import { remoteContentPlan, remoteThumbnail, remoteTopicCopy, remoteWriting } from "@/lib/ai/remote";
+import { planItemCount, spreadPlanDates } from "@/lib/utils";
 
 export type ThumbnailResult = Omit<ThumbnailDraft, "provider"> & { provider: "local" | "remote" };
 export type WritingResult = Omit<WritingDraft, "provider"> & { provider: "local" | "remote" };
@@ -95,4 +97,43 @@ export async function generateTopicCopy(input: {
   } catch {
     return local;
   }
+}
+
+export async function generateContentPlan(input: {
+  language: Language;
+  platform: Platform;
+  themes: string[];
+  description: string;
+  horizon: PlanHorizon;
+  startDate: string;
+}): Promise<ContentPlan> {
+  const count = planItemCount(input.horizon);
+  const dates = spreadPlanDates(input.startDate, input.horizon, count);
+  const local = localContentPlan({ ...input, count });
+  let items = local.items;
+  let provider: "local" | "remote" = "local";
+  if (remoteAiEnabled()) {
+    try {
+      const remote = await remoteContentPlan({ ...input, count });
+      const merged = [...remote.items];
+      if (merged.length < count) {
+        for (const extra of local.items) {
+          if (merged.length >= count) break;
+          if (merged.some((item) => item.title.toLowerCase() === extra.title.toLowerCase())) continue;
+          merged.push(extra);
+        }
+      }
+      items = merged.slice(0, count);
+      provider = "remote";
+    } catch {
+      items = local.items;
+    }
+  }
+  return {
+    provider,
+    items: items.map((item, index) => ({
+      ...item,
+      planned_date: dates[index] ?? dates[dates.length - 1],
+    })),
+  };
 }

@@ -1,6 +1,8 @@
 export const platforms = ["youtube", "instagram", "both"] as const;
 export const languages = ["en", "ml"] as const;
 export const tagCountOptions = [5, 8, 10, 12, 15, 20, 25, 30] as const;
+export const planHorizons = ["week", "month"] as const;
+export const ideaThemes = ["comedy", "nostalgia", "tech", "education", "food", "lifestyle", "family"] as const;
 export const statuses = [
   "idea",
   "planning",
@@ -13,6 +15,8 @@ export const statuses = [
 export type Platform = (typeof platforms)[number];
 export type Language = (typeof languages)[number];
 export type Status = (typeof statuses)[number];
+export type PlanHorizon = (typeof planHorizons)[number];
+export type IdeaTheme = (typeof ideaThemes)[number];
 
 export type ChecklistItem = {
   id: string;
@@ -125,4 +129,16 @@ export type ActionResult = {
 export type ContentOption = {
   id: string;
   title: string;
+};
+
+export type PlanIdea = {
+  title: string;
+  topic: string;
+  description: string;
+  planned_date: string;
+};
+
+export type ContentPlan = {
+  provider: "local" | "remote";
+  items: PlanIdea[];
 };

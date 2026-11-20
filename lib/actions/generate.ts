@@ -1,13 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
+import { generateContentPlan, generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
 import { isSupabaseConfigured } from "@/lib/env";
 import { requireSession } from "@/lib/session";
-import type { ActionResult, ContentInput, Language, Platform } from "@/lib/types";
+import type { ActionResult, ContentInput, Language, PlanHorizon, Platform } from "@/lib/types";
+import { defaultChecklist, storedPrompt } from "@/lib/utils";
 import {
   contentSchema,
   firstIssue,
+  planRequestSchema,
+  planSaveSchema,
   thumbnailRequestSchema,
   topicCopySchema,
   writingApplySchema,
@@ -101,9 +104,9 @@ export async function savePrompt(input: {
   contentId: string | null;
 }): Promise<ActionResult> {
   const topic = input.topic.trim();
-  const landscape = input.landscape.trim() || "Not generated.";
-  const vertical = input.vertical.trim() || "Not generated.";
-  if (!topic || (landscape === "Not generated." && vertical === "Not generated.")) {
+  const landscape = storedPrompt(input.landscape);
+  const vertical = storedPrompt(input.vertical);
+  if (!topic || (landscape.trim() === "" && vertical.trim() === "")) {
     return { ok: false, error: "Generate a prompt before saving." };
   }
   if (landscape.length > 20000 || vertical.length > 20000) {
@@ -129,8 +132,8 @@ export async function savePrompt(input: {
 
   if (input.contentId) {
     const combined = [
-      landscape !== "Not generated." ? `Landscape (16:9)\n${landscape}` : "",
-      vertical !== "Not generated." ? `Vertical (9:16)\n${vertical}` : "",
+      landscape.trim() ? `Landscape (16:9)\n${landscape.trim()}` : "",
+      vertical.trim() ? `Vertical (9:16)\n${vertical.trim()}` : "",
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -178,4 +181,81 @@ export async function applyWriting(
   if (error) return { ok: false, error: "Could not update that content." };
   revalidatePath("/", "layout");
   return { ok: true, id: contentId, message: "Draft applied." };
+}
+
+export async function generatePlan(input: {
+  language: Language;
+  platform: Platform;
+  themes: string[];
+  description: string;
+  horizon: PlanHorizon;
+  startDate: string;
+}) {
+  const parsed = planRequestSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };
+  const blocked = await generationAllowed();
+  if (blocked) return blocked;
+  try {
+    const result = await generateContentPlan(parsed.data);
+    return { ok: true as const, result };
+  } catch (error) {
+    return { ok: false as const, error: aiError(error, "Could not build a content plan. Check the API settings.") };
+  }
+}
+
+export async function saveContentPlan(input: {
+  language: Language;
+  platform: Platform;
+  category_id: string | null;
+  items: Array<{ title: string; topic: string; description: string; planned_date: string }>;
+}): Promise<ActionResult> {
+  const parsed = planSaveSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  const session = await requireSession();
+  if (!session.ok) return session;
+
+  if (parsed.data.category_id) {
+    const { data: category } = await session.supabase
+      .from("categories")
+      .select("id")
+      .eq("id", parsed.data.category_id)
+      .maybeSingle();
+    if (!category) return { ok: false, error: "That category is not available." };
+  }
+
+  const rows = [];
+  for (const item of parsed.data.items) {
+    const payload = contentSchema.safeParse({
+      title: item.title,
+      topic: item.topic || item.title,
+      platform: parsed.data.platform,
+      language: parsed.data.language,
+      status: "planning",
+      category_id: parsed.data.category_id,
+      description: item.description || null,
+      youtube_description: item.description || null,
+      instagram_caption: null,
+      tags: [],
+      hashtags: [],
+      script_notes: null,
+      thumbnail_prompt: null,
+      video_url: null,
+      published_url: null,
+      planned_date: item.planned_date,
+      views: null,
+      likes: null,
+      comments: null,
+      notes: null,
+      reference_links: [],
+      checklist: defaultChecklist(),
+      is_template: false,
+    });
+    if (!payload.success) return { ok: false, error: firstIssue(payload.error) };
+    rows.push({ ...payload.data, user_id: session.user.id });
+  }
+
+  const { error } = await session.supabase.from("contents").insert(rows);
+  if (error) return { ok: false, error: "Could not save that plan. Try fewer ideas, then save again." };
+  revalidatePath("/", "layout");
+  return { ok: true, message: `Saved ${rows.length} ideas to your calendar.` };
 }

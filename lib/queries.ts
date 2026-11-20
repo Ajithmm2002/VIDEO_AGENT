@@ -43,7 +43,7 @@ export async function listCategories() {
   const supabase = await client();
   if (!supabase) return [];
   const { data, error } = await supabase.from("categories").select("id, name, color").order("name");
-  if (error) throw new Error("Could not load categories.");
+  if (error) return [];
   return (data ?? []).flatMap((row) => {
     const category = asCategory(row);
     return category ? [category] : [];

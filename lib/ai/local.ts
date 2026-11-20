@@ -1,4 +1,4 @@
-import type { Language, Platform } from "@/lib/types";
+import type { ContentPlan, Language, Platform } from "@/lib/types";
 
 export type ThumbnailDraft = {
   landscape: string;
@@ -328,4 +328,70 @@ export function localWriting(input: {
     scriptOutline: scriptOutline(topic, tone, false),
     provider: "local",
   };
+}
+
+const englishAngles = [
+  ["the first 10 seconds", "Open on the exact moment people recognise, then explain why it sticks."],
+  ["three kinds of people", "A funny or honest split of how different people handle the same situation."],
+  ["then vs now", "Compare how this used to feel with how it feels today."],
+  ["what nobody says out loud", "Name the small detail everyone notices and nobody posts."],
+  ["a tiny how-to", "One practical takeaway the viewer can use the same day."],
+  ["behind the camera", "Show the mess, the wait, or the real reaction around the idea."],
+  ["a comment question", "End with a question people will actually answer."],
+  ["the wrong way first", "Start with the common mistake, then flip it."],
+  ["a 60-second version", "Keep it tight: hook, one example, one closer."],
+  ["family edition", "Tell it through the people in the room, not a lecture."],
+  ["phone-in-hand version", "Make it work as a Reel or Short: one visual, one line."],
+  ["the follow-up", "Answer the next question this topic always creates."],
+];
+
+const malayalamAngles = [
+  ["ആദ്യ 10 സെക്കൻഡ്", "ആളുകൾ തിരിച്ചറിയുന്ന നിമിഷത്തിൽ തുടങ്ങി, അത് എന്തുകൊണ്ട് ഓർമ്മയിൽ നിൽക്കുന്നു എന്ന് പറയുക."],
+  ["മൂന്ന് തരം ആളുകൾ", "ഒരേ സാഹചര്യത്തിൽ വ്യത്യസ്ത ആളുകൾ എങ്ങനെ പ്രതികരിക്കുന്നു എന്ന് കാണിക്കുക."],
+  ["അന്നും ഇന്നും", "പഴയ അനുഭവവും ഇന്നത്തെ അനുഭവവും അടുപ്പിച്ച് വയ്ക്കുക."],
+  ["ആരും പറയാത്ത കാര്യം", "എല്ലാവരും ശ്രദ്ധിക്കുന്ന, പക്ഷേ പോസ്റ്റ് ചെയ്യാത്ത ചെറിയ വിശദാംശം."],
+  ["ഒരു ചെറിയ ടിപ്", "ഇന്ന് തന്നെ ഉപയോഗിക്കാവുന്ന ഒരു പ്രായോഗിക കാര്യം."],
+  ["ക്യാമറയ്ക്ക് പിന്നിൽ", "യഥാർത്ഥ പ്രതികരണവും കാത്തിരിപ്പും കാണിക്കുക."],
+  ["കമന്റ് ചോദ്യം", "ആളുകൾ ഉത്തരം പറയുന്ന ഒരു ചോദ്യത്തിൽ അവസാനിപ്പിക്കുക."],
+  ["തെറ്റായ വഴി ആദ്യം", "സാധാരണ തെറ്റ് കാണിച്ചിട്ട് ശരിയായത് പറയുക."],
+  ["60 സെക്കൻഡ് വേർഷൻ", "ഹുക്ക്, ഒരു ഉദാഹരണം, ഒരു ക്ലോസർ."],
+  ["കുടുംബ എഡിഷൻ", "മുറിയിലുള്ള ആളുകളിലൂടെ കഥ പറയുക."],
+  ["റീൽ വേർഷൻ", "ഒരു വിഷ്വലും ഒരു വരിയും മതി."],
+  ["അടുത്ത ചോദ്യം", "ഈ വിഷയം ഉണ്ടാക്കുന്ന അടുത്ത സംശയത്തിന് ഉത്തരം."],
+];
+
+export function localContentPlan(input: {
+  language: Language;
+  platform: Platform;
+  themes: string[];
+  description: string;
+  count: number;
+}): Omit<ContentPlan, "items"> & { items: Array<Omit<ContentPlan["items"][number], "planned_date">> } {
+  const brief = input.description.trim() || input.themes[0] || "everyday content";
+  const malayalam = input.language === "ml" || containsMalayalam(brief) || input.themes.some((theme) => containsMalayalam(theme));
+  const themes = input.themes.length ? input.themes : malayalam ? ["ദൈനംദിനം"] : ["everyday"];
+  const angles = malayalam ? malayalamAngles : englishAngles;
+  const items = Array.from({ length: input.count }, (_, index) => {
+    const theme = themes[index % themes.length];
+    const [angle, note] = angles[index % angles.length];
+    const title = malayalam
+      ? `${brief}: ${angle}`.slice(0, 200)
+      : `${brief}: ${angle}`.slice(0, 200);
+    const topic = `${theme} · ${brief}`.slice(0, 500);
+    const description = malayalam
+      ? [
+          `✨ ${brief}`,
+          `🎭 ${theme} ആംഗിളിൽ: ${angle}.`,
+          `📌 ${note}`,
+          input.platform === "instagram" ? "📱 റീൽ ആയി ചുരുക്കി തുടങ്ങാം." : "🎥 യൂട്യൂബ് അല്ലെങ്കിൽ ഷോർട്സ് ആയി പ്ലാൻ ചെയ്യാം.",
+        ].join("\n")
+      : [
+          `✨ ${brief}`,
+          `🎭 ${theme} angle: ${angle}.`,
+          `📌 ${note}`,
+          input.platform === "instagram" ? "📱 Keep this short enough for a Reel." : "🎥 Plan it as a video or a Short.",
+        ].join("\n");
+    return { title, topic, description };
+  });
+  return { provider: "local", items };
 }

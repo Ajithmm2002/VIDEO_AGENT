@@ -1,4 +1,4 @@
-import type { Language, Platform } from "@/lib/types";
+import type { ContentPlan, Language, Platform } from "@/lib/types";
 import {
   localThumbnail,
   toEnglishHashtags,
@@ -253,4 +253,46 @@ export async function remoteTopicCopy(input: {
     hashtags: toEnglishHashtags(stringList(data.hashtags), input.hashtagCount),
     provider: "remote",
   };
+}
+
+export async function remoteContentPlan(input: {
+  language: Language;
+  platform: Platform;
+  themes: string[];
+  description: string;
+  count: number;
+}): Promise<Omit<ContentPlan, "items"> & { items: Array<Omit<ContentPlan["items"][number], "planned_date">> }> {
+  const data = await complete(
+    `You plan a personal YouTube and Instagram calendar for one creator. Reply with JSON only: {"items":[{"title":string,"topic":string,"description":string}]}.
+
+Rules:
+- Return exactly ${input.count} items. No extra keys.
+- Titles, topics, and descriptions in the requested language (Malayalam or English). Match the brief.
+- Mix the selected categories. Each idea must feel related to the brief, not a generic filler list.
+- Vary the format: story, reaction, list, then-vs-now, how-to, family moment, short Reel, follow-up question.
+- title: under 90 characters, specific, no numbering.
+- topic: a short phrase for the creator's notes.
+- description: 2-4 short lines with a few relevant emojis. Say what the video is, not "this is a great video".
+- Do not copy the same title twice.`,
+    `Language: ${input.language}
+Platform: ${input.platform}
+Categories: ${input.themes.join(", ") || "(none)"}
+Brief: ${input.description || "(none)"}
+Items wanted: ${input.count}`,
+    { maxOutputTokens: input.count > 8 ? 3500 : 2200, timeoutMs: 45000, temperature: 0.8 },
+  );
+  const raw = Array.isArray(data.items) ? data.items : [];
+  const items = raw.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const row = item as Record<string, unknown>;
+    const title = typeof row.title === "string" ? row.title.trim() : "";
+    const topic = typeof row.topic === "string" ? row.topic.trim() : title;
+    const description = typeof row.description === "string" ? row.description.trim() : "";
+    if (!title || !description) return [];
+    return [{ title: title.slice(0, 200), topic: (topic || title).slice(0, 500), description: description.slice(0, 8000) }];
+  });
+  if (items.length < Math.min(3, input.count)) {
+    throw new Error("The connected AI provider returned an incomplete plan.");
+  }
+  return { provider: "remote", items: items.slice(0, input.count) };
 }

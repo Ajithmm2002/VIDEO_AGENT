@@ -17,23 +17,29 @@ export function HashtagManager({ collections, configured }: { collections: Hasht
   const [platform, setPlatform] = useState<Platform | "">("");
   const [hashtags, setHashtags] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   async function onSave() {
-    const result = await saveHashtagCollection(editing, {
-      name,
-      platform: platform || null,
-      hashtags: hashtags.split(/[\n,]/).map((item) => item.trim()).filter(Boolean),
-    });
-    if (!result.ok) {
-      toast.error(result.error);
-      return;
+    setSaving(true);
+    try {
+      const result = await saveHashtagCollection(editing, {
+        name,
+        platform: platform || null,
+        hashtags: hashtags.split(/[\n,]/).map((item) => item.trim()).filter(Boolean),
+      });
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Collection saved");
+      setName("");
+      setPlatform("");
+      setHashtags("");
+      setEditing(null);
+      router.refresh();
+    } finally {
+      setSaving(false);
     }
-    toast.success("Collection saved");
-    setName("");
-    setPlatform("");
-    setHashtags("");
-    setEditing(null);
-    router.refresh();
   }
 
   return (
@@ -52,7 +58,9 @@ export function HashtagManager({ collections, configured }: { collections: Hasht
         <Field label="Hashtags" hint="One per line, or separated by commas.">
           <TextArea value={hashtags} onChange={(event) => setHashtags(event.target.value)} />
         </Field>
-        <Button onClick={onSave} disabled={!configured}>Save collection</Button>
+        <Button onClick={onSave} loading={saving} disabled={!configured}>
+          {saving ? "Saving…" : "Save collection"}
+        </Button>
       </Card>
       <div className="grid gap-3">
         {collections.length ? collections.map((collection) => (
@@ -80,6 +88,7 @@ export function HashtagManager({ collections, configured }: { collections: Hasht
                   title="Delete this collection?"
                   message="Content that already uses these hashtags will keep its own copy."
                   confirmLabel="Delete"
+                  pendingLabel="Deleting…"
                   onConfirm={async () => {
                     const result = await deleteHashtagCollection(collection.id);
                     if (!result.ok) {
