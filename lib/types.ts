@@ -1,0 +1,127 @@
+export const platforms = ["youtube", "instagram", "both"] as const;
+export const languages = ["en", "ml"] as const;
+export const statuses = [
+  "idea",
+  "planning",
+  "in_progress",
+  "ready",
+  "scheduled",
+  "published",
+] as const;
+
+export type Platform = (typeof platforms)[number];
+export type Language = (typeof languages)[number];
+export type Status = (typeof statuses)[number];
+
+export type ChecklistItem = {
+  id: string;
+  label: string;
+  done: boolean;
+};
+
+export type ReferenceLink = {
+  id: string;
+  title: string;
+  url: string;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  color: string | null;
+};
+
+export type Content = {
+  id: string;
+  user_id: string;
+  category_id: string | null;
+  category: Category | null;
+  title: string;
+  topic: string | null;
+  platform: Platform;
+  language: Language;
+  description: string | null;
+  youtube_description: string | null;
+  instagram_caption: string | null;
+  tags: string[];
+  hashtags: string[];
+  script_notes: string | null;
+  thumbnail_prompt: string | null;
+  video_url: string | null;
+  published_url: string | null;
+  thumbnail_path: string | null;
+  planned_date: string | null;
+  status: Status;
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  notes: string | null;
+  reference_links: ReferenceLink[];
+  checklist: ChecklistItem[];
+  is_template: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ContentInput = {
+  title: string;
+  topic: string | null;
+  platform: Platform;
+  language: Language;
+  status: Status;
+  category_id: string | null;
+  description: string | null;
+  youtube_description: string | null;
+  instagram_caption: string | null;
+  tags: string[];
+  hashtags: string[];
+  script_notes: string | null;
+  thumbnail_prompt: string | null;
+  video_url: string | null;
+  published_url: string | null;
+  planned_date: string | null;
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  notes: string | null;
+  reference_links: ReferenceLink[];
+  checklist: ChecklistItem[];
+  is_template: boolean;
+};
+
+export type HashtagCollection = {
+  id: string;
+  name: string;
+  platform: Platform | null;
+  hashtags: string[];
+  created_at: string;
+};
+
+export type ThumbnailPromptRecord = {
+  id: string;
+  content_id: string | null;
+  topic: string;
+  language: Language;
+  landscape_prompt: string;
+  vertical_prompt: string;
+  created_at: string;
+};
+
+export type Profile = {
+  id: string;
+  display_name: string | null;
+};
+
+export type ActionResult = {
+  ok: true;
+  message?: string;
+  id?: string;
+} | {
+  ok: false;
+  error: string;
+};
+
+export type ContentOption = {
+  id: string;
+  title: string;
+};
