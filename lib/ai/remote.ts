@@ -148,6 +148,7 @@ export async function remoteThumbnail(input: {
   styleNotes?: string;
   landscape?: boolean;
   vertical?: boolean;
+  title?: string;
 }): Promise<RemoteThumbnail> {
   const wantLandscape = input.landscape !== false;
   const wantVertical = input.vertical !== false;
@@ -157,8 +158,8 @@ export async function remoteThumbnail(input: {
     wantVertical ? '"vertical": string' : "",
   ].filter(Boolean);
   const data = await complete(
-    `Write Google Flow image prompts. JSON only: {${keys.join(", ")}}. English instructions, under 110 words each. Include subject, background, lighting, composition, colours, on-image text, and style. If the topic is Malayalam, quote that exact text on the image. Do not describe an image you generated.`,
-    `Topic: ${input.topic}\nLanguage: ${input.language}\nStyle notes: ${input.styleNotes || "none"}\nFormats: ${[wantLandscape ? "16:9 YouTube" : "", wantVertical ? "9:16 Reels/Shorts" : ""].filter(Boolean).join(", ")}`,
+    `Write Google Flow image prompts. JSON only: {${keys.join(", ")}}. English instructions, under 110 words each. Include subject, background, lighting, composition, colours, on-image text, and style. Quote the on-image title exactly. If that title is Malayalam, do not translate it. Do not describe an image you generated.`,
+    `Topic: ${input.topic}\nOn-image title: ${input.title?.trim() || input.topic}\nLanguage: ${input.language}\nStyle notes: ${input.styleNotes || "none"}\nFormats: ${[wantLandscape ? "16:9 YouTube" : "", wantVertical ? "9:16 Reels/Shorts" : ""].filter(Boolean).join(", ")}`,
     {
       maxOutputTokens: wantLandscape && wantVertical ? 1600 : 900,
       timeoutMs: wantLandscape && wantVertical ? 20000 : 12000,
@@ -306,9 +307,11 @@ export async function remoteContentPlan(input: {
 Rules:
 - Return exactly ${input.count} items. No extra keys.
 - Language for every field: the requested language (Malayalam or English).
-- title: a specific video title, under 90 characters, no numbering. This is the idea.
+- title: a finished YouTube or Instagram title the creator can paste as-is. Under 80 characters. Name the actual topic from the brief (for example Arduino, not the word "tech").
+- Never write titles like "comedy: ...", "tech: ...", "aurduino: the first 10 seconds", "Idea 1", or a topic plus ": the first 10 seconds".
+- Good titles sound like: "Don't start Arduino like this", "Arduino before you write any code", "വീട്ടിൽ കറന്റ് പോയാൽ ഉണ്ടാകുന്ന 3 തരം ആളുകൾ".
 - topic: a short note for the creator.
-- description: how to execute the video. Shot order, what to film, props, and where to stand. 4-7 short lines. Not a synopsis.
+- description: how to execute the video. Shot order, what to film, props, and where to stand. 4-7 short lines. Never write "tech angle:" or "comedy angle:". Never quote a placeholder title.
 - script: the spoken audio script for a ${input.durationSeconds}-second video, about ${words} words, with times like [0:00]. What they say out loud.
 - Mix the selected categories. Related to the brief. Do not repeat titles.`,
     `Language: ${input.language}
@@ -334,7 +337,7 @@ Spoken-word target per script: ${words}`,
     const script = typeof row.script === "string" ? row.script.trim() : "";
     if (!title || !description) return [];
     return [{
-      title: title.slice(0, 200),
+      title: title.slice(0, 80),
       topic: (topic || title).slice(0, 500),
       description: description.slice(0, 8000),
       script: (script || localAudioScript({

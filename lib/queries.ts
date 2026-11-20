@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { asCategory, asCollection, asContent, asPrompt } from "@/lib/records";
-import type { Content, Status } from "@/lib/types";
+import type { Content, ContentOption, Status } from "@/lib/types";
 import { statuses } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -61,20 +61,26 @@ export async function listCollections() {
   return (data ?? []).map(asCollection);
 }
 
-export async function listContentOptions() {
+export async function listContentOptions(): Promise<ContentOption[]> {
   const supabase = await client();
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("contents")
-    .select("id, title")
+    .select("id, title, language, topic")
     .eq("is_template", false)
     .order("updated_at", { ascending: false })
     .limit(100);
   if (error) throw new Error("Could not load content.");
   return (data ?? []).flatMap((row) => {
-    const record = row as { id?: string; title?: string };
+    const record = row as { id?: string; title?: string; language?: string; topic?: string | null };
     if (!record.id || !record.title) return [];
-    return [{ id: record.id, title: record.title }];
+    const language = record.language === "ml" ? "ml" as const : record.language === "en" ? "en" as const : undefined;
+    return [{
+      id: record.id,
+      title: record.title,
+      language,
+      topic: record.topic ?? null,
+    }];
   });
 }
 

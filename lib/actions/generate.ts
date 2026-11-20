@@ -41,6 +41,7 @@ export async function generateThumbnails(input: {
   styleNotes?: string;
   landscape?: boolean;
   vertical?: boolean;
+  title?: string;
 }) {
   const parsed = thumbnailRequestSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: firstIssue(parsed.error) };

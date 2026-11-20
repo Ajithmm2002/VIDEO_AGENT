@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { containsMalayalam, hashtagsFor, localAudioScript, localContentPlan, localThumbnail, localTopicCopy, localWriting } from "@/lib/ai/local";
+import { containsMalayalam, hashtagsFor, isWeakHowTo, isWeakVideoTitle, localAudioScript, localContentPlan, localThumbnail, localTopicCopy, localWriting, polishPlanItem } from "@/lib/ai/local";
 
 describe("thumbnail prompts", () => {
   it("builds landscape and vertical prompts with the required sections", () => {
@@ -34,6 +34,17 @@ describe("thumbnail prompts", () => {
     expect(result.landscape).toContain(`"${topic}"`);
     expect(result.vertical).toContain(`"${topic}"`);
     expect(result.landscape).toContain("Do not translate it.");
+  });
+
+  it("puts a selected project title on the thumbnail", () => {
+    const result = localThumbnail({
+      topic: "Arduino board on a desk",
+      title: "Don't start Arduino like this",
+      language: "en",
+    });
+    expect(result.landscape).toContain("Don't start Arduino like this");
+    expect(result.vertical).toContain("Don't start Arduino like this");
+    expect(result.landscape).toContain("Arduino board on a desk");
   });
 });
 
@@ -89,6 +100,8 @@ describe("content plans", () => {
     });
     expect(result.items).toHaveLength(7);
     expect(result.items[0].title.toLowerCase()).toContain("power cuts");
+    expect(result.items.every((item) => !/^comedy:/i.test(item.title))).toBe(true);
+    expect(result.items.every((item) => !item.title.includes("first 10 seconds"))).toBe(true);
     expect(result.items.every((item) => item.description.toLowerCase().includes("how to shoot"))).toBe(true);
     expect(result.items.every((item) => item.script.includes("[0:00]"))).toBe(true);
     expect(result.items[0].durationSeconds).toBe(30);
@@ -121,7 +134,68 @@ describe("content plans", () => {
     });
     expect(result.items).toHaveLength(3);
     expect(containsMalayalam(result.items[0].title)).toBe(true);
+    expect(result.items[0].title).toContain("വീട്ടിൽ കറന്റ് പോകുമ്പോൾ");
+    expect(result.items.every((item) => !item.title.includes("comedy"))).toBe(true);
+    expect(result.items.every((item) => !item.title.includes("ആദ്യ 10 സെക്കൻഡ്"))).toBe(true);
     expect(containsMalayalam(result.items[0].description)).toBe(true);
     expect(containsMalayalam(result.items[0].script)).toBe(true);
+  });
+
+  it("never uses a category label as the video title", () => {
+    const result = localContentPlan({
+      language: "ml",
+      platform: "both",
+      themes: ["comedy"],
+      description: "",
+      count: 2,
+      durationSeconds: 30,
+    });
+    expect(result.items.every((item) => !isWeakVideoTitle(item.title))).toBe(true);
+    expect(result.items.every((item) => !/^comedy/i.test(item.title))).toBe(true);
+    expect(result.items[0].title.length).toBeGreaterThan(12);
+  });
+
+  it("does not glue a topic onto a shooting note", () => {
+    const result = localContentPlan({
+      language: "en",
+      platform: "youtube",
+      themes: ["tech"],
+      description: "aurduino",
+      count: 1,
+      durationSeconds: 30,
+    });
+    expect(result.items[0].title.toLowerCase()).not.toBe("aurduino: the first 10 seconds");
+    expect(result.items[0].title).toMatch(/Arduino/i);
+    expect(isWeakVideoTitle(result.items[0].title)).toBe(false);
+    expect(result.items[0].description).not.toMatch(/tech angle:/i);
+    expect(isWeakHowTo(result.items[0].description)).toBe(false);
+  });
+
+  it("rewrites a weak idea so the how-to matches the new title", () => {
+    const polished = polishPlanItem({
+      item: {
+        title: "aurduino: the first 10 seconds",
+        topic: "tech",
+        description: [
+          "How to shoot this",
+          "1. Opening shot: hook the idea “aurduino: the first 10 seconds” with a close face or object.",
+          "2. tech angle: Open on the exact moment people recognise, then explain why it sticks.",
+        ].join("\n"),
+        script: "[0:00] aurduino: the first 10 seconds. Watch this till the end.",
+        durationSeconds: 30,
+      },
+      brief: "aurduino",
+      theme: "tech",
+      index: 0,
+      language: "en",
+      platform: "youtube",
+      durationSeconds: 30,
+    });
+    expect(polished.title).toBe("Don't start Arduino like this");
+    expect(polished.description).not.toMatch(/tech angle:/i);
+    expect(polished.description).not.toContain("aurduino: the first 10 seconds");
+    expect(polished.script).not.toContain("aurduino: the first 10 seconds");
+    expect(isWeakVideoTitle(polished.title)).toBe(false);
+    expect(isWeakHowTo(polished.description)).toBe(false);
   });
 });

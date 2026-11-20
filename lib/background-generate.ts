@@ -122,6 +122,7 @@ export function startThumbnailGeneration(input: {
   styleNotes?: string;
   landscape?: boolean;
   vertical?: boolean;
+  title?: string;
 }) {
   void runJob("thumbnail", input, "gen-thumbnail", (result) => {
     if (!result || typeof result !== "object") return;
@@ -135,6 +136,7 @@ export function startThumbnailGeneration(input: {
     writeDraft("thumbnail-draft", {
       ...current,
       topic: typeof current.topic === "string" && current.topic ? current.topic : input.topic,
+      title: input.title ?? current.title ?? "",
       language: data.language,
       styleNotes: input.styleNotes ?? current.styleNotes ?? "",
       landscape: input.landscape !== false ? data.landscape : current.landscape ?? "",

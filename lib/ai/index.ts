@@ -4,6 +4,7 @@ import {
   localAudioScript,
   localContentPlan,
   localThumbnail,
+  polishPlanItem,
   localTopicCopy,
   localWriting,
   toEnglishHashtags,
@@ -25,6 +26,7 @@ export async function generateThumbnailPrompts(input: {
   styleNotes?: string;
   landscape?: boolean;
   vertical?: boolean;
+  title?: string;
 }): Promise<ThumbnailResult> {
   if (!remoteAiEnabled()) return localThumbnail(input);
   try {
@@ -134,7 +136,15 @@ export async function generateContentPlan(input: {
   return {
     provider,
     items: items.map((item, index) => ({
-      ...item,
+      ...polishPlanItem({
+        item,
+        brief: input.description,
+        theme: input.themes[index % Math.max(input.themes.length, 1)] ?? "lifestyle",
+        index,
+        language: input.language,
+        platform: input.platform,
+        durationSeconds: input.durationSeconds,
+      }),
       planned_date: dates[index] ?? dates[dates.length - 1],
     })),
   };

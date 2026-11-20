@@ -131,6 +131,8 @@ export type ActionResult = {
 export type ContentOption = {
   id: string;
   title: string;
+  language?: Language;
+  topic?: string | null;
 };
 
 export type PlanIdea = {

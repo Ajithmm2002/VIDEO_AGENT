@@ -99,6 +99,7 @@ export const contentSchema = z.object({
 export const thumbnailRequestSchema = z
   .object({
     topic: z.string().trim().min(1, "Enter a topic").max(500),
+    title: z.string().trim().max(200).optional().default(""),
     language: z.enum(languages),
     styleNotes: z.string().trim().max(500).optional().default(""),
     landscape: z.boolean().optional().default(true),

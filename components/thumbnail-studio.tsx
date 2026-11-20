@@ -14,6 +14,37 @@ import type { ContentOption, Language } from "@/lib/types";
 import { languages } from "@/lib/types";
 import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
 
+type TitleChoice = {
+  key: string;
+  title: string;
+  contentId?: string;
+  language?: Language;
+  group: "saved" | "planner";
+};
+
+function contentTitleKey(id: string) {
+  return `content:${id}`;
+}
+
+function plannerTitleChoices(): TitleChoice[] {
+  const stored = readDraft<{
+    items?: Array<{ id?: string; title?: string }>;
+  }>("planner-draft");
+  const seen = new Set<string>();
+  return (stored?.items ?? []).flatMap((item, index) => {
+    const title = item.title?.trim() ?? "";
+    if (!title) return [];
+    const fingerprint = title.toLowerCase();
+    if (seen.has(fingerprint)) return [];
+    seen.add(fingerprint);
+    return [{
+      key: `plan:${item.id || String(index)}`,
+      title,
+      group: "planner" as const,
+    }];
+  });
+}
+
 export function ThumbnailStudio({
   configured,
   contents,
@@ -35,8 +66,22 @@ export function ThumbnailStudio({
   const [contentId, setContentId] = useState(initial.contentId);
   const [wantLandscape, setWantLandscape] = useState(true);
   const [wantVertical, setWantVertical] = useState(true);
+  const [titleKey, setTitleKey] = useState(initial.contentId ? contentTitleKey(initial.contentId) : "");
+  const [plannerChoices, setPlannerChoices] = useState<TitleChoice[]>([]);
   const [saving, setSaving] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
+
+  const savedChoices: TitleChoice[] = contents.map((item) => ({
+    key: contentTitleKey(item.id),
+    title: item.title,
+    contentId: item.id,
+    language: item.language,
+    group: "saved",
+  }));
+  const savedTitles = new Set(savedChoices.map((item) => item.title.trim().toLowerCase()));
+  const planChoices = plannerChoices.filter((item) => !savedTitles.has(item.title.toLowerCase()));
+  const titleChoices = [...savedChoices, ...planChoices];
+  const selectedTitle = titleChoices.find((item) => item.key === titleKey)?.title ?? "";
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- restore unsaved work after switching pages */
@@ -50,7 +95,9 @@ export function ThumbnailStudio({
       contentId: string;
       wantLandscape?: boolean;
       wantVertical?: boolean;
+      titleKey?: string;
     }>("thumbnail-draft");
+    setPlannerChoices(plannerTitleChoices());
     if (stored) {
       if (!initial.topic) setTopic(stored.topic);
       if (!initial.topic) setLanguage(stored.language);
@@ -61,10 +108,16 @@ export function ThumbnailStudio({
       if (typeof stored.wantLandscape === "boolean") setWantLandscape(stored.wantLandscape);
       if (typeof stored.wantVertical === "boolean") setWantVertical(stored.wantVertical);
       if (!initial.contentId && stored.contentId) setContentId(stored.contentId);
+      if (!initial.contentId && stored.titleKey) setTitleKey(stored.titleKey);
+      else if (!initial.contentId && stored.contentId) setTitleKey(contentTitleKey(stored.contentId));
+    }
+    if (initial.contentId && !initial.topic) {
+      const match = contents.find((item) => item.id === initial.contentId);
+      if (match) setTopic(match.title);
     }
     setDraftReady(true);
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [initial.contentId, initial.topic]);
+  }, [contents, initial.contentId, initial.topic]);
 
   useEffect(() => {
     return onGenerationResult<{
@@ -100,16 +153,33 @@ export function ThumbnailStudio({
       contentId,
       wantLandscape,
       wantVertical,
+      titleKey,
     });
-  }, [draftReady, pending, topic, language, styleNotes, landscape, vertical, provider, contentId, wantLandscape, wantVertical]);
+  }, [draftReady, pending, topic, language, styleNotes, landscape, vertical, provider, contentId, wantLandscape, wantVertical, titleKey]);
+
+  function onPickProjectTitle(key: string) {
+    setTitleKey(key);
+    if (!key) return;
+    const choice = titleChoices.find((item) => item.key === key);
+    if (!choice) return;
+    setTopic(choice.title);
+    if (choice.language) setLanguage(choice.language);
+    setContentId(choice.contentId ?? "");
+  }
 
   function onGenerate() {
     if (!wantLandscape && !wantVertical) {
       toast.error("Choose at least one thumbnail format.");
       return;
     }
+    const overlay = selectedTitle || topic.trim();
+    if (!overlay) {
+      toast.error("Choose a project title or enter a topic.");
+      return;
+    }
     startThumbnailGeneration({
-      topic,
+      topic: topic.trim() || overlay,
+      title: overlay,
       language,
       styleNotes,
       landscape: wantLandscape,
@@ -120,7 +190,7 @@ export function ThumbnailStudio({
   async function onSave() {
     setSaving(true);
     try {
-      const result = await savePrompt({ topic, language, landscape, vertical, contentId: contentId || null });
+      const result = await savePrompt({ topic: selectedTitle || topic, language, landscape, vertical, contentId: contentId || null });
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -146,7 +216,36 @@ export function ThumbnailStudio({
             {provider === "remote" ? "Gemini" : "Local templates"}
           </span>
         </div>
-        <Field label="Topic" hint="Malayalam or English. Malayalam topics are quoted as the text on the thumbnail.">
+        <Field
+          label="Project title"
+          hint={titleChoices.length
+            ? "Select a saved or planned title to put that exact text on the thumbnail."
+            : "Save a content item or generate a plan first, or type a topic below."}
+        >
+          <SelectInput value={titleKey} onChange={(event) => onPickProjectTitle(event.target.value)}>
+            <option value="">Type a custom topic</option>
+            {savedChoices.length ? (
+              <optgroup label="Saved projects">
+                {savedChoices.map((item) => (
+                  <option key={item.key} value={item.key}>{item.title}</option>
+                ))}
+              </optgroup>
+            ) : null}
+            {planChoices.length ? (
+              <optgroup label="Planner titles">
+                {planChoices.map((item) => (
+                  <option key={item.key} value={item.key}>{item.title}</option>
+                ))}
+              </optgroup>
+            ) : null}
+          </SelectInput>
+        </Field>
+        {selectedTitle ? (
+          <p className="rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm leading-6">
+            On the thumbnail: <span className="font-semibold">{selectedTitle}</span>
+          </p>
+        ) : null}
+        <Field label="Topic" hint="Visual subject. Malayalam or English. If you pick a project title above, that title is the text on the image.">
           <TextInput value={topic} onChange={(event) => setTopic(event.target.value)} maxLength={500} />
         </Field>
         <div className="grid gap-4 md:grid-cols-2">

@@ -28,7 +28,7 @@ export default async function ThumbnailsPage({
       <PageHeader
         eyebrow="Visuals"
         title="Thumbnail prompts"
-        description="Write a topic in Malayalam or English. Copy the landscape and vertical prompts into Google Flow."
+        description="Pick a project title from the dropdown, or type a topic. Copy the landscape and vertical prompts into Google Flow."
       />
       <ThumbnailStudio
         configured={isSupabaseConfigured()}

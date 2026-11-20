@@ -11,6 +11,7 @@ import { ideaThemeLabels, languageLabels, planDayLabel, platformLabels, videoDur
 import type { Category, IdeaTheme, Language, Platform, VideoDuration } from "@/lib/types";
 import { ideaThemes, languages, planDays, platforms, videoDurations } from "@/lib/types";
 import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
+import { isWeakHowTo, isWeakVideoTitle, polishPlanItem } from "@/lib/ai/local";
 import { isVideoDuration, newId, todayISO } from "@/lib/utils";
 
 type DraftItem = {
@@ -108,13 +109,33 @@ export function PlannerStudio({
       if (stored.startDate) setStartDate(stored.startDate);
       setCategoryId(stored.categoryId ?? "");
       if (stored.items?.length) {
+        const restoredLanguage = stored.language ?? "en";
+        const restoredPlatform = stored.platform ?? "both";
+        const restoredThemes = stored.themes?.length ? stored.themes : ["lifestyle"];
+        const restoredDuration = stored.durationSeconds && isVideoDuration(stored.durationSeconds) ? stored.durationSeconds : 30;
         setItems(
-          stored.items.map((item) => ({
-            ...item,
-            script: item.script ?? "",
-            durationSeconds: isVideoDuration(item.durationSeconds) ? item.durationSeconds : 30,
-            included: item.included !== false,
-          })),
+          stored.items.map((item, index) => {
+            const durationSeconds = isVideoDuration(item.durationSeconds) ? item.durationSeconds : restoredDuration;
+            const draft = {
+              ...item,
+              script: item.script ?? "",
+              durationSeconds,
+              included: item.included !== false,
+            };
+            if (!isWeakVideoTitle(draft.title) && !isWeakHowTo(draft.description)) return draft;
+            return {
+              ...draft,
+              ...polishPlanItem({
+                item: draft,
+                brief: stored.description ?? "",
+                theme: restoredThemes[index % restoredThemes.length] ?? "lifestyle",
+                index,
+                language: restoredLanguage,
+                platform: restoredPlatform,
+                durationSeconds,
+              }),
+            };
+          }),
         );
       }
       setProvider(stored.provider ?? null);
@@ -347,13 +368,16 @@ export function PlannerStudio({
                   Remove
                 </Button>
               </div>
-              <div className="grid gap-3 md:grid-cols-[1fr_10rem]">
-                <Field label="Video title">
-                  <TextInput value={item.title} onChange={(event) => patchItem(item.id, { title: event.target.value })} maxLength={200} />
+              <div className="grid gap-3 md:grid-cols-[1fr_10rem_auto] md:items-end">
+                <Field label="Video title" hint="Paste this onto YouTube or Instagram.">
+                  <TextInput value={item.title} onChange={(event) => patchItem(item.id, { title: event.target.value })} maxLength={80} />
                 </Field>
                 <Field label="Date">
                   <TextInput type="date" value={item.planned_date} onChange={(event) => patchItem(item.id, { planned_date: event.target.value })} />
                 </Field>
+                <div className="md:pb-6">
+                  <CopyButton text={item.title} label="Copy title" />
+                </div>
               </div>
               <Field label="How to execute" hint="Shot order, what to film, and how to perform it.">
                 <TextArea value={item.description} onChange={(event) => patchItem(item.id, { description: event.target.value })} />

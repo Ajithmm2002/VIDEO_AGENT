@@ -1,4 +1,5 @@
-import type { ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import type { ContentPlan, IdeaTheme, Language, Platform, VideoDuration } from "@/lib/types";
+import { ideaThemes } from "@/lib/types";
 import { spokenWordTarget } from "@/lib/utils";
 
 export type ThumbnailDraft = {
@@ -130,22 +131,24 @@ export function localThumbnail(input: {
   styleNotes?: string;
   landscape?: boolean;
   vertical?: boolean;
+  title?: string;
 }): ThumbnailDraft {
   const topic = input.topic.trim();
+  const overlay = clipTitle(input.title?.trim() || topic);
   const wantLandscape = input.landscape !== false;
   const wantVertical = input.vertical !== false;
-  const malayalam = input.language === "ml" || containsMalayalam(topic);
+  const malayalam = input.language === "ml" || containsMalayalam(overlay) || containsMalayalam(topic);
   const style =
     input.styleNotes?.trim() ||
     "clean, bold, high-end creator thumbnail with a single focal point";
   const textInstruction = malayalam
-    ? `Render this exact Malayalam text on the image, spelled correctly, in a heavy rounded sans-serif with a solid plate or strong outline so it stays readable: "${topic}". Do not translate it.`
-    : `Render this short title in large readable type, in a heavy sans-serif with a contrasting plate or outline: "${topic.slice(0, 80)}".`;
+    ? `Render this exact Malayalam text on the image, spelled correctly, in a heavy rounded sans-serif with a solid plate or strong outline so it stays readable: "${overlay}". Do not translate it.`
+    : `Render this short title in large readable type, in a heavy sans-serif with a contrasting plate or outline: "${overlay}".`;
 
   const landscape = wantLandscape
     ? [
         "Format: landscape 16:9 YouTube thumbnail, composed for a 1280x720 frame.",
-        `Subject: one clear hero for "${topic}", shown close to the camera as a person, object, or symbol that is recognisable at small size.`,
+        `Subject: one clear hero for "${topic}", shown close to the camera as a person, object, or symbol that is recognisable at small size. The on-image title is "${overlay}".`,
         "Background: a simple layered background with a soft gradient and one supporting shape. Leave it uncluttered so the subject and title win.",
         "Lighting: bright key light from the front-left and a gentle rim light that separates the subject from the background.",
         "Composition: subject on the right third, open space on the left for the title, with about 6% safe margin on every edge.",
@@ -159,7 +162,7 @@ export function localThumbnail(input: {
   const vertical = wantVertical
     ? [
         "Format: vertical 9:16 thumbnail for Instagram Reels and YouTube Shorts, composed for a 1080x1920 frame.",
-        `Subject: the same hero for "${topic}", centred and large, with the important detail in the upper-middle of the frame.`,
+        `Subject: the same hero for "${topic}", centred and large, with the important detail in the upper-middle of the frame. The on-image title is "${overlay}".`,
         "Background: a tall simple gradient with one bold shape behind the subject. Keep the lower fifth quiet because the app interface covers it.",
         "Lighting: bright frontal key light and a slim rim light, with the main subject evenly lit.",
         "Composition: centred vertical stack. Keep important details inside the central safe area, away from the top 12% and the bottom 20%.",
@@ -331,55 +334,294 @@ export function localWriting(input: {
   };
 }
 
-const englishAngles = [
-  ["the first 10 seconds", "Open on the exact moment people recognise, then explain why it sticks."],
-  ["three kinds of people", "A funny or honest split of how different people handle the same situation."],
-  ["then vs now", "Compare how this used to feel with how it feels today."],
-  ["what nobody says out loud", "Name the small detail everyone notices and nobody posts."],
-  ["a tiny how-to", "One practical takeaway the viewer can use the same day."],
-  ["behind the camera", "Show the mess, the wait, or the real reaction around the idea."],
-  ["a comment question", "End with a question people will actually answer."],
-  ["the wrong way first", "Start with the common mistake, then flip it."],
-  ["a 60-second version", "Keep it tight: hook, one example, one closer."],
-  ["family edition", "Tell it through the people in the room, not a lecture."],
-  ["phone-in-hand version", "Make it work as a Reel or Short: one visual, one line."],
-  ["the follow-up", "Answer the next question this topic always creates."],
+const shootNotesEn = [
+  "Open on the exact moment people recognise, then hold the reaction.",
+  "Split the video into three kinds of people in the same situation.",
+  "Cut then vs now in the same frame if you can.",
+  "Name the small detail everyone notices and nobody posts.",
+  "Give one practical takeaway they can try the same day.",
+  "Show the mess, the wait, or the real reaction around the idea.",
+  "End with a question people will actually answer.",
+  "Start with the common mistake, then flip it.",
+  "Keep it to one hook, one example, one closer.",
+  "Tell it through the people in the room, not a lecture.",
+  "One visual, one line, phone in hand.",
+  "Answer the next question this topic always creates.",
 ];
 
-const malayalamAngles = [
-  ["ആദ്യ 10 സെക്കൻഡ്", "ആളുകൾ തിരിച്ചറിയുന്ന നിമിഷത്തിൽ തുടങ്ങി, അത് എന്തുകൊണ്ട് ഓർമ്മയിൽ നിൽക്കുന്നു എന്ന് പറയുക."],
-  ["മൂന്ന് തരം ആളുകൾ", "ഒരേ സാഹചര്യത്തിൽ വ്യത്യസ്ത ആളുകൾ എങ്ങനെ പ്രതികരിക്കുന്നു എന്ന് കാണിക്കുക."],
-  ["അന്നും ഇന്നും", "പഴയ അനുഭവവും ഇന്നത്തെ അനുഭവവും അടുപ്പിച്ച് വയ്ക്കുക."],
-  ["ആരും പറയാത്ത കാര്യം", "എല്ലാവരും ശ്രദ്ധിക്കുന്ന, പക്ഷേ പോസ്റ്റ് ചെയ്യാത്ത ചെറിയ വിശദാംശം."],
-  ["ഒരു ചെറിയ ടിപ്", "ഇന്ന് തന്നെ ഉപയോഗിക്കാവുന്ന ഒരു പ്രായോഗിക കാര്യം."],
-  ["ക്യാമറയ്ക്ക് പിന്നിൽ", "യഥാർത്ഥ പ്രതികരണവും കാത്തിരിപ്പും കാണിക്കുക."],
-  ["കമന്റ് ചോദ്യം", "ആളുകൾ ഉത്തരം പറയുന്ന ഒരു ചോദ്യത്തിൽ അവസാനിപ്പിക്കുക."],
-  ["തെറ്റായ വഴി ആദ്യം", "സാധാരണ തെറ്റ് കാണിച്ചിട്ട് ശരിയായത് പറയുക."],
-  ["60 സെക്കൻഡ് വേർഷൻ", "ഹുക്ക്, ഒരു ഉദാഹരണം, ഒരു ക്ലോസർ."],
-  ["കുടുംബ എഡിഷൻ", "മുറിയിലുള്ള ആളുകളിലൂടെ കഥ പറയുക."],
-  ["റീൽ വേർഷൻ", "ഒരു വിഷ്വലും ഒരു വരിയും മതി."],
-  ["അടുത്ത ചോദ്യം", "ഈ വിഷയം ഉണ്ടാക്കുന്ന അടുത്ത സംശയത്തിന് ഉത്തരം."],
+const shootNotesMl = [
+  "ആളുകൾ തിരിച്ചറിയുന്ന നിമിഷത്തിൽ തുടങ്ങി, റിയാക്ഷൻ നിർത്തി വയ്ക്കുക.",
+  "ഒരേ സാഹചര്യത്തിൽ മൂന്ന് തരം ആളുകളെ കാണിക്കുക.",
+  "അന്നും ഇന്നും ഒരേ ഫ്രെയിമിൽ അടുപ്പിക്കുക.",
+  "എല്ലാവരും ശ്രദ്ധിക്കുന്ന, പക്ഷേ പോസ്റ്റ് ചെയ്യാത്ത ചെറിയ വിശദാംശം.",
+  "ഇന്ന് തന്നെ ഉപയോഗിക്കാവുന്ന ഒരു പ്രായോഗിക കാര്യം.",
+  "യഥാർത്ഥ പ്രതികരണവും കാത്തിരിപ്പും കാണിക്കുക.",
+  "ആളുകൾ ഉത്തരം പറയുന്ന ഒരു ചോദ്യത്തിൽ അവസാനിപ്പിക്കുക.",
+  "സാധാരണ തെറ്റ് കാണിച്ചിട്ട് ശരിയായത് പറയുക.",
+  "ഹുക്ക്, ഒരു ഉദാഹരണം, ഒരു ക്ലോസർ.",
+  "മുറിയിലുള്ള ആളുകളിലൂടെ കഥ പറയുക.",
+  "ഒരു വിഷ്വലും ഒരു വരിയും മതി.",
+  "ഈ വിഷയം ഉണ്ടാക്കുന്ന അടുത്ത സംശയത്തിന് ഉത്തരം.",
 ];
 
-function howToShoot(title: string, theme: string, note: string, malayalam: boolean, platform: Platform) {
+const themeSubjectsEn: Record<string, string> = {
+  comedy: "funny reactions at home",
+  nostalgia: "things we all grew up doing",
+  tech: "the phone habit nobody explains",
+  education: "the one lesson school skipped",
+  food: "the kitchen trick everyone copies",
+  lifestyle: "a tiny daily reset that actually works",
+  family: "what really happens in a Malayali home",
+};
+
+const themeSubjectsMl: Record<string, string> = {
+  comedy: "വീട്ടിലെ റിയാക്ഷനുകൾ",
+  nostalgia: "കുട്ടിക്കാലത്ത് എല്ലാവരും ചെയ്ത കാര്യങ്ങൾ",
+  tech: "ഫോണിൽ എല്ലാവരും ചെയ്യുന്ന തെറ്റ്",
+  education: "സ്കൂളിൽ പഠിപ്പിക്കാത്ത ഒരു കാര്യം",
+  food: "അടുക്കളയിൽ എല്ലാവരും പകർത്തുന്ന ട്രിക്ക്",
+  lifestyle: "ദിവസവും ചെയ്യാവുന്ന ഒരു ചെറിയ മാറ്റം",
+  family: "മലയാളി വീട്ടിൽ യഥാർത്ഥത്തിൽ നടക്കുന്നത്",
+};
+
+function clipTitle(value: string) {
+  const text = value.replace(/\s+/g, " ").trim();
+  if (text.length <= 80) return text;
+  const cut = text.slice(0, 80);
+  const space = cut.lastIndexOf(" ");
+  return (space > 40 ? cut.slice(0, space) : cut).trim();
+}
+
+export function isWeakVideoTitle(title: string) {
+  const text = title.trim();
+  if (!text) return true;
+  if (/^(comedy|nostalgia|tech|education|food|lifestyle|family)(\s*:|\s*$)/i.test(text)) return true;
+  if (/^(idea|video|title|day)\s*\d+/i.test(text)) return true;
+  if (/^(the first 10 seconds|60-second version|reel version|ആദ്യ 10 സെക്കൻഡ്|റീൽ വേർഷൻ|60 സെക്കൻഡ് വേർഷൻ)$/i.test(text)) return true;
+  if (/:\s*(the first 10 seconds|ആദ്യ 10 സെക്കൻഡ്|60-second version|റീൽ വേർഷൻ)\s*$/i.test(text)) return true;
+  return false;
+}
+
+export function isWeakHowTo(text: string) {
+  const value = text.trim();
+  if (!value) return true;
+  if (/\b(comedy|nostalgia|tech|education|food|lifestyle|family) angle:/i.test(value)) return true;
+  const quoted = value.match(/hook the idea [“"']([^”"']+)[”"']/i);
+  if (quoted && isWeakVideoTitle(quoted[1])) return true;
+  return false;
+}
+
+function prettySubject(text: string) {
+  const cleaned = text
+    .replace(/\b(aurduino|ardunio|aruino|arduino)\b/gi, "Arduino")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (/^[A-Za-z][A-Za-z0-9+.#-]*$/.test(cleaned)) {
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+  return cleaned;
+}
+
+function ideaSubject(brief: string, theme: string, malayalam: boolean) {
+  const trimmed = brief.trim();
+  const key = trimmed.toLowerCase();
+  const themeKey = ideaThemes.includes(key as IdeaTheme) ? key : theme;
+  if (!trimmed || ideaThemes.includes(key as IdeaTheme)) {
+    return malayalam
+      ? themeSubjectsMl[themeKey] ?? "വീട്ടിലെ ഒരു നിമിഷം"
+      : themeSubjectsEn[themeKey] ?? "a moment at home";
+  }
+  return prettySubject(trimmed);
+}
+
+function titleTemplates(theme: string, subject: string, malayalam: boolean) {
+  if (malayalam) {
+    if (theme === "tech") {
+      return [
+        `${subject} ഇങ്ങനെ തുടങ്ങരുത്`,
+        `POV: ആദ്യമായി ${subject}`,
+        `${subject} സെറ്റപ്പ് എല്ലാവരും ഒഴിവാക്കും`,
+        `കോഡ് എഴുതുന്നതിന് മുമ്പ് ${subject}`,
+        `${subject} ഇങ്ങനെ വയർ ചെയ്യരുത്`,
+        `ആദ്യ ${subject} പ്രോജക്റ്റ് ഇതാണ്`,
+        `${subject} 60 സെക്കൻഡിൽ`,
+        `${subject} ഒരു മണിക്കൂർ നഷ്ടമാക്കുന്ന തെറ്റ്`,
+        `ആദ്യം ചെയ്യേണ്ടത് | ${subject}`,
+        `${subject} | ഒരു വർക്കിങ് സർക്യൂട്ട്`,
+        `${subject} ഉപയോഗിച്ച് തുടങ്ങാം`,
+        `അടുത്ത ഭാഗം | ${subject}`,
+      ];
+    }
+    return [
+      `3 തരം ആളുകൾ | ${subject}`,
+      `POV: ${subject}`,
+      `ആരും പോസ്റ്റ് ചെയ്യാറില്ല | ${subject}`,
+      `${subject} വീട്ടിൽ ആകുമ്പോൾ`,
+      `ഇങ്ങനെ ചെയ്യരുത് | ${subject}`,
+      `കണ്ടിട്ടുള്ളവർക്ക് മാത്രം | ${subject}`,
+      `യഥാർത്ഥത്തിൽ നടക്കുന്നത് | ${subject}`,
+      `ഒരു സത്യം | ${subject}`,
+      `${subject} vs നമ്മൾ കാണിക്കുന്നത്`,
+      `ആരും പറയാറില്ല | ${subject}`,
+      `ഒരു ക്ലിപ്പിൽ | ${subject}`,
+      `അടുത്ത ഭാഗം | ${subject}`,
+    ];
+  }
+  if (theme === "tech") {
+    return [
+      `Don't start ${subject} like this`,
+      `POV: first time with ${subject}`,
+      `The ${subject} setup everyone skips`,
+      `${subject} before you write any code`,
+      `Stop wiring ${subject} like this`,
+      `Your first ${subject} project that works`,
+      `${subject} in 60 seconds`,
+      `The ${subject} mistake that wastes an hour`,
+      `What to do first | ${subject}`,
+      `${subject} | one working circuit`,
+      `Unbox ${subject} the useful way`,
+      `The follow-up | ${subject}`,
+    ];
+  }
+  if (theme === "education") {
+    return [
+      `The ${subject} lesson nobody explains`,
+      `Learn ${subject} in 60 seconds`,
+      `Stop learning ${subject} like this`,
+      `${subject} | one example is enough`,
+      `POV: finally understanding ${subject}`,
+      `The ${subject} mistake beginners make`,
+      `What to do first | ${subject}`,
+      `${subject} without the boring part`,
+      `A 60-second truth | ${subject}`,
+      `${subject} in one honest clip`,
+      `Nobody teaches ${subject} like this`,
+      `The follow-up | ${subject}`,
+    ];
+  }
+  return [
+    `3 types of people | ${subject}`,
+    `POV: ${subject}`,
+    `Nobody posts this part | ${subject}`,
+    `${subject} hits different at home`,
+    `Stop doing this | ${subject}`,
+    `If you grew up with this | ${subject}`,
+    `What actually happens | ${subject}`,
+    `A 60-second truth | ${subject}`,
+    `${subject} vs how we pretend it goes`,
+    `Nobody talks about this | ${subject}`,
+    `${subject} in one honest clip`,
+    `The follow-up | ${subject}`,
+  ];
+}
+
+export function publishableVideoTitle(input: {
+  brief: string;
+  theme: string;
+  index: number;
+  language: Language;
+}) {
+  const malayalam = input.language === "ml" || containsMalayalam(input.brief);
+  const subject = ideaSubject(input.brief, input.theme, malayalam);
+  const titles = titleTemplates(input.theme, subject, malayalam);
+  return clipTitle(titles[input.index % titles.length]);
+}
+
+function shootNote(theme: string, index: number, malayalam: boolean) {
+  const techEn = [
+    "Show the board, the cable, and the first working result in close-up.",
+    "Film the wrong wiring or setup, then cut to the correct one.",
+    "Keep the screen or LED in frame so the result is obvious.",
+    "One step on camera, then say why it matters.",
+    "Start with the common beginner mistake, then flip it.",
+    "Hands only, then a wide shot of the finished setup.",
+    "End by asking what they want to build next.",
+    "Show power on, the first blink, and your reaction.",
+  ];
+  const techMl = [
+    "ബോർഡ്, കേബിൾ, ആദ്യത്തെ വർക്കിങ് റിസൾട്ട് ക്ലോസ്-അപ്പിൽ.",
+    "തെറ്റായ വയറിങ് കാണിച്ചിട്ട് ശരിയായത് കട്ട് ചെയ്യുക.",
+    "സ്ക്രീനോ LED-ഓ ഫ്രെയിമിൽ വയ്ക്കുക.",
+    "ഒരു സ്റ്റെപ്പ് ക്യാമറയിൽ, പിന്നെ എന്തുകൊണ്ട് എന്ന് പറയുക.",
+    "സാധാരണ തെറ്റ് കാണിച്ചിട്ട് ശരിയായത് കാണിക്കുക.",
+    "കൈകൾ മാത്രം, പിന്നെ ഫിനിഷ്ഡ് സെറ്റപ്പ്.",
+    "അടുത്തത് എന്ത് ഉണ്ടാക്കണം എന്ന് ചോദിച്ച് അവസാനിപ്പിക്കുക.",
+    "പവർ ഓൺ, ആദ്യ ബ്ലിങ്ക്, നിങ്ങളുടെ റിയാക്ഷൻ.",
+  ];
+  const notes = theme === "tech" ? (malayalam ? techMl : techEn) : malayalam ? shootNotesMl : shootNotesEn;
+  return notes[index % notes.length];
+}
+
+function howToShoot(title: string, note: string, malayalam: boolean, platform: Platform, subject: string) {
+  const thing = subject || (malayalam ? "വിഷയം" : "the subject");
   if (malayalam) {
     return [
-      `എങ്ങനെ ചെയ്യാം`,
-      `1. ആദ്യ ഷോട്ട്: ${title} എന്ന ഐഡിയയുടെ ഹുക്ക് — മുഖം അല്ലെങ്കിൽ പ്രധാന വസ്തു ക്ലോസ്-അപ്പിൽ.`,
-      `2. ${theme} ആംഗിൾ: ${note}`,
-      "3. ഒരു വ്യക്തമായ ഉദാഹരണം അല്ലെങ്കിൽ റിയാക്ഷൻ കാണിക്കുക.",
+      "എങ്ങനെ ചെയ്യാം",
+      `1. ആദ്യ ഷോട്ട്: ${thing} ക്ലോസ്-അപ്പിൽ, പിന്നെ നിങ്ങളുടെ റിയാക്ഷൻ.`,
+      `2. ${note}`,
+      `3. ടൈറ്റിൽ “${title}” ആക്കുന്ന ഒരു വ്യക്തമായ ഉദാഹരണം കാണിക്കുക.`,
       "4. അവസാനം ഒരു ചോദ്യം അല്ലെങ്കിൽ CTA.",
       platform === "instagram" ? "ക്യാമറ: ഫോൺ വെർട്ടിക്കൽ, സ്ഥിരമായ ലൈറ്റ്." : "ക്യാമറ: 16:9 അല്ലെങ്കിൽ വെർട്ടിക്കൽ ഷോർട്സ്.",
     ].join("\n");
   }
   return [
     "How to shoot this",
-    `1. Opening shot: hook the idea “${title}” with a close face or object.`,
-    `2. ${theme} angle: ${note}`,
-    "3. Show one clear example, reaction, or step. Keep cuts short.",
+    `1. Opening shot: close-up of ${thing}, then your reaction.`,
+    `2. ${note}`,
+    `3. Show one clear example that matches “${title}”. Keep cuts short.`,
     "4. Close on a question or a one-line CTA.",
     platform === "instagram" ? "Camera: phone vertical, steady light, one location." : "Camera: 16:9 or a vertical Short, one location.",
   ].join("\n");
+}
+
+type PlanDraftItem = {
+  title: string;
+  topic: string;
+  description: string;
+  script: string;
+  durationSeconds: VideoDuration;
+};
+
+export function polishPlanItem(input: {
+  item: PlanDraftItem;
+  brief: string;
+  theme: string;
+  index: number;
+  language: Language;
+  platform: Platform;
+  durationSeconds: VideoDuration;
+}): PlanDraftItem {
+  const malayalam = input.language === "ml" || containsMalayalam(input.brief) || containsMalayalam(input.item.title);
+  const oldTitle = input.item.title.trim();
+  const title = isWeakVideoTitle(oldTitle)
+    ? publishableVideoTitle({
+        brief: input.brief,
+        theme: input.theme,
+        index: input.index,
+        language: malayalam ? "ml" : input.language,
+      })
+    : clipTitle(oldTitle);
+  const subject = ideaSubject(input.brief, input.theme, malayalam);
+  const rewriteHowTo = isWeakHowTo(input.item.description) || (isWeakVideoTitle(oldTitle) && input.item.description.includes(oldTitle));
+  const description = rewriteHowTo
+    ? howToShoot(title, shootNote(input.theme, input.index, malayalam), malayalam, input.platform, subject)
+    : input.item.description.trim();
+  const rewriteScript = !input.item.script.trim() || (isWeakVideoTitle(oldTitle) && input.item.script.includes(oldTitle));
+  const script = rewriteScript
+    ? localAudioScript({
+        title,
+        description,
+        language: malayalam ? "ml" : input.language,
+        durationSeconds: input.durationSeconds,
+      }).script
+    : input.item.script;
+  return {
+    title,
+    topic: (input.item.topic.trim() || subject).slice(0, 500),
+    description: description.slice(0, 8000),
+    script: script.slice(0, 20000),
+    durationSeconds: input.durationSeconds,
+  };
 }
 
 function padSpoken(lines: string[], targetWords: number) {
@@ -466,16 +708,20 @@ export function localContentPlan(input: {
   count: number;
   durationSeconds: VideoDuration;
 }): Omit<ContentPlan, "items"> & { items: Array<Omit<ContentPlan["items"][number], "planned_date">> } {
-  const brief = input.description.trim() || input.themes[0] || "everyday content";
-  const malayalam = input.language === "ml" || containsMalayalam(brief) || input.themes.some((theme) => containsMalayalam(theme));
-  const themes = input.themes.length ? input.themes : malayalam ? ["ദൈനംദിനം"] : ["everyday"];
-  const angles = malayalam ? malayalamAngles : englishAngles;
+  const brief = input.description.trim();
+  const malayalam = input.language === "ml" || containsMalayalam(brief);
+  const themes = input.themes.length ? input.themes : malayalam ? ["family"] : ["lifestyle"];
   const items = Array.from({ length: input.count }, (_, index) => {
     const theme = themes[index % themes.length];
-    const [angle, note] = angles[index % angles.length];
-    const title = `${brief}: ${angle}`.slice(0, 200);
-    const topic = `${theme} · ${brief}`.slice(0, 500);
-    const description = howToShoot(title, theme, note, malayalam, input.platform);
+    const title = publishableVideoTitle({ brief, theme, index, language: malayalam ? "ml" : input.language });
+    const topic = ideaSubject(brief, theme, malayalam).slice(0, 500);
+    const description = howToShoot(
+      title,
+      shootNote(theme, index, malayalam),
+      malayalam,
+      input.platform,
+      topic,
+    );
     const audio = localAudioScript({
       title,
       description,
