@@ -22,7 +22,7 @@ export default async function MarketplaceAdminPage() {
       <PageHeader
         eyebrow="Admin"
         title="Skill shop desk"
-        description="Set the rupee price only. Coin cost for buyers is calculated automatically at 10 coins = ₹1."
+        description="Set the rupee price only. Coin cost for buyers is calculated automatically at 100 coins = ₹1. Buy now will use Razorpay soon."
       />
       <MarketplaceAdmin listings={listings} pending={pending} />
     </div>

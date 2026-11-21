@@ -28,6 +28,6 @@ describe("skill uploads", () => {
     expect(formatSkillPrice(0)).toBe("Free");
     expect(formatSkillPrice(19900)).toBe("₹199");
     expect(formatSkillPriceWithCoins(0)).toBe("Free");
-    expect(formatSkillPriceWithCoins(9900)).toBe("₹99 · 990 coins");
+    expect(formatSkillPriceWithCoins(9900)).toBe("₹99 · 9,900 coins");
   });
 });

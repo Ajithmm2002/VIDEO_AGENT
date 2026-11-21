@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ComingSoonNotice } from "@/components/coming-soon";
+import { RazorpayComingSoon } from "@/components/razorpay-coming-soon";
 import { Button, Card, EmptyState } from "@/components/ui";
 import { redeemListingWithCoins } from "@/lib/actions/game";
-import { requestMarketplaceSkill } from "@/lib/actions/marketplace";
 import { formatCoins, priceInCoins } from "@/lib/game-coins";
 import { formatSkillPrice } from "@/lib/marketplace-file";
 import type { MarketplaceListing, MarketplacePurchase } from "@/lib/types";
@@ -28,10 +28,10 @@ export function MarketplaceBrowser({
   return (
     <div className="grid gap-4">
       <ComingSoonNotice
-        title="Image samples and seller uploads are on the way"
-        body="The shop owner sets a rupee price. Coin cost is calculated for you automatically (10 coins = ₹1). Pay with coins or rupees."
+        title="Razorpay checkout is next"
+        body="The shop owner sets a rupee price. Coin cost is calculated automatically (100 coins = ₹1). Buy with coins today, or tap Buy now to see Razorpay coming soon."
       />
-      <p className="text-sm font-semibold">Your wallet: 🪙 {formatCoins(coins)} · 10 coins = ₹1</p>
+      <p className="text-sm font-semibold">Your wallet: 🪙 {formatCoins(coins)} · 100 coins = ₹1</p>
       {isAdmin ? (
         <Link
           href="/admin/marketplace"
@@ -66,21 +66,19 @@ export function MarketplaceBuy({
   listing: MarketplaceListing;
   purchase?: MarketplacePurchase;
   coins: number;
+  isAdmin?: boolean;
 }) {
   const router = useRouter();
-  const [pending, setPending] = useState<"coins" | "rupees" | null>(null);
+  const [pending, setPending] = useState(false);
   const free = listing.price_paise <= 0;
   const cost = priceInCoins(listing.price_paise);
   const canCoinBuy = !free && coins >= cost;
   const paid = purchase?.status === "paid";
-  const rupeePending = purchase?.status === "checkout_soon";
 
-  async function run(kind: "coins" | "rupees") {
-    setPending(kind);
+  async function buyWithCoins() {
+    setPending(true);
     try {
-      const result = kind === "coins"
-        ? await redeemListingWithCoins(listing.id)
-        : await requestMarketplaceSkill(listing.id);
+      const result = await redeemListingWithCoins(listing.id);
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -88,13 +86,13 @@ export function MarketplaceBuy({
       toast.success(result.message ?? "Saved");
       router.refresh();
     } finally {
-      setPending(null);
+      setPending(false);
     }
   }
 
   return (
     <Card className="grid gap-4">
-      <div className="grid h-36 place-items-center rounded-[1.5rem] border border-dashed border-line bg-surface-2/80 shadow-[var(--shadow-inset)]">
+      <div className="grid h-36 place-items-center rounded-[1.75rem] border border-dashed border-line bg-surface-2/80 shadow-[var(--shadow-inset)]">
         <p className="text-center text-sm text-muted">
           Image samples
           <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.16em] text-accent">Coming soon</span>
@@ -120,7 +118,7 @@ export function MarketplaceBuy({
         <div>
           <p className="text-lg font-semibold">{formatSkillPrice(listing.price_paise)}</p>
           {free ? null : (
-            <p className="mt-1 text-sm text-muted">or 🪙 {formatCoins(cost)} · 10 coins = ₹1</p>
+            <p className="mt-1 text-sm text-muted">or 🪙 {formatCoins(cost)} · 100 coins = ₹1</p>
           )}
         </div>
         {paid ? (
@@ -128,29 +126,21 @@ export function MarketplaceBuy({
             Download
           </a>
         ) : free ? (
-          <Button loading={pending === "rupees"} onClick={() => run("rupees")}>
+          <Button loading={pending} onClick={buyWithCoins}>
             {pending ? "Working…" : "Get this skill"}
           </Button>
         ) : (
           <div className="flex flex-wrap gap-2">
             {canCoinBuy ? (
-              <Button loading={pending === "coins"} disabled={Boolean(pending)} onClick={() => run("coins")}>
-                {pending === "coins" ? "Working…" : `Buy with ${formatCoins(cost)}`}
+              <Button variant="secondary" loading={pending} disabled={pending} onClick={buyWithCoins}>
+                {pending ? "Working…" : `Buy with ${formatCoins(cost)}`}
               </Button>
             ) : (
               <Link href="/play" className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
                 Earn {formatCoins(Math.max(1, cost - coins))}
               </Link>
             )}
-            {rupeePending ? (
-              <span className="inline-flex items-center rounded-full bg-accent/12 px-3 py-1.5 text-xs font-semibold text-accent">
-                Rupee payment pending
-              </span>
-            ) : (
-              <Button variant="secondary" loading={pending === "rupees"} disabled={Boolean(pending)} onClick={() => run("rupees")}>
-                {pending === "rupees" ? "Working…" : `Buy with ${formatSkillPrice(listing.price_paise)}`}
-              </Button>
-            )}
+            <RazorpayComingSoon title={listing.title} amountPaise={listing.price_paise} />
           </div>
         )}
       </div>

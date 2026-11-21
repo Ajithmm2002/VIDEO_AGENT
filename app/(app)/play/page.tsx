@@ -12,7 +12,7 @@ export default async function PlayPage() {
       <PageHeader
         eyebrow="Play"
         title="Fun mode"
-        description="Play to earn coins. 10 coins = ₹1. A good run pays up to 12 coins, 400 a day. Pay rupees when you want the skill now."
+        description="Play to earn coins. 100 coins = ₹1. A good run pays up to 12 coins, 400 a day. Use Buy now in the shop when Razorpay is ready."
       />
       <FunMode coins={wallet.coins} earned={wallet.earned} />
     </div>

@@ -1,7 +1,7 @@
 export const gameIds = ["memory", "catch", "sparks"] as const;
 export type GameId = (typeof gameIds)[number];
 
-export const COINS_PER_RUPEE = 10;
+export const COINS_PER_RUPEE = 100;
 export const MAX_COINS_PER_CLAIM = 12;
 export const MIN_CLAIM_MS = 20_000;
 export const DAILY_COIN_CAP = 400;

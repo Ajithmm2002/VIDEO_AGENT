@@ -11,7 +11,7 @@ const features = [
   { icon: PenLine, title: "Writing drafts", body: "Titles, captions, hashtags, and a script outline in Malayalam or English." },
   { icon: CalendarDays, title: "Quiet calendar", body: "Drop ideas onto a day. Each account stays private." },
   { icon: BadgePercent, title: "Affiliate ads", body: "Load a product link, then generate a studio image or video prompt." },
-  { icon: Store, title: "Skill shop", body: "Preview Claude and LLM skills. Buy with rupees or with Fun mode coins at 10 coins per rupee." },
+  { icon: Store, title: "Skill shop", body: "Preview Claude and LLM skills. Buy with Fun mode coins, or tap Buy now for Razorpay (coming soon)." },
   { icon: Gamepad2, title: "Fun mode", body: "Play longer runs for a small coin payout, then spend them in the skill shop." },
 ];
 

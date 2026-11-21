@@ -37,7 +37,7 @@ export function FunMode({ coins, earned }: { coins: number; earned: number }) {
           <p className="mt-1 text-2xl font-semibold">{formatCoinBalance(totalEarned)}</p>
           <p className="mt-1 text-sm font-semibold">earned in total · {formatCoins(balance)} to spend</p>
           <p className="mt-1 text-sm text-muted">
-            10 coins = ₹1. Up to 12 coins per run, 400 a day.{" "}
+            100 coins = ₹1. Up to 12 coins per run, 400 a day.{" "}
             <Link href="/marketplace" className="font-semibold text-accent">
               Spend in the skill shop
             </Link>
