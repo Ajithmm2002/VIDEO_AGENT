@@ -12,7 +12,7 @@ export default async function PlayPage() {
       <PageHeader
         eyebrow="Play"
         title="Fun mode"
-        description="Play to earn studio coins for this skill shop. Up to 12 coins per run, 400 a day. Coins stay on your account, are not transferable, and have no cash value."
+        description="Earn studio coins by playing. You can also buy coin packs with money, then redeem coins for skills—or buy those skills with rupees. Coins are not transferable and have no cash value."
       />
       <FunMode coins={wallet.coins} earned={wallet.earned} />
     </div>

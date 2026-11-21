@@ -10,11 +10,13 @@ export function RazorpayComingSoon({
   amountPaise,
   compact = false,
   disabled = false,
+  note,
 }: {
   title: string;
   amountPaise: number;
   compact?: boolean;
   disabled?: boolean;
+  note?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [opening, setOpening] = useState(false);
@@ -82,7 +84,8 @@ export function RazorpayComingSoon({
                   Pay {formatSkillPrice(amountPaise)} for {title}
                 </h2>
                 <p id={messageId} className="mt-2 text-sm leading-6 text-muted">
-                  Razorpay checkout is coming soon. Card, UPI, and net banking pay the listed rupee price. Studio coins stay in this shop: they are not converted into cash or gift cards.
+                  {note ??
+                    "Razorpay checkout is coming soon. Card, UPI, and net banking pay the listed rupee price. You can also redeem studio coins for this skill. Coins are not converted into cash or gift cards."}
                 </p>
                 <div className="mt-5 rounded-2xl border border-dashed border-line bg-surface-2/80 px-4 py-3 text-sm text-muted shadow-[var(--shadow-inset)]">
                   Secure payment by Razorpay · Coming soon

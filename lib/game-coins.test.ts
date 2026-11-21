@@ -21,9 +21,14 @@ describe("game coins", () => {
 
   it("states that coins are an in-app reward with no cash value", () => {
     expect(COIN_REWARD_HEADLINE.toLowerCase()).toContain("not money");
-    expect(COIN_REWARD_TERMS.join(" ").toLowerCase()).toMatch(/not transferable/);
-    expect(COIN_REWARD_TERMS.join(" ").toLowerCase()).toMatch(/cash/);
-    expect(COIN_REWARD_TERMS.join(" ").toLowerCase()).toMatch(/gift cards/);
-    expect(COIN_REWARD_TERMS.join(" ").toLowerCase()).toMatch(/skill shop/);
+    const terms = COIN_REWARD_TERMS.join(" ").toLowerCase();
+    expect(terms).toMatch(/earn coins/);
+    expect(terms).toMatch(/coin pack/);
+    expect(terms).toMatch(/redeem coins/);
+    expect(terms).toMatch(/buy now|real money/);
+    expect(terms).toMatch(/not transferable/);
+    expect(terms).toMatch(/cash/);
+    expect(terms).toMatch(/gift cards/);
+    expect(terms).toMatch(/skill shop/);
   });
 });

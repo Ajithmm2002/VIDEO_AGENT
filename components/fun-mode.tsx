@@ -38,9 +38,13 @@ export function FunMode({ coins, earned }: { coins: number; earned: number }) {
           <p className="mt-1 text-2xl font-semibold">{formatCoinBalance(totalEarned)}</p>
           <p className="mt-1 text-sm font-semibold">earned in total · {formatCoins(balance)} for this shop</p>
           <p className="mt-1 text-sm text-muted">
-            Up to 12 coins per run, 400 a day.{" "}
+            Up to 12 coins per run, 400 a day. Earn by playing, or{" "}
+            <Link href="/marketplace#coin-packs" className="font-semibold text-accent">
+              buy a coin pack
+            </Link>
+            .{" "}
             <Link href="/marketplace" className="font-semibold text-accent">
-              Redeem only in the skill shop
+              Redeem in the skill shop
             </Link>
           </p>
         </div>

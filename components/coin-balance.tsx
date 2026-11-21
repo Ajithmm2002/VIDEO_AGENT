@@ -19,6 +19,9 @@ export function CoinBalanceCard({ wallet }: { wallet: GameWallet }) {
         <Link href="/play" className="ig-gradient inline-flex rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]">
           Play Fun mode
         </Link>
+        <Link href="/marketplace#coin-packs" className="inline-flex rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
+          Buy coins
+        </Link>
         <Link href="/marketplace" className="inline-flex rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
           Skill shop
         </Link>

@@ -6,9 +6,11 @@ import { useCallback, useEffect, useId, useRef, useState, useTransition } from "
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { FileArchive, FileText } from "lucide-react";
+import { CoinPacks } from "@/components/coin-packs";
 import { CoinRewardNotice } from "@/components/coin-reward-notice";
 import { ComingSoonNotice } from "@/components/coming-soon";
 import { RazorpayComingSoon } from "@/components/razorpay-coming-soon";
+import { ShopPaths } from "@/components/shop-paths";
 import { SkillPreview } from "@/components/skill-preview";
 import { Button, Card, EmptyState } from "@/components/ui";
 import { redeemListingWithCoins } from "@/lib/actions/game";
@@ -48,9 +50,17 @@ export function MarketplaceBrowser({
       </div>
       <ComingSoonNotice
         title="Razorpay checkout is next"
-        body="Pay the listed rupee price with money when Razorpay is ready, or redeem studio coins in this shop. Coins are not cash."
+        body="Buy coin packs or skills with rupees when Razorpay is ready. You can also earn coins in Fun mode and redeem them here. Coins are not cash."
       />
+      <ShopPaths />
+      <CoinPacks />
       <CoinRewardNotice />
+      <div>
+        <h2 className="font-semibold">Digital skills</h2>
+        <p className="mt-1 text-sm leading-6 text-muted">
+          Redeem studio coins, or buy the same skill with rupees. Both unlock the same download.
+        </p>
+      </div>
       {listings.length ? (
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {listings.map((listing) => (

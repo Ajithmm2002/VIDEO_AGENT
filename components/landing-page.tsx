@@ -9,8 +9,8 @@ const features = [
   { icon: PenLine, title: "Writing drafts", body: "Titles, captions, hashtags, and a script outline in Malayalam or English." },
   { icon: CalendarDays, title: "Quiet calendar", body: "Drop ideas onto a day. Each account stays private." },
   { icon: BadgePercent, title: "Affiliate ads", body: "Load a product link, then generate a studio image or video prompt." },
-  { icon: Store, title: "Skill shop", body: "Preview Claude and LLM skills. Redeem in-app studio coins here, or tap Buy now for Razorpay (coming soon)." },
-  { icon: Gamepad2, title: "Fun mode", body: "Play for studio coins you can spend only in this skill shop. Coins are not cash and cannot be transferred." },
+  { icon: Store, title: "Skill shop", body: "Buy coin packs or skills with money, or redeem Fun mode coins for the same digital skills." },
+  { icon: Gamepad2, title: "Fun mode", body: "Earn studio coins by playing, then redeem them in the skill shop. Coins are not cash and cannot be transferred." },
 ];
 
 const previewCards = [
