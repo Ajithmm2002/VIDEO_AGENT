@@ -6,26 +6,29 @@ import { toast } from "sonner";
 import { ComingSoonNotice } from "@/components/coming-soon";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, choiceClass, Field, TextArea, TextInput } from "@/components/ui";
-import { deleteMarketplaceListing, saveMarketplaceListing } from "@/lib/actions/marketplace";
+import { deleteMarketplaceListing, fulfillMoneyPurchase, saveMarketplaceListing } from "@/lib/actions/marketplace";
+import { formatCoinBalance, priceInCoins } from "@/lib/game-coins";
 import { formatSkillPrice } from "@/lib/marketplace-file";
-import type { MarketplaceListing } from "@/lib/types";
+import { rupeesToPaise } from "@/lib/validation";
+import type { MarketplaceListing, MarketplacePurchase } from "@/lib/types";
 
 export function MarketplaceAdmin({
   listings,
-  adminEmail,
+  pending,
 }: {
   listings: MarketplaceListing[];
-  adminEmail: string;
+  pending: MarketplacePurchase[];
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<MarketplaceListing | null>(null);
+  const titles = new Map(listings.map((item) => [item.id, item.title]));
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
       <Card>
         <h2 className="font-semibold">{editing ? "Edit listing" : "List a skill"}</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Upload one Claude or LLM skill as a .md file, or a bundle as a .zip. Set the price and what the buyer gets.
+          Upload a .md skill or a .zip bundle and set the rupee price only. Coin cost for buyers is calculated automatically (10 coins = ₹1).
         </p>
         <ListingForm
           key={editing?.id ?? "new"}
@@ -47,22 +50,64 @@ export function MarketplaceAdmin({
         </div>
       </Card>
       <div className="grid gap-3">
-        <Card className="text-sm leading-6 text-muted">
-          If a save fails, run this once in the Supabase SQL editor, using the signed-in shop email:
-          <pre className="mt-2 overflow-x-auto rounded-2xl bg-surface-2 p-3 text-xs text-ink shadow-[var(--shadow-inset)]">
-            {`insert into public.app_admins (email) values ('${adminEmail.replace(/'/g, "''")}');\n`}
-          </pre>
-        </Card>
+        {pending.length ? (
+          <Card className="grid gap-3">
+            <h2 className="font-semibold">Rupee payments to confirm</h2>
+            {pending.map((item) => (
+              <div key={`${item.listing_id}-${item.buyer_id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-line bg-surface-2/70 px-3 py-2">
+                <div>
+                  <p className="text-sm font-semibold">{titles.get(item.listing_id) ?? "Skill"}</p>
+                  <p className="text-xs text-muted">{formatSkillPrice(item.amount_paise)} · waiting</p>
+                </div>
+                {item.buyer_id ? (
+                  <ConfirmButton
+                    label="Mark paid"
+                    title="Confirm this rupee payment?"
+                    message="This unlocks the download for that buyer."
+                    confirmLabel="Mark paid"
+                    onConfirm={async () => {
+                      const result = await fulfillMoneyPurchase(item.listing_id, item.buyer_id as string);
+                      if (!result.ok) {
+                        toast.error(result.error);
+                        return;
+                      }
+                      toast.success(result.message ?? "Marked paid");
+                      router.refresh();
+                    }}
+                  />
+                ) : null}
+              </div>
+            ))}
+          </Card>
+        ) : null}
         {listings.length ? listings.map((listing) => (
-          <Card key={listing.id} className="grid gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
-                {listing.listed ? "Listed" : "Draft"} · {listing.kind} · {formatSkillPrice(listing.price_paise)}
-              </p>
-              <h3 className="mt-1 font-semibold">{listing.title}</h3>
-              <p className="mt-1 line-clamp-3 text-sm text-muted">{listing.description}</p>
+          <Card key={listing.id} className="grid gap-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+                  {listing.listed ? "Listed" : "Draft"} · {listing.kind}
+                </p>
+                <h3 className="mt-1 truncate font-semibold">{listing.title}</h3>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-sm font-semibold">{formatSkillPrice(listing.price_paise)}</p>
+                {listing.price_paise > 0 ? (
+                  <p className="mt-0.5 text-xs text-muted">{formatCoinBalance(priceInCoins(listing.price_paise))} for buyers</p>
+                ) : (
+                  <p className="mt-0.5 text-xs text-muted">Free</p>
+                )}
+              </div>
             </div>
+            <p className="line-clamp-2 text-sm text-muted">{listing.description}</p>
             <div className="flex flex-wrap gap-2">
+              {listing.file_ext ? (
+                <a
+                  href={`/api/marketplace/download?id=${listing.id}`}
+                  className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
+                >
+                  Download
+                </a>
+              ) : null}
               <Button variant="secondary" onClick={() => setEditing(listing)}>Edit</Button>
               <ConfirmButton
                 label="Delete"
@@ -101,7 +146,9 @@ function ListingForm({
 }) {
   const [pending, setPending] = useState(false);
   const [kind, setKind] = useState(listing?.kind ?? "skill");
-  const rupees = listing ? (listing.price_paise / 100).toString() : "0";
+  const [priceText, setPriceText] = useState(listing ? String(listing.price_paise / 100) : "0");
+  const paise = rupeesToPaise(priceText);
+  const coinsNeeded = paise == null ? null : priceInCoins(paise);
 
   return (
     <form
@@ -119,6 +166,7 @@ function ListingForm({
           }
           toast.success(result.message ?? "Saved");
           form.reset();
+          setPriceText("0");
           onSaved();
         } finally {
           setPending(false);
@@ -151,9 +199,24 @@ function ListingForm({
         </div>
         <input type="hidden" name="kind" value={kind} />
       </div>
-      <Field label="Selling price (INR)" hint="Use 0 to let people take it for free. Paid checkout is coming soon.">
-        <TextInput name="price" inputMode="decimal" defaultValue={rupees} />
+      <Field
+        label="Selling price (INR)"
+        hint="Enter rupees only. 0 is free. Coin cost is calculated for buyers at 10 coins = ₹1. You never enter coins."
+      >
+        <TextInput
+          name="price"
+          inputMode="decimal"
+          value={priceText}
+          onChange={(event) => setPriceText(event.target.value)}
+        />
       </Field>
+      <p className="rounded-2xl border border-line bg-surface-2/80 px-3 py-2 text-sm shadow-[var(--shadow-inset)]">
+        {paise == null
+          ? "Enter a rupee amount such as 99 or 99.50."
+          : paise <= 0
+            ? "This listing will be free. No coins required."
+            : `Buyers need ${formatCoinBalance(coinsNeeded ?? 0)} or ${formatSkillPrice(paise)}.`}
+      </p>
       <Field label="Skill file" hint={listing ? "Leave empty to keep the current file. Accepts .md or .zip." : "Required. .md for one skill, .zip for a bundle."}>
         <input
           name="file"

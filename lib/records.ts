@@ -144,6 +144,7 @@ export function asPurchase(value: unknown): MarketplacePurchase | null {
   const status = row.status === "paid" ? "paid" : "checkout_soon";
   return {
     listing_id: row.listing_id,
+    buyer_id: typeof row.buyer_id === "string" ? row.buyer_id : undefined,
     status,
     amount_paise: typeof row.amount_paise === "number" && Number.isFinite(row.amount_paise) ? row.amount_paise : 0,
     created_at: text(row.created_at) ?? "",

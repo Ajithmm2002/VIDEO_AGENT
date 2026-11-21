@@ -9,7 +9,7 @@ import { Button, Card, EmptyState } from "@/components/ui";
 import { redeemListingWithCoins } from "@/lib/actions/game";
 import { requestMarketplaceSkill } from "@/lib/actions/marketplace";
 import { formatCoins, priceInCoins } from "@/lib/game-coins";
-import { formatSkillPriceWithCoins } from "@/lib/marketplace-file";
+import { formatSkillPrice } from "@/lib/marketplace-file";
 import type { MarketplaceListing, MarketplacePurchase } from "@/lib/types";
 
 export function MarketplaceBrowser({
@@ -28,10 +28,10 @@ export function MarketplaceBrowser({
   return (
     <div className="grid gap-4">
       <ComingSoonNotice
-        title="Card checkout, seller uploads, and image samples are on the way"
-        body="You can buy listed skills with Fun mode coins today (1 coin = ₹1). Free skills can be taken without coins. Play longer runs to earn more, then claim them."
+        title="Image samples and seller uploads are on the way"
+        body="The shop owner sets a rupee price. Coin cost is calculated for you automatically (10 coins = ₹1). Pay with coins or rupees."
       />
-      <p className="text-sm font-semibold">Your wallet: {formatCoins(coins)}</p>
+      <p className="text-sm font-semibold">Your wallet: 🪙 {formatCoins(coins)} · 10 coins = ₹1</p>
       {isAdmin ? (
         <Link
           href="/admin/marketplace"
@@ -68,10 +68,29 @@ export function MarketplaceBuy({
   coins: number;
 }) {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const [pending, setPending] = useState<"coins" | "rupees" | null>(null);
   const free = listing.price_paise <= 0;
   const cost = priceInCoins(listing.price_paise);
   const canCoinBuy = !free && coins >= cost;
+  const paid = purchase?.status === "paid";
+  const rupeePending = purchase?.status === "checkout_soon";
+
+  async function run(kind: "coins" | "rupees") {
+    setPending(kind);
+    try {
+      const result = kind === "coins"
+        ? await redeemListingWithCoins(listing.id)
+        : await requestMarketplaceSkill(listing.id);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(result.message ?? "Saved");
+      router.refresh();
+    } finally {
+      setPending(null);
+    }
+  }
 
   return (
     <Card className="grid gap-4">
@@ -97,42 +116,39 @@ export function MarketplaceBuy({
           ))}
         </ul>
       ) : null}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-lg font-semibold">{formatSkillPriceWithCoins(listing.price_paise)}</p>
-        {purchase?.status === "paid" ? (
-          <a href={`/api/marketplace/download?id=${listing.id}`} className="ig-gradient inline-flex rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]">
+      <div className="grid gap-3">
+        <div>
+          <p className="text-lg font-semibold">{formatSkillPrice(listing.price_paise)}</p>
+          {free ? null : (
+            <p className="mt-1 text-sm text-muted">or 🪙 {formatCoins(cost)} · 10 coins = ₹1</p>
+          )}
+        </div>
+        {paid ? (
+          <a href={`/api/marketplace/download?id=${listing.id}`} className="ig-gradient inline-flex w-fit rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]">
             Download
           </a>
+        ) : free ? (
+          <Button loading={pending === "rupees"} onClick={() => run("rupees")}>
+            {pending ? "Working…" : "Get this skill"}
+          </Button>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {!free && !canCoinBuy ? (
-              <Link href="/play" className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
-                Earn {Math.max(1, cost - coins)} more coins
-              </Link>
-            ) : null}
-            {purchase?.status === "checkout_soon" && !canCoinBuy ? (
-              <span className="rounded-full bg-accent/12 px-3 py-1.5 text-xs font-semibold text-accent">Card checkout coming soon</span>
+            {canCoinBuy ? (
+              <Button loading={pending === "coins"} disabled={Boolean(pending)} onClick={() => run("coins")}>
+                {pending === "coins" ? "Working…" : `Buy with ${formatCoins(cost)}`}
+              </Button>
             ) : (
-              <Button
-                loading={pending}
-                onClick={async () => {
-                  setPending(true);
-                  try {
-                    const result = canCoinBuy
-                      ? await redeemListingWithCoins(listing.id)
-                      : await requestMarketplaceSkill(listing.id);
-                    if (!result.ok) {
-                      toast.error(result.error);
-                      return;
-                    }
-                    toast.success(result.message ?? "Saved");
-                    router.refresh();
-                  } finally {
-                    setPending(false);
-                  }
-                }}
-              >
-                {pending ? "Working…" : free ? "Get this skill" : canCoinBuy ? `Buy with ${cost} coins` : "Wait for checkout"}
+              <Link href="/play" className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
+                Earn {formatCoins(Math.max(1, cost - coins))}
+              </Link>
+            )}
+            {rupeePending ? (
+              <span className="inline-flex items-center rounded-full bg-accent/12 px-3 py-1.5 text-xs font-semibold text-accent">
+                Rupee payment pending
+              </span>
+            ) : (
+              <Button variant="secondary" loading={pending === "rupees"} disabled={Boolean(pending)} onClick={() => run("rupees")}>
+                {pending === "rupees" ? "Working…" : `Buy with ${formatSkillPrice(listing.price_paise)}`}
               </Button>
             )}
           </div>

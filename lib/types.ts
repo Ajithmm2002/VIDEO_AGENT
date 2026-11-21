@@ -181,6 +181,7 @@ export type MarketplaceListing = {
 
 export type MarketplacePurchase = {
   listing_id: string;
+  buyer_id?: string;
   status: MarketplacePurchaseStatus;
   amount_paise: number;
   created_at: string;

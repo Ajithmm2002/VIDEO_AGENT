@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarDays, Camera, CheckCircle2, Clapperboard, PenLine, Play, Sparkles } from "lucide-react";
 import { StatusBadge } from "@/components/badges";
+import { CoinBalanceCard } from "@/components/coin-balance";
 import { DashboardWelcome } from "@/components/dashboard-welcome";
 import { Card, EmptyState } from "@/components/ui";
 import { isSupabaseConfigured } from "@/lib/env";
-import { dashboardData } from "@/lib/queries";
+import { dashboardData, getGameWallet } from "@/lib/queries";
 import { checklistProgress, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -23,6 +24,7 @@ const statMeta = [
 export default async function DashboardPage() {
   const data = await dashboardData();
   const configured = isSupabaseConfigured();
+  const wallet = configured ? await getGameWallet() : { coins: 0, earned: 0 };
   const values = {
     total: data.total,
     drafts: data.drafts,
@@ -49,6 +51,9 @@ export default async function DashboardPage() {
         }
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="sm:col-span-2">
+          <CoinBalanceCard wallet={wallet} />
+        </div>
         {statMeta.map((item) => {
           const Icon = item.icon;
           return (

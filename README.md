@@ -72,7 +72,7 @@ npm test
    - a private `thumbnails` storage bucket
    - Row Level Security so `user_id` must match the signed-in user
    - a trigger that creates a profile when someone registers
-6. For the skill shop, also run `supabase/migrations/20261121123000_marketplace.sql`, then `supabase/migrations/20261121140000_game_coins.sql`. Insert your sign-in email into `app_admins` and set `MARKETPLACE_ADMIN_EMAIL` to the same address in `.env.local` and Vercel. Only that account can upload `.md` or `.zip` skills. Fun mode coins buy listed skills at 1 coin = ₹1. Card checkout, seller uploads, and image samples are marked coming soon.
+6. For the skill shop, also run `supabase/migrations/20261121123000_marketplace.sql`, then `supabase/migrations/20261121140000_game_coins.sql`, then `supabase/migrations/20261121153000_coin_economy.sql`, then `supabase/migrations/20261121160000_ten_coins_per_rupee.sql`. Insert your sign-in email into `app_admins` and set `MARKETPLACE_ADMIN_EMAIL` to the same address in `.env.local` and Vercel. Only that account can upload `.md` or `.zip` skills. 10 Fun mode coins = ₹1. Buyers can pay rupees or coins. Seller uploads and image samples are marked coming soon.
 7. Open **Authentication → Providers** and keep Email enabled.
 8. For a personal workspace, you can turn off **Confirm email** under **Authentication → Sign In / Providers → Email**. Registration will sign you in immediately. Leave it on if you want people to confirm their address before they can sign in.
 9. Open **Authentication → URL Configuration**.
@@ -132,8 +132,8 @@ To connect a model later, set `AI_PROVIDER` to `openai` or `gemini`, set `AI_API
 - Plan 1 to 7 days of video ideas: titles, how to shoot them, and a spoken audio script for 15 seconds up to 5 minutes. Edit anything, then save it to the calendar.
 - Use a month or week calendar and move a planned date by dragging or with the date field.
 - Browse the library, export CSV, and download or restore a JSON backup of your rows.
-- Open the skill shop to preview listed Claude or LLM skills. Free listings can be taken now. Paid skills can be bought with Fun mode coins (1 coin = ₹1). Card checkout, community seller uploads, and image samples are coming soon.
-- Play Fun mode: longer memory, catch, and spark runs. Bank a round of at least 20 seconds, claim coins, and spend them in the skill shop. Daily cap is 500 coins.
+- Open the skill shop to preview listed Claude or LLM skills. Free listings can be taken now. Paid skills can be bought with rupees or with Fun mode coins (10 coins = ₹1). Community seller uploads and image samples are coming soon.
+- Play Fun mode: longer memory, catch, and spark runs. Bank a round of at least 20 seconds, claim coins, and spend them in the skill shop. Daily cap is 400 coins. Your total earned coins show on the dashboard and in Settings.
 
 Deleting content asks for confirmation. Thumbnail files live in a private bucket at `{your user id}/{content id}/...`.
 

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { asCategory, asCollection, asContent, asListing, asPrompt, asPurchase } from "@/lib/records";
+import { clampWalletCoins, type GameWallet } from "@/lib/game-coins";
 import type { Content, ContentOption, MarketplaceListing, MarketplacePurchase, Status } from "@/lib/types";
 import { statuses } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/utils";
@@ -317,12 +318,22 @@ export async function getMarketplaceListing(id: string) {
   return asListing(data);
 }
 
-export async function getGameCoins() {
+export async function getGameWallet(): Promise<GameWallet> {
   const supabase = await client();
-  if (!supabase) return 0;
-  const { data } = await supabase.from("game_wallets").select("coins").maybeSingle();
-  const coins = typeof data?.coins === "number" && Number.isFinite(data.coins) ? data.coins : 0;
-  return Math.max(0, Math.min(1_000_000, Math.floor(coins)));
+  if (!supabase) return { coins: 0, earned: 0 };
+  const { data, error } = await supabase.from("game_wallets").select("coins, earned").maybeSingle();
+  if (error) {
+    const { data: fallback } = await supabase.from("game_wallets").select("coins").maybeSingle();
+    const coins = clampWalletCoins(fallback?.coins);
+    return { coins, earned: coins };
+  }
+  const coins = clampWalletCoins(data?.coins);
+  const earned = Math.max(coins, clampWalletCoins(data?.earned));
+  return { coins, earned };
+}
+
+export async function getGameCoins() {
+  return (await getGameWallet()).coins;
 }
 
 export async function listMyPurchases() {
@@ -330,7 +341,7 @@ export async function listMyPurchases() {
   if (!supabase) return [] as MarketplacePurchase[];
   const { data, error } = await supabase
     .from("marketplace_purchases")
-    .select("listing_id, status, amount_paise, created_at")
+    .select("listing_id, buyer_id, status, amount_paise, created_at")
     .order("created_at", { ascending: false })
     .limit(100);
   if (error) return [];
@@ -338,6 +349,11 @@ export async function listMyPurchases() {
     const purchase = asPurchase(row);
     return purchase ? [purchase] : [];
   });
+}
+
+export async function listPendingMoneyPurchases() {
+  const purchases = await listMyPurchases();
+  return purchases.filter((item) => item.status === "checkout_soon" && item.buyer_id);
 }
 
 export async function listPrompts() {

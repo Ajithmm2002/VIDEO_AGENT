@@ -27,7 +27,7 @@ import { BrandMark } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, SubmitButton } from "@/components/ui";
 import { useGenerationJobs } from "@/lib/background-generate";
-import { formatCoins } from "@/lib/game-coins";
+import { formatCoinBalance, formatCoins } from "@/lib/game-coins";
 import { cn } from "@/lib/utils";
 
 const groups = [
@@ -68,12 +68,14 @@ export function AppShell({
   configured,
   isAdmin,
   coins = 0,
+  earned = 0,
   children,
 }: {
   email: string | null;
   configured: boolean;
   isAdmin?: boolean;
   coins?: number;
+  earned?: number;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -163,7 +165,9 @@ export function AppShell({
     <div className="rounded-3xl border border-line bg-surface-2/80 px-3 py-3 shadow-[var(--shadow-inset)]">
       <p className="truncate text-xs font-medium">{email ?? (configured ? "Workspace" : "Local draft mode")}</p>
       <p className="mt-1 text-[11px] leading-4 text-muted">
-        {email ? `${formatCoins(coins)} · spend in the skill shop` : "Connect Supabase to save your work."}
+        {email
+          ? `${formatCoinBalance(earned)} earned · ${formatCoins(coins)} to spend`
+          : "Connect Supabase to save your work."}
       </p>
     </div>
   );

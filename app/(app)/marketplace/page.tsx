@@ -20,7 +20,7 @@ export default async function MarketplacePage() {
       <PageHeader
         eyebrow="Marketplace"
         title="Skill shop"
-        description="Preview Claude and LLM skills. Buy with Fun mode coins today, or wait for card checkout. Image samples and seller uploads are coming soon."
+        description="Preview Claude and LLM skills. Buy with Fun mode coins (10 coins = ₹1) or pay the listed rupees. Image samples and seller uploads are coming soon."
       />
       <MarketplaceBrowser listings={listings} purchases={purchases} isAdmin={isMarketplaceAdmin(email)} coins={coins} />
     </div>

@@ -61,7 +61,7 @@ export async function saveMarketplaceListing(formData: FormData): Promise<Action
     if (storageError) {
       return {
         ok: false,
-        error: "Could not store the file. Add your sign-in email to app_admins in Supabase, then try again.",
+        error: "Could not store the file. Check MARKETPLACE_ADMIN_EMAIL and try again.",
       };
     }
   }
@@ -85,7 +85,7 @@ export async function saveMarketplaceListing(formData: FormData): Promise<Action
   if (result.error) {
     return {
       ok: false,
-      error: "Could not save the listing. Add your sign-in email to app_admins in Supabase, then try again.",
+      error: "Could not save the listing. Check MARKETPLACE_ADMIN_EMAIL and try again.",
     };
   }
   refreshShop();
@@ -124,12 +124,34 @@ export async function requestMarketplaceSkill(listingId: string): Promise<Action
   });
   if (error) {
     if (error.code === "23505") {
-      return { ok: true, message: listing.price_paise === 0 ? "You already have this skill." : "Checkout is already on your list." };
+      if (listing.price_paise === 0) return { ok: true, message: "You already have this skill." };
+      if (isMarketplaceAdmin(session.user.email)) {
+        return fulfillMoneyPurchase(listingId, session.user.id);
+      }
+      return { ok: true, message: "Rupee checkout is already waiting for confirmation." };
     }
     return { ok: false, error: "Could not start checkout." };
+  }
+  if (listing.price_paise > 0 && isMarketplaceAdmin(session.user.email)) {
+    return fulfillMoneyPurchase(listingId, session.user.id);
   }
   refreshShop();
   revalidatePath(`/marketplace/${listingId}`);
   if (listing.price_paise === 0) return { ok: true, message: "This skill is now in your library." };
-  return { ok: true, message: "Checkout is coming soon. We saved your interest." };
+  return { ok: true, message: "Pay the listed rupees. Download unlocks after the shop confirms the payment." };
+}
+
+export async function fulfillMoneyPurchase(listingId: string, buyerId: string): Promise<ActionResult> {
+  const session = await requireAdmin();
+  if (!session.ok) return session;
+  const { error } = await session.supabase.rpc("admin_fulfill_money_purchase", {
+    p_listing_id: listingId,
+    p_buyer_id: buyerId,
+  });
+  if (error) {
+    return { ok: false, error: error.message || "Could not confirm that rupee payment. Run the coin economy SQL in Supabase." };
+  }
+  refreshShop();
+  revalidatePath(`/marketplace/${listingId}`);
+  return { ok: true, message: "Rupee payment confirmed. The skill can be downloaded." };
 }

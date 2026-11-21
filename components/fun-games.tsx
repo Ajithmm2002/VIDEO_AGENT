@@ -72,6 +72,8 @@ export function MemoryMarathon({
   const [elapsed, setElapsed] = useState(0);
   const pairs = memoryLevels[Math.min(level, memoryLevels.length - 1)];
   const cols = pairs <= 8 ? 4 : 6;
+  const tile = pairs >= 18 ? "h-8 w-8 sm:h-9 sm:w-9" : "h-10 w-10 sm:h-11 sm:w-11";
+  const icon = pairs >= 18 ? "h-3.5 w-3.5" : "h-4 w-4";
 
   useEffect(() => {
     const tick = window.setInterval(() => setElapsed(Date.now() - started.current), 1000);
@@ -123,25 +125,28 @@ export function MemoryMarathon({
           {Math.floor(elapsed / 1000)}s · Score {score} · Combo {combo} · Board {boards + 1}
         </p>
       </div>
-      <div className={cn("mt-4 grid gap-2", cols === 4 ? "grid-cols-4" : "grid-cols-6")}>
-        {deck.map((card, index) => {
-          const show = open.includes(index) || matched.has(card.key);
-          const Icon = card.Icon;
-          return (
-            <button
-              key={`${boards}-${card.id}`}
-              type="button"
-              onClick={() => flip(index)}
-              className={cn(
-                "grid aspect-square place-items-center rounded-[1.2rem] border text-lg shadow-[var(--shadow)]",
-                show ? "choice-selected" : "border-line bg-surface text-muted",
-              )}
-              aria-label={show ? "Open card" : "Hidden card"}
-            >
-              {show ? <Icon className="h-5 w-5" /> : "?"}
-            </button>
-          );
-        })}
+      <div className="mt-3 flex justify-center">
+        <div className={cn("grid gap-1", cols === 4 ? "grid-cols-4" : "grid-cols-6")}>
+          {deck.map((card, index) => {
+            const show = open.includes(index) || matched.has(card.key);
+            const Icon = card.Icon;
+            return (
+              <button
+                key={`${boards}-${card.id}`}
+                type="button"
+                onClick={() => flip(index)}
+                className={cn(
+                  "grid place-items-center rounded-lg border text-xs shadow-[var(--shadow)]",
+                  tile,
+                  show ? "choice-selected" : "border-line bg-surface text-muted",
+                )}
+                aria-label={show ? "Open card" : "Hidden card"}
+              >
+                {show ? <Icon className={icon} /> : "?"}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button onClick={() => onBank(score, Date.now() - started.current)}>Bank this run</Button>
@@ -161,12 +166,12 @@ export function CatchEndless({
   const banked = useRef(false);
   const [running, setRunning] = useState(true);
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(5);
+  const [lives, setLives] = useState(6);
   const [combo, setCombo] = useState(0);
   const [hits, setHits] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [position, setPosition] = useState(10);
-  const motion = useRef({ dir: 1, speed: 3 });
+  const motion = useRef({ dir: 1, speed: 2.2 });
 
   function bank() {
     if (banked.current) return;
@@ -193,19 +198,19 @@ export function CatchEndless({
 
   function catchReel() {
     if (!running) return;
-    const zone = Math.max(6, 12 - Math.floor(hits / 12));
+    const zone = Math.max(8, 14 - Math.floor(hits / 14));
     const hit = Math.abs(position - 50) <= zone;
     if (hit) {
       const streak = combo + 1;
       setCombo(streak);
       setHits((value) => {
         const next = value + 1;
-        if (next % 20 === 0) setLives((current) => Math.min(5, current + 1));
+        if (next % 12 === 0) setLives((current) => Math.min(6, current + 1));
         return next;
       });
       scoreRef.current += 5 + streak;
       setScore(scoreRef.current);
-      if (hits > 0 && hits % 8 === 0) motion.current.speed = Math.min(9, motion.current.speed + 0.6);
+      if (hits > 0 && hits % 10 === 0) motion.current.speed = Math.min(7.5, motion.current.speed + 0.45);
     } else {
       setCombo(0);
       const nextLives = lives - 1;
@@ -215,11 +220,11 @@ export function CatchEndless({
   }
 
   const coins = previewGameCoins(score, elapsed);
-  const zone = Math.max(6, 12 - Math.floor(hits / 12));
+  const zone = Math.max(8, 14 - Math.floor(hits / 14));
 
   return (
     <Card>
-      <p className="text-sm text-muted">Tap when the glow is in the band. Speed rises. Five lives, with a life back every 20 catches.</p>
+      <p className="text-sm text-muted">Tap when the glow is in the band. Six lives, with a life back every 12 catches.</p>
       <div className="relative mt-5 h-16 overflow-hidden rounded-[1.5rem] border border-line bg-surface-2 shadow-[var(--shadow-inset)]">
         <div
           className="absolute inset-y-0 left-1/2 -translate-x-1/2 bg-accent/20"
@@ -288,7 +293,7 @@ export function SparkRush({
     const spawn = window.setInterval(() => {
       setSparks((current) => {
         const now = Date.now();
-        const kept = current.filter((item) => now - item.born < 1300);
+        const kept = current.filter((item) => now - item.born < 1600);
         const extra = left < 30 ? 2 : 1;
         const added = Array.from({ length: extra }, () => {
           const id = nextId.current;
@@ -297,7 +302,7 @@ export function SparkRush({
         });
         return [...kept, ...added].slice(-12);
       });
-    }, left < 30 ? 380 : 520);
+    }, left < 30 ? 460 : 620);
     return () => window.clearInterval(spawn);
   }, [running, left]);
 

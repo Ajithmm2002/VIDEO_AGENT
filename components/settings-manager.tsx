@@ -7,17 +7,21 @@ import { restoreBackup } from "@/lib/actions/backup";
 import { deleteCategory, saveCategory, updateDisplayName } from "@/lib/actions/catalog";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, Field, TextInput } from "@/components/ui";
+import { CoinBalanceCard } from "@/components/coin-balance";
 import { categoryColors } from "@/lib/labels";
+import type { GameWallet } from "@/lib/game-coins";
 import type { Category, Profile } from "@/lib/types";
 
 export function SettingsManager({
   profile,
   categories,
   configured,
+  wallet,
 }: {
   profile: Profile | null;
   categories: Category[];
   configured: boolean;
+  wallet: GameWallet;
 }) {
   const router = useRouter();
   const [name, setName] = useState(profile?.display_name ?? "");
@@ -29,6 +33,9 @@ export function SettingsManager({
 
   return (
     <div className="grid gap-4">
+      <div className="max-w-xl">
+        <CoinBalanceCard wallet={wallet} />
+      </div>
       <Card className="grid max-w-xl gap-3">
         <h2 className="font-semibold">Profile</h2>
         <Field label="Display name">

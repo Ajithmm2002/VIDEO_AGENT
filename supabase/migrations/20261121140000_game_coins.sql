@@ -1,5 +1,5 @@
 -- Fun-mode coins. Run after the marketplace migration.
--- 1 coin = ₹1 in the skill shop. Claims are capped per round and per day.
+-- Then run 20261121153000_coin_economy.sql and 20261121160000_ten_coins_per_rupee.sql (10 coins = ₹1).
 
 alter table public.marketplace_purchases
   add column if not exists paid_with_coins boolean not null default false;

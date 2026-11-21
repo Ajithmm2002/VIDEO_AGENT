@@ -15,7 +15,7 @@ export async function claimGameCoins(input: {
   game: string;
   score: number;
   durationMs: number;
-}): Promise<ActionResult & { awarded?: number; balance?: number }> {
+}): Promise<ActionResult & { awarded?: number; balance?: number; earned?: number }> {
   const session = await requireSession();
   if (!session.ok) return session;
   if (!isGameId(input.game)) return { ok: false, error: "Unknown game." };
@@ -35,13 +35,14 @@ export async function claimGameCoins(input: {
   if (error) {
     return { ok: false, error: error.message || "Could not claim coins. Run the game coins SQL in Supabase." };
   }
-  const row = data as { awarded?: number; balance?: number } | null;
+  const row = data as { awarded?: number; balance?: number; earned?: number } | null;
   refreshPlay();
   return {
     ok: true,
     message: `Claimed ${row?.awarded ?? 0} coins.`,
     awarded: row?.awarded,
     balance: row?.balance,
+    earned: row?.earned,
   };
 }
 

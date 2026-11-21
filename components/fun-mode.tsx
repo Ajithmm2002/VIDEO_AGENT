@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { CatchEndless, MemoryMarathon, SparkRush } from "@/components/fun-games";
 import { Button, Card, choiceClass } from "@/components/ui";
 import { claimGameCoins } from "@/lib/actions/game";
-import { formatCoins, previewGameCoins, type GameId } from "@/lib/game-coins";
+import { formatCoinBalance, formatCoins, previewGameCoins, type GameId } from "@/lib/game-coins";
 
 const games = [
   { id: "memory" as const, label: "Memory marathon" },
@@ -15,11 +15,12 @@ const games = [
   { id: "sparks" as const, label: "Spark rush" },
 ];
 
-export function FunMode({ coins }: { coins: number }) {
+export function FunMode({ coins, earned }: { coins: number; earned: number }) {
   const router = useRouter();
   const [game, setGame] = useState<GameId>("memory");
   const [run, setRun] = useState(0);
   const [balance, setBalance] = useState(coins);
+  const [totalEarned, setTotalEarned] = useState(earned);
   const [pending, setPending] = useState<{ game: GameId; score: number; durationMs: number } | null>(null);
   const [claiming, setClaiming] = useState(false);
   const ready = pending ? previewGameCoins(pending.score, pending.durationMs) : 0;
@@ -33,9 +34,10 @@ export function FunMode({ coins }: { coins: number }) {
       <Card className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.18em]">Studio coins</p>
-          <p className="mt-1 text-2xl font-semibold">{formatCoins(balance)}</p>
+          <p className="mt-1 text-2xl font-semibold">{formatCoinBalance(totalEarned)}</p>
+          <p className="mt-1 text-sm font-semibold">earned in total · {formatCoins(balance)} to spend</p>
           <p className="mt-1 text-sm text-muted">
-            1 coin = ₹1. Up to 18 coins per run, 500 per day.{" "}
+            10 coins = ₹1. Up to 12 coins per run, 400 a day.{" "}
             <Link href="/marketplace" className="font-semibold text-accent">
               Spend in the skill shop
             </Link>
@@ -58,6 +60,11 @@ export function FunMode({ coins }: { coins: number }) {
                   }
                   toast.success(result.message ?? "Coins claimed");
                   if (typeof result.balance === "number") setBalance(result.balance);
+                  if (typeof result.earned === "number") setTotalEarned(result.earned);
+                  else if (typeof result.awarded === "number") {
+                    const awarded = result.awarded;
+                    setTotalEarned((value) => value + awarded);
+                  }
                   setPending(null);
                   setRun((value) => value + 1);
                   router.refresh();

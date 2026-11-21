@@ -1,3 +1,5 @@
+import { formatCoins, priceInCoins } from "@/lib/game-coins";
+
 export const SKILL_MAX_BYTES = 8 * 1024 * 1024;
 
 const allowedExt = new Set(["md", "markdown", "zip"]);
@@ -36,6 +38,5 @@ export function formatSkillPrice(paise: number) {
 
 export function formatSkillPriceWithCoins(paise: number) {
   if (paise <= 0) return "Free";
-  const coins = Math.ceil(paise / 100);
-  return `${formatSkillPrice(paise)} · ${coins} coin${coins === 1 ? "" : "s"}`;
+  return `${formatSkillPrice(paise)} · ${formatCoins(priceInCoins(paise))}`;
 }
