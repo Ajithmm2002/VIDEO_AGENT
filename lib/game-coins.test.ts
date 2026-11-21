@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COIN_REWARD_HEADLINE, COIN_REWARD_TERMS, previewGameCoins, priceInCoins } from "@/lib/game-coins";
+import { COIN_REWARD_HEADLINE, COIN_REWARD_TERMS, previewGameCoins, priceInCoins, WELCOME_BONUS_COINS } from "@/lib/game-coins";
 
 describe("game coins", () => {
   it("gives nothing for a short round", () => {
@@ -10,6 +10,11 @@ describe("game coins", () => {
     expect(previewGameCoins(80, 25_000)).toBeGreaterThan(0);
     expect(previewGameCoins(120, 90_000)).toBeGreaterThan(0);
     expect(previewGameCoins(20_000, 180_000)).toBe(12);
+  });
+
+  it("credits a 9,900-coin welcome bonus for the test account", () => {
+    expect(WELCOME_BONUS_COINS).toBe(9_900);
+    expect(priceInCoins(9900)).toBe(WELCOME_BONUS_COINS);
   });
 
   it("converts rupees to coins at 100 coins per rupee", () => {

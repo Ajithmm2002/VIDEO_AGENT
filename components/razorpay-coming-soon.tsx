@@ -11,12 +11,14 @@ export function RazorpayComingSoon({
   compact = false,
   disabled = false,
   note,
+  label,
 }: {
   title: string;
   amountPaise: number;
   compact?: boolean;
   disabled?: boolean;
   note?: string;
+  label?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [opening, setOpening] = useState(false);
@@ -59,7 +61,7 @@ export function RazorpayComingSoon({
           setOpen(true);
         }}
       >
-        {opening ? "Opening…" : "Buy now"}
+        {opening ? "Opening…" : label ?? "Buy now"}
       </Button>
       {mounted && open
         ? createPortal(

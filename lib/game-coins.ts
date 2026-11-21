@@ -6,6 +6,8 @@ export const MAX_COINS_PER_CLAIM = 12;
 export const MIN_CLAIM_MS = 20_000;
 export const DAILY_COIN_CAP = 400;
 export const WALLET_COIN_CAP = 10_000_000;
+export const WELCOME_BONUS_COINS = 9_900;
+export const WELCOME_BONUS_EMAIL = "ajithmmkt2002@gmail.com";
 
 export type GameWallet = {
   coins: number;

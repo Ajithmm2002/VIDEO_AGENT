@@ -142,7 +142,7 @@ function SkillQuickView({
           </Button>
         </div>
         <SkillPreview listing={listing} heading="h2">
-          <MarketplaceBuy listing={listing} purchase={purchase} coins={coins} />
+          <MarketplaceBuy listing={listing} purchase={purchase} coins={coins} onClose={onClose} />
         </SkillPreview>
         <div className="mt-3">
           <CoinRewardNotice compact />
@@ -159,12 +159,14 @@ export function MarketplaceBuy({
   coins,
   compact = false,
   onOpen,
+  onClose,
 }: {
   listing: MarketplaceListing;
   purchase?: MarketplacePurchase;
   coins: number;
   compact?: boolean;
   onOpen?: () => void;
+  onClose?: () => void;
 }) {
   const router = useRouter();
   const [working, setWorking] = useState(false);
@@ -229,6 +231,29 @@ export function MarketplaceBuy({
     onOpen();
   }
 
+  function needMoreCoins() {
+    const missing = Math.max(1, cost - coins);
+    toast.error(`Pay with coins needs ${formatCoins(cost)}. You have ${formatCoins(coins)}. Get ${formatCoins(missing)} more in Fun mode or a coin pack.`);
+  }
+
+  function goToPacks() {
+    onClose?.();
+    startPlay(() => {
+      router.push("/marketplace#coin-packs");
+    });
+  }
+
+  const moneyPay = (
+    <RazorpayComingSoon
+      title={listing.title}
+      amountPaise={listing.price_paise}
+      compact={compact}
+      disabled={pending || downloading}
+      label={compact ? "Pay money" : `Pay ${formatSkillPrice(listing.price_paise)}`}
+      note="Razorpay checkout is coming soon. This pays the listed rupee price with card, UPI, or net banking. You can also pay with studio coins if you have enough."
+    />
+  );
+
   const actions = paid ? (
     <Button loading={downloading} onClick={download} className={compactBtn}>
       {downloading ? "Downloading…" : "Download"}
@@ -237,27 +262,65 @@ export function MarketplaceBuy({
     <Button loading={pending} onClick={buyWithCoins} className={compactBtn}>
       {pending ? "Buying…" : "Get this skill"}
     </Button>
+  ) : compact ? (
+    <div className="grid gap-1.5">
+      <Button
+        variant="secondary"
+        loading={pending}
+        disabled={pending}
+        className={compactBtn}
+        onClick={canCoinBuy ? buyWithCoins : needMoreCoins}
+      >
+        {pending ? "Buying…" : "Pay coins"}
+      </Button>
+      {moneyPay}
+    </div>
   ) : (
-    <div className={cn("grid gap-1.5", compact ? "grid-cols-1" : "sm:grid-cols-2")}>
-      {canCoinBuy ? (
-        <Button variant="secondary" loading={pending} disabled={pending} onClick={buyWithCoins} className={compactBtn}>
-          {pending ? "Buying…" : compact ? "Coins" : "Pay with coins"}
-        </Button>
-      ) : (
-        <Button
-          variant="secondary"
-          loading={openingPlay}
-          className={compactBtn}
-          onClick={() => {
-            startPlay(() => {
-              router.push("/play");
-            });
-          }}
-        >
-          {openingPlay ? "Opening…" : "Earn coins"}
-        </Button>
-      )}
-      <RazorpayComingSoon title={listing.title} amountPaise={listing.price_paise} compact={compact} disabled={pending || downloading} />
+    <div className="grid gap-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Choose how to pay</p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2 rounded-2xl border border-line bg-surface-2/70 p-3 shadow-[var(--shadow-inset)]">
+          <p className="text-sm font-semibold">Pay with coins</p>
+          <p className="text-xs text-muted">🪙 {formatCoins(cost)}</p>
+          <p className="text-xs text-muted">You have 🪙 {formatCoins(coins)}</p>
+          {canCoinBuy ? (
+            <Button loading={pending} disabled={pending} onClick={buyWithCoins} className="w-full">
+              {pending ? "Buying…" : "Pay with coins"}
+            </Button>
+          ) : (
+            <>
+              <Button className="w-full" disabled>
+                Pay with coins
+              </Button>
+              <p className="text-xs leading-5 text-muted">Need {formatCoins(Math.max(1, cost - coins))} more</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                <Button
+                  variant="secondary"
+                  loading={openingPlay}
+                  className="h-9 px-2 text-xs"
+                  onClick={() => {
+                    onClose?.();
+                    startPlay(() => {
+                      router.push("/play");
+                    });
+                  }}
+                >
+                  Earn coins
+                </Button>
+                <Button variant="secondary" loading={openingPlay} className="h-9 px-2 text-xs" onClick={goToPacks}>
+                  Buy pack
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="grid gap-2 rounded-2xl border border-line bg-surface-2/70 p-3 shadow-[var(--shadow-inset)]">
+          <p className="text-sm font-semibold">Pay with money</p>
+          <p className="text-xs text-muted">{formatSkillPrice(listing.price_paise)}</p>
+          <p className="text-xs text-muted">Card, UPI, or net banking</p>
+          {moneyPay}
+        </div>
+      </div>
     </div>
   );
 
@@ -306,10 +369,9 @@ export function MarketplaceBuy({
 
   return (
     <div className="grid gap-3 border-t border-line pt-4">
-      <div>
+      {paid || free ? (
         <p className="text-2xl font-semibold">{formatSkillPrice(listing.price_paise)}</p>
-        {free ? null : <p className="mt-0.5 text-sm text-muted">🪙 {formatCoins(cost)}</p>}
-      </div>
+      ) : null}
       {actions}
     </div>
   );

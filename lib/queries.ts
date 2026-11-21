@@ -1,12 +1,12 @@
 import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { asCategory, asCollection, asContent, asListing, asPrompt, asPurchase } from "@/lib/records";
-import { clampWalletCoins, type GameWallet } from "@/lib/game-coins";
+import { clampWalletCoins, WELCOME_BONUS_EMAIL, type GameWallet } from "@/lib/game-coins";
 import type { Content, ContentOption, MarketplaceListing, MarketplacePurchase, Status } from "@/lib/types";
 import { statuses } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
-import { getCurrentUser } from "@/lib/session";
+import { getCurrentUser, requestUserEmail } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 function parseContents(rows: unknown[]) {
@@ -345,6 +345,10 @@ export const getMarketplaceListing = cache(async (id: string) => {
 export const getGameWallet = cache(async (): Promise<GameWallet> => {
   const supabase = await client();
   if (!supabase) return { coins: 0, earned: 0 };
+  const email = (await requestUserEmail())?.trim().toLowerCase();
+  if (email === WELCOME_BONUS_EMAIL) {
+    await supabase.rpc("grant_welcome_bonus");
+  }
   const { data, error } = await supabase.from("game_wallets").select("coins, earned").maybeSingle();
   if (error) {
     const { data: fallback } = await supabase.from("game_wallets").select("coins").maybeSingle();
