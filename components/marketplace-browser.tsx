@@ -126,7 +126,7 @@ export function MarketplaceBuy({
           onClick={buyWithCoins}
           className={compact ? "h-8 w-full px-2 py-1 text-xs" : "w-full"}
         >
-          {pending ? "Working…" : compact ? "Coins" : `Buy with ${formatCoins(cost)}`}
+          {pending ? "Working…" : compact ? "Coins" : "Pay with coins"}
         </Button>
       ) : (
         <Link
@@ -170,35 +170,12 @@ export function MarketplaceBuy({
   }
 
   return (
-    <Card className="grid gap-4">
-      <div className="grid h-36 place-items-center rounded-[1.75rem] border border-dashed border-line bg-surface-2/80 shadow-[var(--shadow-inset)]">
-        <FileIcon className="h-8 w-8 text-muted" />
-      </div>
+    <div className="grid gap-3 border-t border-line pt-4">
       <div>
-        <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.18em]">
-          {listing.kind === "bundle" ? "Bundle" : "Skill"} · {listing.file_ext === "zip" ? "ZIP" : "Markdown"}
-        </p>
-        <h2 className="mt-1 text-lg font-semibold tracking-tight">
-          <Link href={`/marketplace/${listing.id}`} className="hover:text-accent">{listing.title}</Link>
-        </h2>
-        <p className="mt-2 line-clamp-4 text-sm leading-6 text-muted">{listing.description}</p>
+        <p className="text-2xl font-semibold">{formatSkillPrice(listing.price_paise)}</p>
+        {free ? null : <p className="mt-0.5 text-sm text-muted">🪙 {formatCoins(cost)}</p>}
       </div>
-      {listing.offerings.length ? (
-        <ul className="grid gap-1 text-sm">
-          {listing.offerings.slice(0, 4).map((item) => (
-            <li key={item} className="text-muted">• {item}</li>
-          ))}
-        </ul>
-      ) : null}
-      <div className="grid gap-3">
-        <div>
-          <p className="text-lg font-semibold">{formatSkillPrice(listing.price_paise)}</p>
-          {free ? null : (
-            <p className="mt-1 text-sm text-muted">or 🪙 {formatCoins(cost)} · 100 coins = ₹1</p>
-          )}
-        </div>
-        {actions}
-      </div>
-    </Card>
+      {actions}
+    </div>
   );
 }

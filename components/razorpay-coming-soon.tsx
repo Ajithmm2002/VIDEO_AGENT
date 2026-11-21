@@ -42,7 +42,7 @@ export function RazorpayComingSoon({
   return (
     <>
       <Button onClick={() => setOpen(true)} className={compact ? "h-8 w-full px-2.5 py-1 text-xs" : "w-full"}>
-        {compact ? "Buy now" : `Buy now · ${formatSkillPrice(amountPaise)}`}
+        Buy now
       </Button>
       {mounted && open
         ? createPortal(
