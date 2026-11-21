@@ -8,9 +8,11 @@ import { formatSkillPrice } from "@/lib/marketplace-file";
 export function RazorpayComingSoon({
   title,
   amountPaise,
+  compact = false,
 }: {
   title: string;
   amountPaise: number;
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -39,7 +41,9 @@ export function RazorpayComingSoon({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Buy now · {formatSkillPrice(amountPaise)}</Button>
+      <Button onClick={() => setOpen(true)} className={compact ? "h-8 w-full px-2.5 py-1 text-xs" : "w-full"}>
+        {compact ? "Buy now" : `Buy now · ${formatSkillPrice(amountPaise)}`}
+      </Button>
       {mounted && open
         ? createPortal(
             <div className="animate-veil-in fixed inset-0 z-[100] grid place-items-center p-4">
