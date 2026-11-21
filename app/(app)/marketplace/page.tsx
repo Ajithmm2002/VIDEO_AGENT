@@ -5,7 +5,7 @@ import { isMarketplaceAdmin, isSupabaseConfigured } from "@/lib/env";
 import { getGameCoins, listMarketplaceListings, listMyPurchases } from "@/lib/queries";
 import { requestUserEmail } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Skill shop" };
+export const metadata: Metadata = { title: "Marketplace" };
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -28,8 +28,8 @@ export default async function MarketplacePage({
     <div>
       <PageHeader
         eyebrow="Marketplace"
-        title="Skill shop"
-        description="Browse every listed skill and digital product. Details and purchase stay on this page. Earn coins in Fun mode, buy coin packs, redeem coins, or pay rupees. Coins stay in this shop and cannot be cashed out."
+        title="Marketplace"
+        description="Buy and sell digital products here. Browse listings, pay with coins or rupees, then open Purchases to download. Coin packs live in Fun mode."
       />
       <MarketplaceBrowser
         listings={listings}

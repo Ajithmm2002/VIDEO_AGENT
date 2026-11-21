@@ -34,6 +34,6 @@ describe("game coins", () => {
     expect(terms).toMatch(/not transferable/);
     expect(terms).toMatch(/cash/);
     expect(terms).toMatch(/gift cards/);
-    expect(terms).toMatch(/skill shop/);
+    expect(terms).toMatch(/marketplace/);
   });
 });

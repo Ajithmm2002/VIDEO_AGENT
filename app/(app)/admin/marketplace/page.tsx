@@ -6,7 +6,7 @@ import { isMarketplaceAdmin, isSupabaseConfigured } from "@/lib/env";
 import { listMarketplaceListings, listPendingMoneyPurchases } from "@/lib/queries";
 import { getCurrentUser, requestUserEmail } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Shop admin" };
+export const metadata: Metadata = { title: "Sell products" };
 
 export default async function MarketplaceAdminPage() {
   if (!isSupabaseConfigured()) redirect("/marketplace");
@@ -21,8 +21,8 @@ export default async function MarketplaceAdminPage() {
     <div>
       <PageHeader
         eyebrow="Admin"
-        title="Skill shop desk"
-        description="List skills and other digital products. Set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out."
+        title="Sell products"
+        description="List skills and other digital products for the marketplace. Set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out."
       />
       <MarketplaceAdmin listings={listings} pending={pending} />
     </div>

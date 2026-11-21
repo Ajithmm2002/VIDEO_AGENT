@@ -1,6 +1,7 @@
 import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { asCategory, asCollection, asContent, asListing, asPrompt, asPurchase } from "@/lib/records";
+import { attachListingsToPurchases } from "@/lib/marketplace-catalog";
 import { clampWalletCoins, WELCOME_BONUS_EMAIL, type GameWallet } from "@/lib/game-coins";
 import type { Content, ContentOption, MarketplaceListing, MarketplacePurchase, Status } from "@/lib/types";
 import { statuses } from "@/lib/types";
@@ -383,6 +384,11 @@ export async function listPendingMoneyPurchases() {
   const purchases = await listMyPurchases();
   return purchases.filter((item) => item.status === "checkout_soon" && item.buyer_id);
 }
+
+export const listMyPurchaseItems = cache(async () => {
+  const [purchases, listings] = await Promise.all([listMyPurchases(), listMarketplaceListings()]);
+  return attachListingsToPurchases(purchases, listings);
+});
 
 export const listPrompts = cache(async () => {
   const supabase = await client();

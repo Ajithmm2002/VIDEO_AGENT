@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  attachListingsToPurchases,
   filterMarketplaceCatalog,
   listingKindLabel,
   pickMarketplaceListing,
@@ -56,5 +57,17 @@ describe("marketplace catalog", () => {
     expect(pickMarketplaceListing(catalog, "bundle-1")?.id).toBe("bundle-1");
     expect(pickMarketplaceListing(catalog, "missing")?.id).toBe("skill-1");
     expect(pickMarketplaceListing([], "skill-1")).toBeNull();
+  });
+
+  it("moves owned products onto a purchases list", () => {
+    const records = attachListingsToPurchases(
+      [
+        { listing_id: "bundle-1", status: "paid", amount_paise: 9900, created_at: "2026-11-21" },
+        { listing_id: "gone", status: "paid", amount_paise: 100, created_at: "2026-11-21" },
+      ],
+      catalog,
+    );
+    expect(records[0]?.listing?.title).toBe("Reel starter kit");
+    expect(records[1]?.listing).toBeNull();
   });
 });

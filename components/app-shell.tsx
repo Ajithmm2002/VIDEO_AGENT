@@ -18,6 +18,7 @@ import {
   PenLine,
   Search,
   Settings,
+  ShoppingBag,
   Store,
   Shield,
   X,
@@ -55,7 +56,7 @@ const groups = [
   {
     label: "Discover",
     links: [
-      { href: "/marketplace", label: "Skill shop", icon: Store },
+      { href: "/marketplace", label: "Marketplace", icon: Store },
       { href: "/play", label: "Fun mode", icon: Gamepad2 },
     ],
   },
@@ -136,12 +137,30 @@ export function AppShell({
             <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", navActive(pathname, "/admin/marketplace") ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
               <Shield className="h-4 w-4" />
             </span>
-            Shop desk
+            Sell
           </Link>
         </div>
       ) : null}
       <div>
         <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Account</p>
+        <div className="grid gap-1">
+        <Link
+          href="/purchases"
+          prefetch
+          onClick={() => setOpen(false)}
+          className={cn(
+            "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
+            pathname.startsWith("/purchases")
+              ? "nav-item-active"
+              : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
+          )}
+          aria-current={pathname.startsWith("/purchases") ? "page" : undefined}
+        >
+          <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", pathname.startsWith("/purchases") ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
+            <ShoppingBag className="h-4 w-4" />
+          </span>
+          Purchases
+        </Link>
         <Link
           href="/settings"
           prefetch
@@ -159,6 +178,7 @@ export function AppShell({
           </span>
           Settings
         </Link>
+        </div>
       </div>
     </nav>
   );

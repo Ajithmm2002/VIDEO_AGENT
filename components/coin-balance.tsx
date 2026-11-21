@@ -11,7 +11,7 @@ export function CoinBalanceCard({ wallet }: { wallet: GameWallet }) {
       <p className="text-sm text-muted">Studio coins</p>
       <p className="mt-3 text-4xl font-semibold tracking-tight">{formatCoinBalance(wallet.earned)}</p>
       <p className="mt-1 text-sm text-muted">earned in total</p>
-      <p className="mt-3 text-sm font-semibold">🪙 {formatCoins(wallet.coins)} for this skill shop</p>
+      <p className="mt-3 text-sm font-semibold">🪙 {formatCoins(wallet.coins)} for the marketplace</p>
       <div className="mt-3">
         <CoinRewardNotice compact />
       </div>
@@ -19,11 +19,14 @@ export function CoinBalanceCard({ wallet }: { wallet: GameWallet }) {
         <Link href="/play" className="ig-gradient inline-flex rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]">
           Play Fun mode
         </Link>
-        <Link href="/marketplace#coin-packs" className="inline-flex rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
+        <Link href="/play#coin-packs" className="inline-flex rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
           Buy coins
         </Link>
         <Link href="/marketplace" className="inline-flex rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
-          Skill shop
+          Marketplace
+        </Link>
+        <Link href="/purchases" className="inline-flex rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
+          Purchases
         </Link>
       </div>
     </Card>

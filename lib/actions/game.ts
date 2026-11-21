@@ -8,6 +8,7 @@ import type { ActionResult } from "@/lib/types";
 function refreshPlay() {
   revalidatePath("/play");
   revalidatePath("/marketplace");
+  revalidatePath("/purchases");
   revalidatePath("/", "layout");
 }
 
@@ -60,7 +61,7 @@ export async function redeemListingWithCoins(listingId: string): Promise<ActionR
   revalidatePath(`/marketplace/${listingId}`);
   return {
     ok: true,
-    message: row?.spent ? `Bought with ${row.spent} coins.` : "Skill unlocked.",
+    message: row?.spent ? `Bought with ${row.spent} coins. Open Purchases to download.` : "Saved to Purchases.",
     balance: row?.balance,
   };
 }

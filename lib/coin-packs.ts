@@ -18,8 +18,8 @@ export const coinPacks: CoinPack[] = [
 export const shopPaths = [
   { title: "Earn coins", body: "Play Fun mode games and claim studio coins." },
   { title: "Buy coin packs", body: "Purchase coin packages with real money." },
-  { title: "Redeem coins", body: "Spend coins on digital skills in this shop." },
-  { title: "Pay with money", body: "Buy the same skills directly with rupees." },
+  { title: "Redeem coins", body: "Spend coins on digital products in the marketplace." },
+  { title: "Pay with money", body: "Buy the same products directly with rupees." },
 ] as const;
 
 export function packPriceLabel(pack: CoinPack) {

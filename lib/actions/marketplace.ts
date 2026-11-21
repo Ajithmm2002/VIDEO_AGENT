@@ -19,6 +19,7 @@ async function requireAdmin() {
 
 function refreshShop() {
   revalidatePath("/marketplace");
+  revalidatePath("/purchases");
   revalidatePath("/admin/marketplace");
 }
 

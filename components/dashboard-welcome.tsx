@@ -7,7 +7,7 @@ const chips = [
   { icon: Sparkles, label: "Ideas", href: "/planner" },
   { icon: ImageIcon, label: "Prompts", href: "/thumbnails" },
   { icon: CalendarDays, label: "Calendar", href: "/calendar" },
-  { icon: Store, label: "Skill shop", href: "/marketplace" },
+  { icon: Store, label: "Marketplace", href: "/marketplace" },
   { icon: Gamepad2, label: "Fun mode", href: "/play" },
 ];
 

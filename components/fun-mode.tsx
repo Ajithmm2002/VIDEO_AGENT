@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { CoinPacks } from "@/components/coin-packs";
 import { CoinRewardNotice } from "@/components/coin-reward-notice";
+import { ShopPaths } from "@/components/shop-paths";
 import { CatchEndless, MemoryMarathon, SparkRush } from "@/components/fun-games";
 import { Button, Card, choiceClass } from "@/components/ui";
 import { claimGameCoins } from "@/lib/actions/game";
@@ -38,13 +40,9 @@ export function FunMode({ coins, earned }: { coins: number; earned: number }) {
           <p className="mt-1 text-2xl font-semibold">{formatCoinBalance(totalEarned)}</p>
           <p className="mt-1 text-sm font-semibold">earned in total · {formatCoins(balance)} for this shop</p>
           <p className="mt-1 text-sm text-muted">
-            Up to 12 coins per run, 400 a day. Earn by playing, or{" "}
-            <Link href="/marketplace#coin-packs" className="font-semibold text-accent">
-              buy a coin pack
-            </Link>
-            .{" "}
+            Up to 12 coins per run, 400 a day. Earn by playing, or buy a pack below.{" "}
             <Link href="/marketplace" className="font-semibold text-accent">
-              Redeem in the skill shop
+              Spend them in the marketplace
             </Link>
           </p>
         </div>
@@ -93,6 +91,8 @@ export function FunMode({ coins, earned }: { coins: number; earned: number }) {
         ) : null}
       </Card>
       <CoinRewardNotice />
+      <ShopPaths />
+      <CoinPacks />
       <div className="flex flex-wrap gap-2">
         {games.map((item) => (
           <button

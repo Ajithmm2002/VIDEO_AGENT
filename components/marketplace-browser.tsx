@@ -5,11 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { FileArchive, FileText, Search } from "lucide-react";
-import { CoinPacks } from "@/components/coin-packs";
-import { CoinRewardNotice } from "@/components/coin-reward-notice";
-import { ComingSoonNotice } from "@/components/coming-soon";
 import { RazorpayComingSoon } from "@/components/razorpay-coming-soon";
-import { ShopPaths } from "@/components/shop-paths";
 import { SkillPreview } from "@/components/skill-preview";
 import { Button, Card, EmptyState, choiceClass } from "@/components/ui";
 import { redeemListingWithCoins } from "@/lib/actions/game";
@@ -28,7 +24,6 @@ const catalogFilters: { id: MarketplaceCatalogFilter; label: string }[] = [
   { id: "all", label: "All products" },
   { id: "skill", label: "Skills" },
   { id: "bundle", label: "Digital products" },
-  { id: "owned", label: "Owned" },
 ];
 
 export function MarketplaceBrowser({
@@ -52,10 +47,7 @@ export function MarketplaceBrowser({
     () => new Set(purchases.filter((item) => item.status === "paid").map((item) => item.listing_id)),
     [purchases],
   );
-  const visible = useMemo(
-    () => filterMarketplaceCatalog(listings, { query, filter, purchasedIds }),
-    [listings, query, filter, purchasedIds],
-  );
+  const visible = useMemo(() => filterMarketplaceCatalog(listings, { query, filter }), [listings, query, filter]);
   const selected = pickMarketplaceListing(listings, activeId);
   const selectedPurchase = selected ? byListing.get(selected.id) : undefined;
 
@@ -72,23 +64,32 @@ export function MarketplaceBrowser({
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-semibold">🪙 {formatCoins(coins)} · in-app shop only</p>
-        {isAdmin ? (
+        <p className="text-sm font-semibold">🪙 {formatCoins(coins)} · in-app only</p>
+        <div className="flex flex-wrap gap-2">
           <Link
-            href="/admin/marketplace"
-            className="ig-gradient inline-flex rounded-2xl px-3 py-1.5 text-xs font-semibold text-white shadow-[var(--shadow-glow)]"
+            href="/purchases"
+            className="inline-flex rounded-2xl border border-line bg-surface px-3 py-1.5 text-xs font-semibold shadow-[var(--shadow)]"
           >
-            Admin desk
+            Purchases
           </Link>
-        ) : null}
+          {isAdmin ? (
+            <Link
+              href="/admin/marketplace"
+              className="ig-gradient inline-flex rounded-2xl px-3 py-1.5 text-xs font-semibold text-white shadow-[var(--shadow-glow)]"
+            >
+              Sell
+            </Link>
+          ) : null}
+        </div>
       </div>
+
       {listings.length ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)] lg:items-start">
           <section className="grid gap-3">
             <div>
-              <h2 className="font-semibold">Skills and digital products</h2>
+              <h2 className="font-semibold">On sale</h2>
               <p className="mt-1 text-sm leading-6 text-muted">
-                Every listed skill and other digital product is here. Select one to read the details and pay on this page.
+                Browse every listed skill and digital product. Buy here. Downloads live in Purchases.
               </p>
             </div>
             <label className="relative block">
@@ -96,8 +97,8 @@ export function MarketplaceBrowser({
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search skills and digital products"
-                aria-label="Search skills and digital products"
+                placeholder="Search products"
+                aria-label="Search products"
                 className="h-11 w-full rounded-2xl border border-line bg-surface pl-10 pr-3 text-sm shadow-[var(--shadow-inset)]"
               />
             </label>
@@ -132,7 +133,7 @@ export function MarketplaceBrowser({
               <Card>
                 <EmptyState
                   title="No matching products"
-                  body="Try another search, or switch back to All products to see the full shop."
+                  body="Try another search, or switch back to All products."
                 />
               </Card>
             )}
@@ -140,15 +141,12 @@ export function MarketplaceBrowser({
 
           <section id="product-detail" className="grid gap-3 lg:sticky lg:top-24">
             {selected ? (
-              <>
-                <SkillPreview listing={selected} heading="h2">
-                  <MarketplaceBuy listing={selected} purchase={selectedPurchase} coins={coins} />
-                </SkillPreview>
-                <CoinRewardNotice compact />
-              </>
+              <SkillPreview listing={selected} heading="h2">
+                <MarketplaceBuy listing={selected} purchase={selectedPurchase} coins={coins} />
+              </SkillPreview>
             ) : (
               <Card>
-                <EmptyState title="Select a product" body="Choose a skill or digital product to see details and purchase options." />
+                <EmptyState title="Select a product" body="Choose a listing to see details and buy." />
               </Card>
             )}
           </section>
@@ -156,18 +154,11 @@ export function MarketplaceBrowser({
       ) : (
         <Card>
           <EmptyState
-            title="No products on the shelf yet"
-            body="When the shop owner lists a skill or other digital product, it will show up here with a description, offerings, and a price."
+            title="Nothing is on sale yet"
+            body="When a seller lists a skill or other digital product, it will show up here."
           />
         </Card>
       )}
-
-      <ShopPaths />
-      <CoinPacks />
-      <ComingSoonNotice
-        title="Razorpay checkout is next"
-        body="Buy coin packs or skills with rupees when Razorpay is ready. You can also earn coins in Fun mode and redeem them here. Coins are not cash."
-      />
     </div>
   );
 }
@@ -226,7 +217,6 @@ export function MarketplaceBuy({
 }) {
   const router = useRouter();
   const [working, setWorking] = useState(false);
-  const [downloading, setDownloading] = useState(false);
   const [refreshing, startRefresh] = useTransition();
   const [openingPlay, startPlay] = useTransition();
   const pending = working || refreshing;
@@ -244,7 +234,7 @@ export function MarketplaceBuy({
         setWorking(false);
         return;
       }
-      toast.success(result.message ?? "Saved");
+      toast.success(result.message ?? "Saved to Purchases");
       startRefresh(() => {
         router.refresh();
         setWorking(false);
@@ -254,41 +244,11 @@ export function MarketplaceBuy({
     }
   }
 
-  async function download() {
-    setDownloading(true);
-    try {
-      const response = await fetch(`/api/marketplace/download?id=${listing.id}`, { redirect: "manual" });
-      if (response.status >= 300 && response.status < 400) {
-        const location = response.headers.get("Location");
-        if (location) {
-          window.location.assign(location);
-          return;
-        }
-      }
-      if (!response.ok && response.type !== "opaqueredirect") {
-        const message = await response.text();
-        toast.error(message || "Could not download.");
-        return;
-      }
-      window.location.assign(`/api/marketplace/download?id=${listing.id}`);
-    } catch {
-      window.location.assign(`/api/marketplace/download?id=${listing.id}`);
-    } finally {
-      window.setTimeout(() => setDownloading(false), 1600);
-    }
-  }
-
-  function goToPacks() {
-    startPlay(() => {
-      router.push(`/marketplace?item=${listing.id}#coin-packs`);
-    });
-  }
-
   const moneyPay = (
     <RazorpayComingSoon
       title={listing.title}
       amountPaise={listing.price_paise}
-      disabled={pending || downloading}
+      disabled={pending}
       label={`Pay ${formatSkillPrice(listing.price_paise)}`}
       note="Razorpay checkout is coming soon. This pays the listed rupee price with card, UPI, or net banking. You can also pay with studio coins if you have enough."
     />
@@ -297,10 +257,13 @@ export function MarketplaceBuy({
   if (paid) {
     return (
       <div className="grid gap-3 border-t border-line pt-4">
-        <p className="text-2xl font-semibold">{formatSkillPrice(listing.price_paise)}</p>
-        <Button loading={downloading} onClick={download} className="w-full">
-          {downloading ? "Downloading…" : "Download"}
-        </Button>
+        <p className="text-sm leading-6 text-muted">You already own this. Downloads are in Purchases.</p>
+        <Link
+          href="/purchases"
+          className="ig-gradient inline-flex h-11 items-center justify-center rounded-2xl px-3.5 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
+        >
+          Open Purchases
+        </Link>
       </div>
     );
   }
@@ -318,7 +281,7 @@ export function MarketplaceBuy({
 
   return (
     <div className="grid gap-3 border-t border-line pt-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Choose how to pay</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Buy this product</p>
       <div className="grid gap-2">
         <div className="grid gap-2 rounded-2xl border border-line bg-surface-2/70 p-3 shadow-[var(--shadow-inset)]">
           <p className="text-sm font-semibold">Pay with coins</p>
@@ -347,7 +310,16 @@ export function MarketplaceBuy({
                 >
                   Earn coins
                 </Button>
-                <Button variant="secondary" loading={openingPlay} className="h-9 px-2 text-xs" onClick={goToPacks}>
+                <Button
+                  variant="secondary"
+                  loading={openingPlay}
+                  className="h-9 px-2 text-xs"
+                  onClick={() => {
+                    startPlay(() => {
+                      router.push("/play#coin-packs");
+                    });
+                  }}
+                >
                   Buy pack
                 </Button>
               </div>

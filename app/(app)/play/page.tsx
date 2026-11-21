@@ -12,7 +12,7 @@ export default async function PlayPage() {
       <PageHeader
         eyebrow="Play"
         title="Fun mode"
-        description="Earn studio coins by playing. You can also buy coin packs with money, then redeem coins for skills—or buy those skills with rupees. Coins are not transferable and have no cash value."
+        description="Earn studio coins by playing, or buy coin packs with money. Spend coins in the marketplace. Coins are not transferable and have no cash value."
       />
       <FunMode coins={wallet.coins} earned={wallet.earned} />
     </div>

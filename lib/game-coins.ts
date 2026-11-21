@@ -48,12 +48,12 @@ export function isGameId(value: string): value is GameId {
 export const COIN_REWARD_HEADLINE = "Studio coins are an in-app reward, not money.";
 
 export const COIN_REWARD_SUMMARY =
-  "Earn them in Fun mode or buy a coin pack with money. Redeem them only in this skill shop, on your own account. They cannot be transferred, withdrawn, or exchanged for cash, gift cards, or other real-world payment.";
+  "Earn them in Fun mode or buy a coin pack with money. Redeem them only in this marketplace, on your own account. They cannot be transferred, withdrawn, or exchanged for cash, gift cards, or other real-world payment.";
 
 export const COIN_REWARD_TERMS = [
   "Earn coins by playing Fun mode games.",
   "Purchase coin packs with real money. Packs credit your in-app balance only.",
-  "Redeem coins for digital skills in this Content Studio skill shop.",
+  "Redeem coins for digital products in this Content Studio marketplace.",
   "You can buy those same skills directly with real money using Buy now.",
   "Tied to your signed-in account and not transferable to anyone else.",
   "No cash value. Coins and packs cannot be converted into cash, gift cards, UPI, bank credit, or other real-world payment methods.",

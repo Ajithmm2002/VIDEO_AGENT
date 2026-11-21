@@ -1,4 +1,4 @@
-import type { MarketplaceKind, MarketplaceListing } from "@/lib/types";
+import type { MarketplaceKind, MarketplaceListing, MarketplacePurchase } from "@/lib/types";
 
 export const marketplaceCatalogFilters = ["all", "skill", "bundle", "owned"] as const;
 export type MarketplaceCatalogFilter = (typeof marketplaceCatalogFilters)[number];
@@ -45,4 +45,17 @@ export function pickMarketplaceListing(listings: MarketplaceListing[], selectedI
     if (match) return match;
   }
   return listings[0] ?? null;
+}
+
+export type PurchaseRecord = {
+  purchase: MarketplacePurchase;
+  listing: MarketplaceListing | null;
+};
+
+export function attachListingsToPurchases(purchases: MarketplacePurchase[], listings: MarketplaceListing[]): PurchaseRecord[] {
+  const byId = new Map(listings.map((listing) => [listing.id, listing]));
+  return purchases.map((purchase) => ({
+    purchase,
+    listing: byId.get(purchase.listing_id) ?? null,
+  }));
 }
