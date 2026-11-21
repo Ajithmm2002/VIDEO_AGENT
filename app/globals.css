@@ -2,42 +2,58 @@
 
 :root {
   color-scheme: light;
-  --bg: #f4eee4;
-  --bg-2: #eadcc8;
-  --surface: #fffcf7;
-  --surface-2: #f3eadc;
-  --ink: #1b1713;
-  --muted: #6d655c;
-  --line: #e4d6c2;
-  --accent: #0d8a7f;
-  --accent-2: #e25d3a;
-  --accent-ink: #f4fffd;
-  --warn: #b45309;
-  --danger: #b91c1c;
-  --ok: #15803d;
-  --glow: 13 138 127;
-  --glow-warm: 226 93 58;
-  --shadow: 0 22px 50px -28px rgb(28 25 23 / 0.38);
+  --bg: #fff7fb;
+  --bg-2: #f8eaf3;
+  --surface: #ffffff;
+  --surface-2: #fbf3f8;
+  --ink: #262626;
+  --muted: #8e8e8e;
+  --line: color-mix(in srgb, #dd2a7b 12%, #f3e6ee);
+  --accent: #dd2a7b;
+  --accent-2: #f77737;
+  --accent-ink: #ffffff;
+  --warn: #f77737;
+  --danger: #ed4956;
+  --ok: #22c55e;
+  --ig-orange: #f58529;
+  --ig-pink: #dd2a7b;
+  --ig-purple: #8134af;
+  --ig-blue: #515bd4;
+  --glow: 221 42 123;
+  --glow-warm: 247 119 55;
+  --glow-cool: 129 52 175;
+  --accent-gradient: linear-gradient(135deg, #f58529 0%, #dd2a7b 48%, #8134af 100%);
+  --shadow: 10px 14px 28px rgb(221 42 123 / 0.1), -8px -8px 22px rgb(255 255 255 / 0.92);
+  --shadow-glow: 0 16px 32px -16px rgb(221 42 123 / 0.55);
+  --shadow-inset: inset 3px 3px 8px rgb(38 38 38 / 0.05), inset -3px -3px 8px rgb(255 255 255 / 0.88);
 }
 
 .dark {
   color-scheme: dark;
-  --bg: #0d1110;
-  --bg-2: #151b18;
-  --surface: #161c19;
-  --surface-2: #1f2723;
-  --ink: #f4f1ea;
-  --muted: #a8a39a;
-  --line: #2b342f;
-  --accent: #3ee0c8;
-  --accent-2: #ff8b68;
-  --accent-ink: #042f2a;
-  --warn: #fbbf24;
-  --danger: #f87171;
+  --bg: #07060a;
+  --bg-2: #121016;
+  --surface: #16141c;
+  --surface-2: #221e28;
+  --ink: #fafafa;
+  --muted: #a8a8a8;
+  --line: color-mix(in srgb, #ff4d8d 18%, #2a2430);
+  --accent: #ff4d8d;
+  --accent-2: #ff8a4c;
+  --accent-ink: #ffffff;
+  --warn: #ffb347;
+  --danger: #ff6b7a;
   --ok: #4ade80;
-  --glow: 62 224 200;
-  --glow-warm: 255 139 104;
-  --shadow: 0 24px 48px -28px rgb(0 0 0 / 0.7);
+  --ig-orange: #f77737;
+  --ig-pink: #ff4d8d;
+  --ig-purple: #c084fc;
+  --ig-blue: #818cf8;
+  --glow: 255 77 141;
+  --glow-warm: 255 138 76;
+  --glow-cool: 192 132 252;
+  --accent-gradient: linear-gradient(135deg, #f77737 0%, #ff4d8d 50%, #a855f7 100%);
+  --shadow: 10px 16px 32px rgb(0 0 0 / 0.55), -4px -6px 16px rgb(255 255 255 / 0.035);
+  --shadow-glow: 0 18px 34px -16px rgb(255 77 141 / 0.55);
+  --shadow-inset: inset 3px 3px 10px rgb(0 0 0 / 0.45), inset -2px -2px 8px rgb(255 255 255 / 0.035);
 }
 
 @theme inline {
@@ -59,12 +75,23 @@
 
 body {
   background:
-    radial-gradient(1100px 520px at 0% -8%, rgb(var(--glow) / 0.16), transparent 58%),
-    radial-gradient(900px 420px at 100% 0%, rgb(var(--glow-warm) / 0.13), transparent 52%),
-    radial-gradient(700px 360px at 70% 110%, rgb(var(--glow) / 0.08), transparent 60%),
+    radial-gradient(1100px 560px at -8% -12%, rgb(var(--glow) / 0.18), transparent 58%),
+    radial-gradient(900px 460px at 108% -6%, rgb(var(--glow-warm) / 0.16), transparent 52%),
+    radial-gradient(780px 420px at 88% 112%, rgb(var(--glow-cool) / 0.14), transparent 58%),
     var(--bg);
   color: var(--ink);
   font-family: var(--font-outfit), var(--font-malayalam), sans-serif;
+}
+
+.ig-gradient {
+  background-image: var(--accent-gradient);
+}
+
+.ig-text {
+  background-image: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 ::selection {
@@ -81,11 +108,11 @@ button {
 
 :focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 dialog::backdrop {
-  background: rgb(16 14 12 / 0.52);
+  background: color-mix(in srgb, #12040c 62%, transparent);
 }
 
 a,
@@ -94,12 +121,13 @@ input,
 textarea,
 select {
   transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease,
-    box-shadow 160ms ease,
-    opacity 160ms ease,
-    transform 160ms ease;
+    background-color 180ms ease,
+    background-image 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

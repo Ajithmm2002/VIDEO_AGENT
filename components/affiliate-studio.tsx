@@ -281,7 +281,7 @@ export function AffiliateStudio({
                   key={type}
                   type="button"
                   onClick={() => setProductType(type)}
-                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "bg-accent text-accent-ink" : "border border-line bg-surface text-ink"}`}
+                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
                 >
                   {affiliateProductTypeLabels[type]}
                 </button>

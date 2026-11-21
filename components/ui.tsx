@@ -21,7 +21,7 @@ export function PageHeader({
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-2xl">
         {eyebrow ? (
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">{eyebrow}</p>
+          <p className="ig-text mb-2 text-[11px] font-semibold uppercase tracking-[0.22em]">{eyebrow}</p>
         ) : null}
         <h1 className="text-3xl font-semibold tracking-tight text-balance">{title}</h1>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{description}</p> : null}
@@ -44,9 +44,9 @@ export function Button({
   loading?: boolean;
 }) {
   const styles = {
-    primary: "bg-accent text-accent-ink shadow-[0_10px_24px_-12px_rgb(var(--glow)/0.9)] hover:brightness-105",
-    secondary: "border border-line bg-surface/80 text-ink hover:bg-surface-2",
-    danger: "bg-danger text-white hover:opacity-90",
+    primary: "ig-gradient text-white shadow-[var(--shadow-glow)] hover:brightness-105",
+    secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:bg-surface-2",
+    danger: "bg-danger text-white shadow-[0_12px_24px_-14px_rgb(237_73_86_/_0.7)] hover:opacity-90",
     ghost: "text-ink hover:bg-surface-2",
   };
   return (
@@ -55,7 +55,7 @@ export function Button({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center gap-2 rounded-2xl px-3.5 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60",
         styles[variant],
         className,
       )}
@@ -84,7 +84,7 @@ export function SubmitButton({
 }
 
 const control =
-  "w-full rounded-xl border border-line bg-surface/90 px-3 text-sm text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.4)] placeholder:text-muted/70";
+  "w-full rounded-2xl border border-line bg-surface px-3 text-sm text-ink shadow-[var(--shadow-inset)] placeholder:text-muted/70";
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cn(control, "h-11", props.className)} />;
@@ -144,7 +144,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return (
     <section
       className={cn(
-        "rounded-3xl border border-line/80 bg-surface/85 p-5 shadow-[var(--shadow)] backdrop-blur-sm",
+        "rounded-[1.75rem] border border-line bg-surface/90 p-5 shadow-[var(--shadow)] backdrop-blur-xl",
         className,
       )}
     >
@@ -163,8 +163,8 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="grid place-items-center rounded-2xl border border-dashed border-line bg-surface-2/50 px-6 py-10 text-center">
-      <div className="mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-accent/12 text-lg">✦</div>
+    <div className="grid place-items-center rounded-[1.75rem] border border-dashed border-line bg-surface-2/70 px-6 py-10 text-center shadow-[var(--shadow-inset)]">
+      <div className="ig-gradient mb-3 grid h-12 w-12 place-items-center rounded-2xl text-lg text-white shadow-[var(--shadow-glow)]">✦</div>
       <p className="font-semibold">{title}</p>
       <p className="mt-1 max-w-md text-sm leading-6 text-muted">{body}</p>
       {action ? <div className="mt-4">{action}</div> : null}

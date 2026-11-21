@@ -82,11 +82,11 @@ export function AppShell({
                   className={cn(
                     "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium",
                     active
-                      ? "bg-accent/12 text-ink shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--accent)_28%,transparent)]"
+                      ? "bg-surface text-ink shadow-[var(--shadow)]"
                       : "text-muted hover:bg-surface-2 hover:text-ink",
                   )}
                 >
-                  <span className={cn("grid h-8 w-8 place-items-center rounded-xl", active ? "bg-accent text-accent-ink" : "bg-surface-2")}>
+                  <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", active ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
                     <Icon className="h-4 w-4" />
                   </span>
                   {link.label}
@@ -105,11 +105,11 @@ export function AppShell({
           className={cn(
             "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium",
             pathname.startsWith("/settings")
-              ? "bg-accent/12 text-ink shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--accent)_28%,transparent)]"
+              ? "bg-surface text-ink shadow-[var(--shadow)]"
               : "text-muted hover:bg-surface-2 hover:text-ink",
           )}
         >
-          <span className={cn("grid h-8 w-8 place-items-center rounded-xl", pathname.startsWith("/settings") ? "bg-accent text-accent-ink" : "bg-surface-2")}>
+          <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", pathname.startsWith("/settings") ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
             <Settings className="h-4 w-4" />
           </span>
           Settings
@@ -120,12 +120,12 @@ export function AppShell({
 
   return (
     <div className="min-h-screen text-ink">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-line/80 bg-surface/70 p-4 backdrop-blur-xl lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-line bg-surface/75 p-4 shadow-[var(--shadow)] backdrop-blur-xl lg:flex">
         <div className="mb-8">
           <BrandMark />
         </div>
         {nav}
-        <div className="mt-auto rounded-2xl border border-line bg-surface-2/70 px-3 py-3">
+        <div className="mt-auto rounded-3xl border border-line bg-surface-2/80 px-3 py-3 shadow-[var(--shadow-inset)]">
           <p className="truncate text-xs font-medium">{email ?? (configured ? "Workspace" : "Local draft mode")}</p>
           <p className="mt-1 text-[11px] leading-4 text-muted">
             {email ? "Private workspace" : "Connect Supabase to save your work."}
@@ -149,7 +149,7 @@ export function AppShell({
       ) : null}
 
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-line/70 bg-bg/70 px-4 py-3 backdrop-blur-xl sm:px-6">
+        <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-bg/75 px-4 py-3 backdrop-blur-xl sm:px-6">
           <Button variant="secondary" className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}>
             <Menu className="h-4 w-4" />
           </Button>
@@ -167,14 +167,14 @@ export function AppShell({
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search titles and topics"
               aria-label="Search content"
-              className="h-11 w-full rounded-2xl border border-line bg-surface/80 pl-10 pr-3 text-sm shadow-[var(--shadow)]"
+              className="h-11 w-full rounded-2xl border border-line bg-surface pl-10 pr-3 text-sm shadow-[var(--shadow-inset)]"
             />
           </form>
           {activeJobs.length ? (
             <>
               <Link
                 href={activeJobs[0].href}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent/12 text-accent sm:hidden"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/12 text-accent sm:hidden"
                 aria-label={activeJobs[0].label}
               >
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -199,14 +199,14 @@ export function AppShell({
               <SubmitButton variant="secondary" pendingLabel="Signing out…">Sign out</SubmitButton>
             </form>
           ) : (
-            <Link href="/login" className="inline-flex h-11 items-center rounded-xl bg-accent px-3.5 text-sm font-semibold text-accent-ink shadow-[0_10px_24px_-12px_rgb(var(--glow)/0.9)]">
+            <Link href="/login" className="ig-gradient inline-flex h-11 items-center rounded-2xl px-3.5 text-sm font-semibold text-white shadow-[var(--shadow-glow)]">
               Sign in
             </Link>
           )}
         </header>
         <main className="px-4 py-8 sm:px-6 lg:px-8">
           {configured ? null : (
-            <div className="mb-6 overflow-hidden rounded-3xl border border-line bg-surface/85 p-4 shadow-[var(--shadow)] sm:p-5">
+            <div className="mb-6 overflow-hidden rounded-[1.75rem] border border-line bg-surface/90 p-4 shadow-[var(--shadow)] sm:p-5">
               <p className="text-sm font-semibold">This device is in local draft mode</p>
               <p className="mt-1 text-sm leading-6 text-muted">
                 Thumbnail prompts and writing drafts still work. <Link href="/login" className="font-medium text-ink underline decoration-accent/50 underline-offset-2">Sign in</Link> and <Link href="/register" className="font-medium text-ink underline decoration-accent/50 underline-offset-2">create an account</Link> after you add the project URL and anon key in <span className="font-medium text-ink">.env.local</span>.

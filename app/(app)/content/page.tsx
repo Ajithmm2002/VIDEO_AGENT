@@ -35,7 +35,7 @@ export default async function ContentPage({
         eyebrow="Library"
         title="Content"
         description="Search, filter, and open any idea, draft, or published post."
-        action={<Link href="/content/new" className="inline-flex items-center rounded-xl bg-accent px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[0_10px_24px_-12px_rgb(var(--glow)/0.9)]">New content</Link>}
+        action={<Link href="/content/new" className="ig-gradient inline-flex items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]">New content</Link>}
       />
       <Card className="mb-4">
         <form className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">

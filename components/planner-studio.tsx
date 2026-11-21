@@ -46,7 +46,7 @@ function DurationPills({
             type="button"
             disabled={disabled}
             onClick={() => onChange(seconds)}
-            className={`rounded-full px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-60 ${on ? "bg-accent text-accent-ink" : "border border-line bg-surface text-ink"}`}
+            className={`rounded-full px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-60 ${on ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
           >
             {videoDurationLabels[seconds]}
           </button>
@@ -316,7 +316,7 @@ export function PlannerStudio({
                   key={theme}
                   type="button"
                   onClick={() => toggleTheme(theme)}
-                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "bg-accent text-accent-ink" : "border border-line bg-surface text-ink"}`}
+                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
                 >
                   {ideaThemeLabels[theme]}
                 </button>
@@ -340,7 +340,7 @@ export function PlannerStudio({
                   key={count}
                   type="button"
                   onClick={() => setDays(count)}
-                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "bg-accent text-accent-ink" : "border border-line bg-surface text-ink"}`}
+                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
                 >
                   {planDayLabel(count)}
                 </button>

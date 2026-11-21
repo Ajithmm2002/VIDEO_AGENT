@@ -13,10 +13,10 @@ const statMeta = [
   { label: "Planned", key: "total", icon: Clapperboard, tint: "var(--accent)" },
   { label: "Drafts", key: "drafts", icon: PenLine, tint: "var(--accent-2)" },
   { label: "Ready", key: "ready", icon: Sparkles, tint: "var(--ok)" },
-  { label: "Scheduled", key: "scheduled", icon: CalendarDays, tint: "#6d28d9" },
+  { label: "Scheduled", key: "scheduled", icon: CalendarDays, tint: "var(--ig-purple)" },
   { label: "Published", key: "published", icon: CheckCircle2, tint: "var(--ok)" },
-  { label: "YouTube", key: "youtube", icon: Play, tint: "#dc2626" },
-  { label: "Instagram", key: "instagram", icon: Camera, tint: "#db2777" },
+  { label: "YouTube", key: "youtube", icon: Play, tint: "#ff3040" },
+  { label: "Instagram", key: "instagram", icon: Camera, tint: "var(--ig-pink)" },
 ] as const;
 
 export default async function DashboardPage() {
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
         action={
           <Link
             href="/content/new"
-            className="inline-flex items-center rounded-xl bg-accent px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[0_10px_24px_-12px_rgb(var(--glow)/0.9)]"
+            className="ig-gradient inline-flex items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
           >
             New content
           </Link>
@@ -79,19 +79,19 @@ export default async function DashboardPage() {
               <div className="flex flex-wrap justify-center gap-2">
                 <Link
                   href="/planner"
-                  className="inline-flex items-center rounded-xl bg-accent px-3.5 py-2 text-sm font-semibold text-accent-ink"
+                  className="ig-gradient inline-flex items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
                 >
                   Plan a week of ideas
                 </Link>
                 <Link
                   href="/affiliate"
-                  className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold"
+                  className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
                 >
                   Affiliate product ad
                 </Link>
                 <Link
                   href="/content/new"
-                  className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold"
+                  className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
                 >
                   Create one item
                 </Link>

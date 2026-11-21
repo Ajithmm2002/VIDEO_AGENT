@@ -59,7 +59,7 @@ export function LibraryBrowser({
             key={id}
             type="button"
             onClick={() => open(id)}
-            className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm ${view === id ? "bg-accent text-accent-ink shadow-[0_10px_24px_-12px_rgb(var(--glow)/0.9)]" : "border border-line bg-surface/80 text-ink"}`}
+            className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm ${view === id ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
           >
             {label}
           </button>

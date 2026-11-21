@@ -38,7 +38,7 @@ export function ConfirmButton({
       </Button>
       <dialog
         ref={dialogRef}
-        className="w-[min(28rem,calc(100%-2rem))] rounded-2xl border border-line bg-surface p-5 text-ink"
+        className="w-[min(28rem,calc(100%-2rem))] rounded-[1.75rem] border border-line bg-surface p-5 text-ink shadow-[var(--shadow)]"
         onClose={() => setOpen(false)}
       >
         <h2 className="text-lg font-semibold">{title}</h2>

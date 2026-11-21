@@ -88,7 +88,7 @@ export function AuthFrame({
       <section className="relative hidden overflow-hidden px-12 py-12 text-ink lg:flex lg:flex-col lg:justify-between">
         <BrandMark href="/" />
         <div className="max-w-lg">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">Personal workspace</p>
+          <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.22em]">Personal workspace</p>
           <h1 className="mt-4 text-5xl font-semibold tracking-tight text-balance">Plan the next video before you record it.</h1>
           <p className="mt-4 max-w-md text-sm leading-6 text-muted">
             Keep YouTube and Instagram ideas, prompts, and publishing dates in one private studio.
@@ -97,8 +97,8 @@ export function AuthFrame({
             {highlights.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.title} className="flex gap-3 rounded-2xl border border-line/70 bg-surface/70 p-4 backdrop-blur-sm">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-accent/12 text-accent">
+                <div key={item.title} className="flex gap-3 rounded-3xl border border-line bg-surface/80 p-4 shadow-[var(--shadow)] backdrop-blur-xl">
+                  <span className="ig-gradient grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-white shadow-[var(--shadow-glow)]">
                     <Icon className="h-4 w-4" />
                   </span>
                   <span>

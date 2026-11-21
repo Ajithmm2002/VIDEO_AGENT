@@ -21,21 +21,21 @@ export const languageLabels: Record<Language, string> = {
 };
 
 export const categoryColors = [
-  "#0d8a7f",
-  "#e25d3a",
-  "#1d4ed8",
-  "#be123c",
-  "#6d28d9",
-  "#3f6212",
+  "#dd2a7b",
+  "#f77737",
+  "#8134af",
+  "#515bd4",
+  "#f58529",
+  "#ed4956",
 ];
 
 export const statusColors: Record<Status, string> = {
-  idea: "#c2410c",
-  planning: "#b45309",
-  in_progress: "#1d4ed8",
-  ready: "#0d8a7f",
-  scheduled: "#6d28d9",
-  published: "#15803d",
+  idea: "#f77737",
+  planning: "#f58529",
+  in_progress: "#515bd4",
+  ready: "#dd2a7b",
+  scheduled: "#8134af",
+  published: "#22c55e",
 };
 
 export const googleFlowUrl = "https://labs.google/fx/tools/flow";
