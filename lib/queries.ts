@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { asCategory, asCollection, asContent, asPrompt } from "@/lib/records";
-import type { Content, ContentOption, Status } from "@/lib/types";
+import { asCategory, asCollection, asContent, asListing, asPrompt, asPurchase } from "@/lib/records";
+import type { Content, ContentOption, MarketplaceListing, MarketplacePurchase, Status } from "@/lib/types";
 import { statuses } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -283,6 +283,53 @@ export async function getProfile() {
   const row = data as { id?: string; display_name?: string | null } | null;
   if (!row?.id) return { id: userData.user.id, display_name: null };
   return { id: row.id, display_name: row.display_name ?? null };
+}
+
+export async function listMarketplaceListings(options: { includeDrafts?: boolean } = {}) {
+  const supabase = await client();
+  if (!supabase) return [] as MarketplaceListing[];
+  let query = supabase
+    .from("marketplace_listings")
+    .select("id, title, description, offerings, kind, price_paise, currency, listed, file_name, file_ext, created_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (!options.includeDrafts) query = query.eq("listed", true);
+  const { data, error } = await query;
+  if (error) {
+    console.error("listMarketplaceListings", error);
+    return [];
+  }
+  return (data ?? []).flatMap((row) => {
+    const listing = asListing(row);
+    return listing ? [listing] : [];
+  });
+}
+
+export async function getMarketplaceListing(id: string) {
+  const supabase = await client();
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("marketplace_listings")
+    .select("id, title, description, offerings, kind, price_paise, currency, listed, file_name, file_ext, created_at")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) return null;
+  return asListing(data);
+}
+
+export async function listMyPurchases() {
+  const supabase = await client();
+  if (!supabase) return [] as MarketplacePurchase[];
+  const { data, error } = await supabase
+    .from("marketplace_purchases")
+    .select("listing_id, status, amount_paise, created_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) return [];
+  return (data ?? []).flatMap((row) => {
+    const purchase = asPurchase(row);
+    return purchase ? [purchase] : [];
+  });
 }
 
 export async function listPrompts() {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BadgePercent, CalendarDays, ImageIcon, PenLine, Sparkles } from "lucide-react";
+import { BadgePercent, CalendarDays, Gamepad2, ImageIcon, PenLine, Sparkles, Store } from "lucide-react";
 import { AmbientGlow } from "@/components/ambient-glow";
 import { BrandMark } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -11,6 +11,8 @@ const features = [
   { icon: PenLine, title: "Writing drafts", body: "Titles, captions, hashtags, and a script outline in Malayalam or English." },
   { icon: CalendarDays, title: "Quiet calendar", body: "Drop ideas onto a day. Each account stays private." },
   { icon: BadgePercent, title: "Affiliate ads", body: "Load a product link, then generate a studio image or video prompt." },
+  { icon: Store, title: "Skill shop", body: "Preview Claude and LLM skills. Checkout and image samples are coming soon." },
+  { icon: Gamepad2, title: "Fun mode", body: "Play a short memory or timing game when you need a break." },
 ];
 
 const previewCards = [

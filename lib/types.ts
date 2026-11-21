@@ -161,6 +161,31 @@ export type AffiliateAd = {
   provider: "local" | "remote";
 };
 
+export const marketplaceKinds = ["skill", "bundle"] as const;
+export type MarketplaceKind = (typeof marketplaceKinds)[number];
+export type MarketplacePurchaseStatus = "checkout_soon" | "paid";
+
+export type MarketplaceListing = {
+  id: string;
+  title: string;
+  description: string;
+  offerings: string[];
+  kind: MarketplaceKind;
+  price_paise: number;
+  currency: "INR";
+  listed: boolean;
+  file_name: string | null;
+  file_ext: "md" | "zip" | null;
+  created_at: string;
+};
+
+export type MarketplacePurchase = {
+  listing_id: string;
+  status: MarketplacePurchaseStatus;
+  amount_paise: number;
+  created_at: string;
+};
+
 export type ProductPreview = {
   url: string;
   title: string;

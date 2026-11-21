@@ -14,6 +14,9 @@ const protectedPrefixes = [
   "/hashtags",
   "/affiliate",
   "/settings",
+  "/marketplace",
+  "/play",
+  "/admin",
   "/api",
 ];
 

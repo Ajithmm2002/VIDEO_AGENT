@@ -1,13 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { CalendarDays, ImageIcon, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Gamepad2, ImageIcon, Sparkles, Store } from "lucide-react";
 import { AmbientGlow } from "@/components/ambient-glow";
 
 const chips = [
-  { icon: Sparkles, label: "Ideas" },
-  { icon: ImageIcon, label: "Prompts" },
-  { icon: CalendarDays, label: "Calendar" },
+  { icon: Sparkles, label: "Ideas", href: "/planner" },
+  { icon: ImageIcon, label: "Prompts", href: "/thumbnails" },
+  { icon: CalendarDays, label: "Calendar", href: "/calendar" },
+  { icon: Store, label: "Skill shop", href: "/marketplace" },
+  { icon: Gamepad2, label: "Fun mode", href: "/play" },
 ];
 
 export function DashboardWelcome({
@@ -37,8 +40,9 @@ export function DashboardWelcome({
             {chips.map((chip, index) => {
               const Icon = chip.icon;
               return (
-                <span
+                <Link
                   key={chip.label}
+                  href={chip.href}
                   className="animate-float inline-flex items-center gap-2 rounded-full border border-line bg-surface/90 px-3 py-1.5 text-xs font-semibold shadow-[var(--shadow)]"
                   style={{ animationDelay: `${index * 0.35}s` }}
                 >
@@ -46,7 +50,7 @@ export function DashboardWelcome({
                     <Icon className="h-3 w-3" />
                   </span>
                   {chip.label}
-                </span>
+                </Link>
               );
             })}
           </div>

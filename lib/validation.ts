@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { affiliateProductTypes, languages, platforms, statuses, videoDurations, type ContentInput, type VideoDuration } from "@/lib/types";
+import { affiliateProductTypes, languages, marketplaceKinds, platforms, statuses, videoDurations, type ContentInput, type VideoDuration } from "@/lib/types";
 import { uniqueLimited } from "@/lib/utils";
 
 function isHttpsUrl(value: string) {
@@ -286,6 +286,35 @@ export const backupSchema = z.object({
     hashtagCollectionSchema.extend({ id: z.uuid() }),
   ).max(500),
 });
+
+export const marketplaceListingSchema = z.object({
+  title: z.string().trim().min(1, "Enter a skill title").max(120),
+  description: z.string().trim().min(20, "Write a short description buyers can preview.").max(8000),
+  offerings: z
+    .array(z.string().trim().min(1).max(80))
+    .max(12)
+    .transform((values) => uniqueLimited(values, 12)),
+  kind: z.enum(marketplaceKinds),
+  price_paise: z.number().int().min(0, "Price cannot be negative").max(100_000_000, "That price is too high"),
+  listed: z.boolean(),
+});
+
+export function parseOfferings(value: string) {
+  return uniqueLimited(
+    value
+      .split(/\n|,/)
+      .map((item) => item.trim())
+      .filter(Boolean),
+    12,
+  );
+}
+
+export function rupeesToPaise(value: string) {
+  const trimmed = value.trim().replace(/[₹,\s]/g, "");
+  if (!trimmed) return 0;
+  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) return null;
+  return Math.round(Number(trimmed) * 100);
+}
 
 export function parseContent(input: ContentInput) {
   return contentSchema.safeParse(input);

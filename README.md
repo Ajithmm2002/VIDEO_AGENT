@@ -72,13 +72,14 @@ npm test
    - a private `thumbnails` storage bucket
    - Row Level Security so `user_id` must match the signed-in user
    - a trigger that creates a profile when someone registers
-6. Open **Authentication → Providers** and keep Email enabled.
-7. For a personal workspace, you can turn off **Confirm email** under **Authentication → Sign In / Providers → Email**. Registration will sign you in immediately. Leave it on if you want people to confirm their address before they can sign in.
-8. Open **Authentication → URL Configuration**.
+6. For the skill shop, also run `supabase/migrations/20261121123000_marketplace.sql`. Then insert your sign-in email into `app_admins` and set `MARKETPLACE_ADMIN_EMAIL` to the same address in `.env.local` and Vercel. Only that account can upload `.md` or `.zip` skills. Paid checkout, seller uploads, and image samples are marked coming soon.
+7. Open **Authentication → Providers** and keep Email enabled.
+8. For a personal workspace, you can turn off **Confirm email** under **Authentication → Sign In / Providers → Email**. Registration will sign you in immediately. Leave it on if you want people to confirm their address before they can sign in.
+9. Open **Authentication → URL Configuration**.
    - Site URL: `http://localhost:3000`
    - Redirect URLs: `http://localhost:3000/auth/callback`
-9. Restart `npm run dev` after saving `.env.local`.
-10. Register from the app. That creates your private workspace. Nothing in the database is tied to a specific person until they register.
+10. Restart `npm run dev` after saving `.env.local`.
+11. Register from the app. That creates your private workspace. Nothing in the database is tied to a specific person until they register.
 
 Password hashing and session cookies are handled by Supabase Auth. The app never stores a raw password. New passwords need at least 8 characters, including a letter and a number. Sign-in, sign-up, and password reset are limited to a few attempts per email and address.
 
@@ -113,6 +114,7 @@ Some projects want the bucket created in the dashboard. Create a **private** buc
 | `AI_API_KEY` | Only for a remote model | Secret. Server only |
 | `AI_BASE_URL` | No | Override the provider URL |
 | `AI_MODEL` | No | Override the model name |
+| `MARKETPLACE_ADMIN_EMAIL` | For the skill shop desk | Sign-in email that can list `.md` / `.zip` skills. Also insert it into `app_admins` |
 
 Leave `AI_PROVIDER=local` and `AI_API_KEY` empty. The thumbnail and writing tools then use the built-in templates. Image prompts are written in English so Google Flow can follow them. A Malayalam topic is quoted as the exact words to place on the thumbnail. Writing drafts follow the language you select.
 
@@ -130,6 +132,8 @@ To connect a model later, set `AI_PROVIDER` to `openai` or `gemini`, set `AI_API
 - Plan 1 to 7 days of video ideas: titles, how to shoot them, and a spoken audio script for 15 seconds up to 5 minutes. Edit anything, then save it to the calendar.
 - Use a month or week calendar and move a planned date by dragging or with the date field.
 - Browse the library, export CSV, and download or restore a JSON backup of your rows.
+- Open the skill shop to preview listed Claude or LLM skills. Free listings can be taken now. Paid checkout, community seller uploads, and image samples are coming soon.
+- Play Fun mode: a short memory game and a timing catch.
 
 Deleting content asks for confirmation. Thumbnail files live in a private bucket at `{your user id}/{content id}/...`.
 

@@ -18,3 +18,13 @@ export function remoteAiEnabled() {
   const provider = process.env.AI_PROVIDER;
   return Boolean(process.env.AI_API_KEY) && Boolean(provider) && provider !== "local";
 }
+
+export function marketplaceAdminEmail() {
+  return process.env.MARKETPLACE_ADMIN_EMAIL?.trim().toLowerCase() ?? "";
+}
+
+export function isMarketplaceAdmin(email: string | null | undefined) {
+  const admin = marketplaceAdminEmail();
+  const value = email?.trim().toLowerCase() ?? "";
+  return Boolean(admin && value && admin === value);
+}

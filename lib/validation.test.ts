@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contentIdsSchema, contentSchema, firstIssue, passwordSchema } from "@/lib/validation";
+import { contentIdsSchema, contentSchema, firstIssue, marketplaceListingSchema, parseOfferings, passwordSchema, rupeesToPaise } from "@/lib/validation";
 import { csvCell, defaultChecklist, safeNextPath } from "@/lib/utils";
 import type { ContentInput } from "@/lib/types";
 
@@ -82,6 +82,38 @@ describe("content ids", () => {
     const parsed = contentIdsSchema.safeParse({ ids: [] });
     expect(parsed.success).toBe(false);
     if (!parsed.success) expect(firstIssue(parsed.error)).toMatch(/at least one/i);
+  });
+});
+
+describe("marketplace listings", () => {
+  it("accepts a priced skill with offerings", () => {
+    const parsed = marketplaceListingSchema.safeParse({
+      title: "Reel hook writer",
+      description: "A Claude skill that drafts Instagram hooks from a topic.",
+      offerings: parseOfferings("Ready-to-paste skill\nUsage notes"),
+      kind: "skill",
+      price_paise: 19900,
+      listed: true,
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects a tiny description", () => {
+    const parsed = marketplaceListingSchema.safeParse({
+      title: "Hook",
+      description: "Too short",
+      offerings: [],
+      kind: "skill",
+      price_paise: 0,
+      listed: true,
+    });
+    expect(parsed.success).toBe(false);
+  });
+
+  it("parses rupees into paise", () => {
+    expect(rupeesToPaise("199")).toBe(19900);
+    expect(rupeesToPaise("12.50")).toBe(1250);
+    expect(rupeesToPaise("abc")).toBeNull();
   });
 });
 

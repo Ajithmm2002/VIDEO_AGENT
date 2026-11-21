@@ -4,12 +4,14 @@ import type {
   Content,
   HashtagCollection,
   Language,
+  MarketplaceListing,
+  MarketplacePurchase,
   Platform,
   ReferenceLink,
   Status,
   ThumbnailPromptRecord,
 } from "@/lib/types";
-import { languages, platforms, statuses } from "@/lib/types";
+import { languages, marketplaceKinds, platforms, statuses } from "@/lib/types";
 
 function record(value: unknown) {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : null;
@@ -110,6 +112,40 @@ export function asCollection(value: unknown): HashtagCollection {
     name: row.name,
     platform: platforms.includes(row.platform as Platform) ? (row.platform as Platform) : null,
     hashtags: textList(row.hashtags),
+    created_at: text(row.created_at) ?? "",
+  };
+}
+
+export function asListing(value: unknown): MarketplaceListing | null {
+  const row = record(value);
+  if (!row || typeof row.id !== "string" || typeof row.title !== "string" || typeof row.description !== "string") {
+    return null;
+  }
+  const kind = marketplaceKinds.includes(row.kind as MarketplaceListing["kind"]) ? (row.kind as MarketplaceListing["kind"]) : "skill";
+  const ext = row.file_ext === "zip" || row.file_ext === "md" ? row.file_ext : null;
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    offerings: textList(row.offerings).slice(0, 12),
+    kind,
+    price_paise: typeof row.price_paise === "number" && Number.isFinite(row.price_paise) ? row.price_paise : 0,
+    currency: "INR",
+    listed: Boolean(row.listed),
+    file_name: text(row.file_name),
+    file_ext: ext,
+    created_at: text(row.created_at) ?? "",
+  };
+}
+
+export function asPurchase(value: unknown): MarketplacePurchase | null {
+  const row = record(value);
+  if (!row || typeof row.listing_id !== "string") return null;
+  const status = row.status === "paid" ? "paid" : "checkout_soon";
+  return {
+    listing_id: row.listing_id,
+    status,
+    amount_paise: typeof row.amount_paise === "number" && Number.isFinite(row.amount_paise) ? row.amount_paise : 0,
     created_at: text(row.created_at) ?? "",
   };
 }

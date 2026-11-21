@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   CalendarDays,
   Clapperboard,
+  Gamepad2,
   Hash,
   ImageIcon,
   LayoutDashboard,
@@ -17,6 +18,8 @@ import {
   PenLine,
   Search,
   Settings,
+  Store,
+  Shield,
   X,
 } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
@@ -46,15 +49,28 @@ const groups = [
       { href: "/affiliate", label: "Affiliate ads", icon: BadgePercent },
     ],
   },
+  {
+    label: "Discover",
+    links: [
+      { href: "/marketplace", label: "Skill shop", icon: Store },
+      { href: "/play", label: "Fun mode", icon: Gamepad2 },
+    ],
+  },
 ];
+
+function navActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function AppShell({
   email,
   configured,
+  isAdmin,
   children,
 }: {
   email: string | null;
   configured: boolean;
+  isAdmin?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -65,13 +81,13 @@ export function AppShell({
   const activeJobs = Object.values(jobs).filter((job) => job.pending);
 
   const nav = (
-    <nav className="grid gap-5">
+    <nav className="grid gap-5 pb-4">
       {groups.map((group) => (
         <div key={group.label}>
           <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{group.label}</p>
           <div className="grid gap-1">
             {group.links.map((link) => {
-              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              const active = navActive(pathname, link.href);
               const Icon = link.icon;
               return (
                 <Link
@@ -81,9 +97,7 @@ export function AppShell({
                   onClick={() => setOpen(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
-                    active
-                      ? "nav-item-active"
-                      : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
+                    active ? "nav-item-active" : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
                   )}
                   aria-current={active ? "page" : undefined}
                 >
@@ -97,6 +111,28 @@ export function AppShell({
           </div>
         </div>
       ))}
+      {isAdmin ? (
+        <div>
+          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Admin</p>
+          <Link
+            href="/admin/marketplace"
+            prefetch
+            onClick={() => setOpen(false)}
+            className={cn(
+              "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
+              navActive(pathname, "/admin/marketplace")
+                ? "nav-item-active"
+                : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
+            )}
+            aria-current={navActive(pathname, "/admin/marketplace") ? "page" : undefined}
+          >
+            <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", navActive(pathname, "/admin/marketplace") ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
+              <Shield className="h-4 w-4" />
+            </span>
+            Shop desk
+          </Link>
+        </div>
+      ) : null}
       <div>
         <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Account</p>
         <Link
@@ -120,32 +156,45 @@ export function AppShell({
     </nav>
   );
 
+  const accountCard = (
+    <div className="rounded-3xl border border-line bg-surface-2/80 px-3 py-3 shadow-[var(--shadow-inset)]">
+      <p className="truncate text-xs font-medium">{email ?? (configured ? "Workspace" : "Local draft mode")}</p>
+      <p className="mt-1 text-[11px] leading-4 text-muted">
+        {email ? "Private workspace" : "Connect Supabase to save your work."}
+      </p>
+    </div>
+  );
+
   return (
     <div className="min-h-screen text-ink">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-line bg-surface/75 p-4 shadow-[var(--shadow)] backdrop-blur-xl lg:flex">
-        <div className="mb-8">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col overflow-hidden border-r border-line bg-surface/75 p-4 shadow-[var(--shadow)] backdrop-blur-xl lg:flex">
+        <div className="mb-6 shrink-0">
           <BrandMark />
         </div>
-        {nav}
-        <div className="mt-auto rounded-3xl border border-line bg-surface-2/80 px-3 py-3 shadow-[var(--shadow-inset)]">
-          <p className="truncate text-xs font-medium">{email ?? (configured ? "Workspace" : "Local draft mode")}</p>
-          <p className="mt-1 text-[11px] leading-4 text-muted">
-            {email ? "Private workspace" : "Connect Supabase to save your work."}
-          </p>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+          {nav}
+        </div>
+        <div className="mt-3 shrink-0">
+          {accountCard}
         </div>
       </aside>
 
       {open ? (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button className="absolute inset-0 bg-ink/50 backdrop-blur-sm" aria-label="Close menu" onClick={() => setOpen(false)} />
-          <div className="relative flex h-full w-80 flex-col bg-surface p-4 shadow-[var(--shadow)]">
-            <div className="mb-6 flex items-center justify-between">
+          <div className="relative flex h-full w-80 max-w-[85vw] flex-col overflow-hidden bg-surface p-4 shadow-[var(--shadow)]">
+            <div className="mb-4 flex shrink-0 items-center justify-between">
               <BrandMark />
               <Button variant="ghost" aria-label="Close menu" onClick={() => setOpen(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            {nav}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+              {nav}
+            </div>
+            <div className="mt-3 shrink-0">
+              {accountCard}
+            </div>
           </div>
         </div>
       ) : null}
