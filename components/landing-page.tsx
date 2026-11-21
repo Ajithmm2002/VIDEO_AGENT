@@ -11,8 +11,8 @@ const features = [
   { icon: PenLine, title: "Writing drafts", body: "Titles, captions, hashtags, and a script outline in Malayalam or English." },
   { icon: CalendarDays, title: "Quiet calendar", body: "Drop ideas onto a day. Each account stays private." },
   { icon: BadgePercent, title: "Affiliate ads", body: "Load a product link, then generate a studio image or video prompt." },
-  { icon: Store, title: "Skill shop", body: "Preview Claude and LLM skills. Checkout and image samples are coming soon." },
-  { icon: Gamepad2, title: "Fun mode", body: "Play a short memory or timing game when you need a break." },
+  { icon: Store, title: "Skill shop", body: "Preview Claude and LLM skills. Buy with Fun mode coins. Card checkout and image samples are coming soon." },
+  { icon: Gamepad2, title: "Fun mode", body: "Play longer memory, catch, and spark runs, then claim coins for the skill shop." },
 ];
 
 const previewCards = [

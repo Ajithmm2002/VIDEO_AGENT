@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatSkillPrice, listingObjectPath, parseSkillUpload } from "@/lib/marketplace-file";
+import { formatSkillPrice, formatSkillPriceWithCoins, listingObjectPath, parseSkillUpload } from "@/lib/marketplace-file";
 
 describe("skill uploads", () => {
   it("accepts a markdown skill file", () => {
@@ -27,5 +27,7 @@ describe("skill uploads", () => {
   it("formats free and paid prices", () => {
     expect(formatSkillPrice(0)).toBe("Free");
     expect(formatSkillPrice(19900)).toBe("₹199");
+    expect(formatSkillPriceWithCoins(0)).toBe("Free");
+    expect(formatSkillPriceWithCoins(19900)).toBe("₹199 · 199 coins");
   });
 });

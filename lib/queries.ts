@@ -317,6 +317,14 @@ export async function getMarketplaceListing(id: string) {
   return asListing(data);
 }
 
+export async function getGameCoins() {
+  const supabase = await client();
+  if (!supabase) return 0;
+  const { data } = await supabase.from("game_wallets").select("coins").maybeSingle();
+  const coins = typeof data?.coins === "number" && Number.isFinite(data.coins) ? data.coins : 0;
+  return Math.max(0, Math.min(1_000_000, Math.floor(coins)));
+}
+
 export async function listMyPurchases() {
   const supabase = await client();
   if (!supabase) return [] as MarketplacePurchase[];

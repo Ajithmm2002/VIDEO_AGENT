@@ -33,3 +33,9 @@ export function formatSkillPrice(paise: number) {
   const rounded = Number.isInteger(rupees) ? String(rupees) : rupees.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
   return `₹${rounded}`;
 }
+
+export function formatSkillPriceWithCoins(paise: number) {
+  if (paise <= 0) return "Free";
+  const coins = Math.ceil(paise / 100);
+  return `${formatSkillPrice(paise)} · ${coins} coin${coins === 1 ? "" : "s"}`;
+}

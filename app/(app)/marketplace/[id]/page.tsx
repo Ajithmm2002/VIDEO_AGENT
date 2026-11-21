@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { ComingSoonNotice } from "@/components/coming-soon";
 import { MarketplaceBuy } from "@/components/marketplace-browser";
 import { Card, PageHeader } from "@/components/ui";
-import { formatSkillPrice } from "@/lib/marketplace-file";
-import { getMarketplaceListing, listMyPurchases } from "@/lib/queries";
+import { formatSkillPriceWithCoins } from "@/lib/marketplace-file";
+import { getGameCoins, getMarketplaceListing, listMyPurchases } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Skill" };
 
@@ -17,7 +17,7 @@ export default async function MarketplaceListingPage({
   const { id } = await params;
   const listing = await getMarketplaceListing(id);
   if (!listing || !listing.listed) notFound();
-  const purchases = await listMyPurchases();
+  const [purchases, coins] = await Promise.all([listMyPurchases(), getGameCoins()]);
   const purchase = purchases.find((item) => item.listing_id === listing.id);
 
   return (
@@ -25,7 +25,7 @@ export default async function MarketplaceListingPage({
       <PageHeader
         eyebrow={listing.kind === "bundle" ? "Bundle" : "Skill"}
         title={listing.title}
-        description={`${formatSkillPrice(listing.price_paise)} · ${listing.file_ext === "zip" ? "ZIP bundle" : "Markdown skill"}`}
+        description={`${formatSkillPriceWithCoins(listing.price_paise)} · ${listing.file_ext === "zip" ? "ZIP bundle" : "Markdown skill"}`}
         action={
           <Link href="/marketplace" className="rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]">
             Back to shop
@@ -47,7 +47,7 @@ export default async function MarketplaceListingPage({
             </div>
           ) : null}
         </Card>
-        <MarketplaceBuy listing={listing} purchase={purchase} />
+        <MarketplaceBuy listing={listing} purchase={purchase} coins={coins} />
       </div>
     </div>
   );

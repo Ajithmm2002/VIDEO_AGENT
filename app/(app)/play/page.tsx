@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 import { FunMode } from "@/components/fun-mode";
 import { PageHeader } from "@/components/ui";
+import { getGameCoins } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Fun mode" };
 
-export default function PlayPage() {
+export default async function PlayPage() {
+  const coins = await getGameCoins();
   return (
     <div>
       <PageHeader
         eyebrow="Play"
         title="Fun mode"
-        description="A short break between drafts. Memory reels and a timing catch — nothing is saved, and nothing is sold here."
+        description="Longer runs earn studio coins. Claim them, then spend 1 coin as ₹1 on skills in the shop. Daily cap is 500 coins."
       />
-      <FunMode />
+      <FunMode coins={coins} />
     </div>
   );
 }
