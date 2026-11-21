@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { CalendarDays, ImageIcon, PenLine } from "lucide-react";
 import { requestPasswordReset, signIn, signUp, updatePassword } from "@/lib/actions/auth";
 import { BrandMark } from "@/components/brand";
+import { AmbientGlow } from "@/components/ambient-glow";
 import { Button, Card, Field, TextInput } from "@/components/ui";
 import type { ActionResult } from "@/lib/types";
 
@@ -86,18 +87,27 @@ export function AuthFrame({
   return (
     <main className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
       <section className="relative hidden overflow-hidden px-12 py-12 text-ink lg:flex lg:flex-col lg:justify-between">
-        <BrandMark href="/" />
-        <div className="max-w-lg">
-          <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.22em]">Personal workspace</p>
-          <h1 className="mt-4 text-5xl font-semibold tracking-tight text-balance">Plan the next video before you record it.</h1>
-          <p className="mt-4 max-w-md text-sm leading-6 text-muted">
+        <AmbientGlow />
+        <div className="relative z-10">
+          <BrandMark href="/" />
+        </div>
+        <div className="relative z-10 max-w-lg">
+          <p className="animate-fade-up ig-text text-[11px] font-semibold uppercase tracking-[0.22em]">Personal workspace</p>
+          <h1 className="animate-fade-up mt-4 text-5xl font-semibold tracking-tight text-balance" style={{ animationDelay: "90ms" }}>
+            Plan the next video before you record it.
+          </h1>
+          <p className="animate-fade-up mt-4 max-w-md text-sm leading-6 text-muted" style={{ animationDelay: "180ms" }}>
             Keep YouTube and Instagram ideas, prompts, and publishing dates in one private studio.
           </p>
           <div className="mt-10 grid gap-3">
-            {highlights.map((item) => {
+            {highlights.map((item, index) => {
               const Icon = item.icon;
               return (
-                <div key={item.title} className="flex gap-3 rounded-3xl border border-line bg-surface/80 p-4 shadow-[var(--shadow)] backdrop-blur-xl">
+                <div
+                  key={item.title}
+                  className="animate-fade-up flex gap-3 rounded-3xl border border-line bg-surface/80 p-4 shadow-[var(--shadow)] backdrop-blur-xl"
+                  style={{ animationDelay: `${260 + index * 90}ms` }}
+                >
                   <span className="ig-gradient grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-white shadow-[var(--shadow-glow)]">
                     <Icon className="h-4 w-4" />
                   </span>
@@ -110,7 +120,7 @@ export function AuthFrame({
             })}
           </div>
         </div>
-        <p className="text-sm text-muted">Malayalam and English. Your rows stay on your account.</p>
+        <p className="relative z-10 text-sm text-muted">Malayalam and English. Your rows stay on your account.</p>
       </section>
       <section className="grid place-items-center px-4 py-10">
         <Card className="w-full max-w-md">

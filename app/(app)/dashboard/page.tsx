@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarDays, Camera, CheckCircle2, Clapperboard, PenLine, Play, Sparkles } from "lucide-react";
 import { StatusBadge } from "@/components/badges";
-import { Card, EmptyState, PageHeader } from "@/components/ui";
+import { DashboardWelcome } from "@/components/dashboard-welcome";
+import { Card, EmptyState } from "@/components/ui";
 import { isSupabaseConfigured } from "@/lib/env";
 import { dashboardData } from "@/lib/queries";
 import { checklistProgress, formatDate } from "@/lib/utils";
@@ -34,14 +35,14 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <PageHeader
+      <DashboardWelcome
         eyebrow="Workspace"
         title="Your studio at a glance"
         description="A private view of what you are planning, drafting, and publishing."
         action={
           <Link
             href="/content/new"
-            className="ig-gradient inline-flex items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
+            className="ig-gradient relative z-10 inline-flex items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
           >
             New content
           </Link>
