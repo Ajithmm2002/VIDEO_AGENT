@@ -7,7 +7,16 @@ import { requestUserEmail } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Skill shop" };
 
-export default async function MarketplacePage() {
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function MarketplacePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
   const [listings, purchases, email, coins] = await Promise.all([
     listMarketplaceListings(),
     listMyPurchases(),
@@ -20,9 +29,15 @@ export default async function MarketplacePage() {
       <PageHeader
         eyebrow="Marketplace"
         title="Skill shop"
-        description="Earn coins in Fun mode, buy coin packs with money, redeem coins for skills, or buy those same skills with rupees. Coins stay in this shop and cannot be cashed out."
+        description="Browse every listed skill and digital product. Details and purchase stay on this page. Earn coins in Fun mode, buy coin packs, redeem coins, or pay rupees. Coins stay in this shop and cannot be cashed out."
       />
-      <MarketplaceBrowser listings={listings} purchases={purchases} isAdmin={isMarketplaceAdmin(email)} coins={coins} />
+      <MarketplaceBrowser
+        listings={listings}
+        purchases={purchases}
+        isAdmin={isMarketplaceAdmin(email)}
+        coins={coins}
+        selectedId={first(params.item) ?? null}
+      />
     </div>
   );
 }

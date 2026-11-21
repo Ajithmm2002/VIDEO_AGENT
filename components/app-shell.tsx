@@ -28,6 +28,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui";
 import { useGenerationJobs } from "@/lib/background-generate";
+import { headerContext, usesContentSearch } from "@/lib/app-shell-nav";
 import { formatCoinBalance, formatCoins } from "@/lib/game-coins";
 import { cn } from "@/lib/utils";
 
@@ -212,23 +213,27 @@ export function AppShell({
           <Button variant="secondary" className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}>
             <Menu className="h-4 w-4" />
           </Button>
-          <form
-            className="relative flex min-w-0 flex-1"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const value = query.trim();
-              router.push(value ? `/content?q=${encodeURIComponent(value)}` : "/content");
-            }}
-          >
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search titles and topics"
-              aria-label="Search content"
-              className="h-11 w-full rounded-2xl border border-line bg-surface pl-10 pr-3 text-sm shadow-[var(--shadow-inset)]"
-            />
-          </form>
+          {usesContentSearch(pathname) ? (
+            <form
+              className="relative flex min-w-0 flex-1"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const value = query.trim();
+                router.push(value ? `/content?q=${encodeURIComponent(value)}` : "/content");
+              }}
+            >
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search titles and topics"
+                aria-label="Search content"
+                className="h-11 w-full rounded-2xl border border-line bg-surface pl-10 pr-3 text-sm shadow-[var(--shadow-inset)]"
+              />
+            </form>
+          ) : (
+            <p className="min-w-0 flex-1 truncate text-sm font-semibold">{headerContext(pathname)}</p>
+          )}
           {activeJobs.length ? (
             <>
               <Link

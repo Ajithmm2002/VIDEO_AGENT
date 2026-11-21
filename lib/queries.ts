@@ -313,7 +313,7 @@ const loadMarketplaceListings = cache(async (includeDrafts: boolean) => {
     .from("marketplace_listings")
     .select("id, title, description, offerings, kind, price_paise, currency, listed, file_name, file_ext, created_at")
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(1000);
   if (!includeDrafts) query = query.eq("listed", true);
   const { data, error } = await query;
   if (error) {
@@ -371,7 +371,7 @@ export const listMyPurchases = cache(async () => {
     .from("marketplace_purchases")
     .select("listing_id, buyer_id, status, amount_paise, created_at")
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(1000);
   if (error) return [];
   return (data ?? []).flatMap((row) => {
     const purchase = asPurchase(row);

@@ -2,41 +2,75 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
-import { createPortal } from "react-dom";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { FileArchive, FileText } from "lucide-react";
+import { FileArchive, FileText, Search } from "lucide-react";
 import { CoinPacks } from "@/components/coin-packs";
 import { CoinRewardNotice } from "@/components/coin-reward-notice";
 import { ComingSoonNotice } from "@/components/coming-soon";
 import { RazorpayComingSoon } from "@/components/razorpay-coming-soon";
 import { ShopPaths } from "@/components/shop-paths";
 import { SkillPreview } from "@/components/skill-preview";
-import { Button, Card, EmptyState } from "@/components/ui";
+import { Button, Card, EmptyState, choiceClass } from "@/components/ui";
 import { redeemListingWithCoins } from "@/lib/actions/game";
 import { formatCoins, priceInCoins } from "@/lib/game-coins";
+import {
+  filterMarketplaceCatalog,
+  listingKindLabel,
+  pickMarketplaceListing,
+  type MarketplaceCatalogFilter,
+} from "@/lib/marketplace-catalog";
 import { formatSkillPrice } from "@/lib/marketplace-file";
 import { cn } from "@/lib/utils";
 import type { MarketplaceListing, MarketplacePurchase } from "@/lib/types";
+
+const catalogFilters: { id: MarketplaceCatalogFilter; label: string }[] = [
+  { id: "all", label: "All products" },
+  { id: "skill", label: "Skills" },
+  { id: "bundle", label: "Digital products" },
+  { id: "owned", label: "Owned" },
+];
 
 export function MarketplaceBrowser({
   listings,
   purchases,
   isAdmin,
   coins,
+  selectedId = null,
 }: {
   listings: MarketplaceListing[];
   purchases: MarketplacePurchase[];
   isAdmin: boolean;
   coins: number;
+  selectedId?: string | null;
 }) {
-  const byListing = new Map(purchases.map((item) => [item.listing_id, item]));
-  const [openId, setOpenId] = useState<string | null>(null);
-  const openListing = listings.find((item) => item.id === openId) ?? null;
-  const closeSkill = useCallback(() => setOpenId(null), []);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<MarketplaceCatalogFilter>("all");
+  const [activeId, setActiveId] = useState(selectedId);
+  const byListing = useMemo(() => new Map(purchases.map((item) => [item.listing_id, item])), [purchases]);
+  const purchasedIds = useMemo(
+    () => new Set(purchases.filter((item) => item.status === "paid").map((item) => item.listing_id)),
+    [purchases],
+  );
+  const visible = useMemo(
+    () => filterMarketplaceCatalog(listings, { query, filter, purchasedIds }),
+    [listings, query, filter, purchasedIds],
+  );
+  const selected = pickMarketplaceListing(listings, activeId);
+  const selectedPurchase = selected ? byListing.get(selected.id) : undefined;
+
+  function selectListing(id: string) {
+    setActiveId(id);
+    window.history.replaceState(null, "", `/marketplace?item=${encodeURIComponent(id)}`);
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      window.setTimeout(() => {
+        document.getElementById("product-detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 0);
+    }
+  }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-semibold">🪙 {formatCoins(coins)} · in-app shop only</p>
         {isAdmin ? (
@@ -48,108 +82,136 @@ export function MarketplaceBrowser({
           </Link>
         ) : null}
       </div>
-      <ComingSoonNotice
-        title="Razorpay checkout is next"
-        body="Buy coin packs or skills with rupees when Razorpay is ready. You can also earn coins in Fun mode and redeem them here. Coins are not cash."
-      />
-      <ShopPaths />
-      <CoinPacks />
-      <CoinRewardNotice />
-      <div>
-        <h2 className="font-semibold">Digital skills</h2>
-        <p className="mt-1 text-sm leading-6 text-muted">
-          Redeem studio coins, or buy the same skill with rupees. Both unlock the same download.
-        </p>
-      </div>
       {listings.length ? (
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {listings.map((listing) => (
-            <MarketplaceBuy
-              key={listing.id}
-              listing={listing}
-              purchase={byListing.get(listing.id)}
-              coins={coins}
-              compact
-              onOpen={() => setOpenId(listing.id)}
-            />
-          ))}
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)] lg:items-start">
+          <section className="grid gap-3">
+            <div>
+              <h2 className="font-semibold">Skills and digital products</h2>
+              <p className="mt-1 text-sm leading-6 text-muted">
+                Every listed skill and other digital product is here. Select one to read the details and pay on this page.
+              </p>
+            </div>
+            <label className="relative block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search skills and digital products"
+                aria-label="Search skills and digital products"
+                className="h-11 w-full rounded-2xl border border-line bg-surface pl-10 pr-3 text-sm shadow-[var(--shadow-inset)]"
+              />
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {catalogFilters.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={choiceClass(filter === item.id)}
+                  onClick={() => setFilter(item.id)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted">
+              {visible.length} of {listings.length} {listings.length === 1 ? "product" : "products"}
+            </p>
+            {visible.length ? (
+              <div className="grid gap-2">
+                {visible.map((listing) => (
+                  <CatalogRow
+                    key={listing.id}
+                    listing={listing}
+                    selected={selected?.id === listing.id}
+                    owned={purchasedIds.has(listing.id)}
+                    onSelect={() => selectListing(listing.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <EmptyState
+                  title="No matching products"
+                  body="Try another search, or switch back to All products to see the full shop."
+                />
+              </Card>
+            )}
+          </section>
+
+          <section id="product-detail" className="grid gap-3 lg:sticky lg:top-24">
+            {selected ? (
+              <>
+                <SkillPreview listing={selected} heading="h2">
+                  <MarketplaceBuy listing={selected} purchase={selectedPurchase} coins={coins} />
+                </SkillPreview>
+                <CoinRewardNotice compact />
+              </>
+            ) : (
+              <Card>
+                <EmptyState title="Select a product" body="Choose a skill or digital product to see details and purchase options." />
+              </Card>
+            )}
+          </section>
         </div>
       ) : (
         <Card>
           <EmptyState
-            title="No skills on the shelf yet"
-            body="When the shop owner lists a skill, it will show up here with a description, offerings, and a price."
+            title="No products on the shelf yet"
+            body="When the shop owner lists a skill or other digital product, it will show up here with a description, offerings, and a price."
           />
         </Card>
       )}
-      {openListing ? (
-        <SkillQuickView
-          listing={openListing}
-          purchase={byListing.get(openListing.id)}
-          coins={coins}
-          onClose={closeSkill}
-        />
-      ) : null}
+
+      <ShopPaths />
+      <CoinPacks />
+      <ComingSoonNotice
+        title="Razorpay checkout is next"
+        body="Buy coin packs or skills with rupees when Razorpay is ready. You can also earn coins in Fun mode and redeem them here. Coins are not cash."
+      />
     </div>
   );
 }
 
-function SkillQuickView({
+function CatalogRow({
   listing,
-  purchase,
-  coins,
-  onClose,
+  selected,
+  owned,
+  onSelect,
 }: {
   listing: MarketplaceListing;
-  purchase?: MarketplacePurchase;
-  coins: number;
-  onClose: () => void;
+  selected: boolean;
+  owned: boolean;
+  onSelect: () => void;
 }) {
-  const titleId = useId();
-  const panelRef = useRef<HTMLDivElement>(null);
+  const FileIcon = listing.file_ext === "zip" ? FileArchive : FileText;
+  const cost = priceInCoins(listing.price_paise);
 
-  useEffect(() => {
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    panelRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = previous;
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [onClose]);
-
-  return createPortal(
-    <div className="animate-veil-in fixed inset-0 z-[90] grid place-items-center p-4">
-      <button type="button" className="absolute inset-0 bg-[#12040c]/62 backdrop-blur-md" aria-label="Close skill" onClick={onClose} />
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        className="animate-pop-in relative z-10 w-[min(28rem,100%)] outline-none"
-      >
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <p id={titleId} className="text-sm font-semibold">
-            Skill
-          </p>
-          <Button variant="secondary" className="h-8 px-3 py-1 text-xs" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-        <SkillPreview listing={listing} heading="h2">
-          <MarketplaceBuy listing={listing} purchase={purchase} coins={coins} onClose={onClose} />
-        </SkillPreview>
-        <div className="mt-3">
-          <CoinRewardNotice compact />
-        </div>
-      </div>
-    </div>,
-    document.body,
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-current={selected ? "true" : undefined}
+      className={cn(
+        "grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border px-3 py-3 text-left shadow-[var(--shadow)]",
+        selected ? "border-accent/50 bg-accent/8" : "border-line bg-surface/90 hover:bg-surface-2",
+      )}
+    >
+      <span className="grid h-11 w-11 place-items-center rounded-2xl border border-line bg-surface-2 text-muted shadow-[var(--shadow-inset)]">
+        <FileIcon className="h-4 w-4" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          {listingKindLabel(listing.kind)}
+          {owned ? " · Owned" : ""}
+        </span>
+        <span className="mt-0.5 block truncate text-sm font-semibold">{listing.title}</span>
+        <span className="mt-0.5 block truncate text-xs text-muted">{listing.description}</span>
+      </span>
+      <span className="shrink-0 text-right">
+        <span className="block text-sm font-semibold">{formatSkillPrice(listing.price_paise)}</span>
+        {listing.price_paise > 0 ? <span className="block text-[11px] text-muted">🪙 {formatCoins(cost)}</span> : null}
+      </span>
+    </button>
   );
 }
 
@@ -157,16 +219,10 @@ export function MarketplaceBuy({
   listing,
   purchase,
   coins,
-  compact = false,
-  onOpen,
-  onClose,
 }: {
   listing: MarketplaceListing;
   purchase?: MarketplacePurchase;
   coins: number;
-  compact?: boolean;
-  onOpen?: () => void;
-  onClose?: () => void;
 }) {
   const router = useRouter();
   const [working, setWorking] = useState(false);
@@ -178,8 +234,6 @@ export function MarketplaceBuy({
   const cost = priceInCoins(listing.price_paise);
   const canCoinBuy = !free && coins >= cost;
   const paid = purchase?.status === "paid";
-  const FileIcon = listing.file_ext === "zip" ? FileArchive : FileText;
-  const compactBtn = compact ? "h-8 w-full px-2 py-1 text-xs" : "w-full";
 
   async function buyWithCoins() {
     setWorking(true);
@@ -224,22 +278,9 @@ export function MarketplaceBuy({
     }
   }
 
-  function openSkill(event: React.MouseEvent<HTMLElement>) {
-    if (!onOpen) return;
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
-    event.preventDefault();
-    onOpen();
-  }
-
-  function needMoreCoins() {
-    const missing = Math.max(1, cost - coins);
-    toast.error(`Pay with coins needs ${formatCoins(cost)}. You have ${formatCoins(coins)}. Get ${formatCoins(missing)} more in Fun mode or a coin pack.`);
-  }
-
   function goToPacks() {
-    onClose?.();
     startPlay(() => {
-      router.push("/marketplace#coin-packs");
+      router.push(`/marketplace?item=${listing.id}#coin-packs`);
     });
   }
 
@@ -247,38 +288,38 @@ export function MarketplaceBuy({
     <RazorpayComingSoon
       title={listing.title}
       amountPaise={listing.price_paise}
-      compact={compact}
       disabled={pending || downloading}
-      label={compact ? "Pay money" : `Pay ${formatSkillPrice(listing.price_paise)}`}
+      label={`Pay ${formatSkillPrice(listing.price_paise)}`}
       note="Razorpay checkout is coming soon. This pays the listed rupee price with card, UPI, or net banking. You can also pay with studio coins if you have enough."
     />
   );
 
-  const actions = paid ? (
-    <Button loading={downloading} onClick={download} className={compactBtn}>
-      {downloading ? "Downloading…" : "Download"}
-    </Button>
-  ) : free ? (
-    <Button loading={pending} onClick={buyWithCoins} className={compactBtn}>
-      {pending ? "Buying…" : "Get this skill"}
-    </Button>
-  ) : compact ? (
-    <div className="grid gap-1.5">
-      <Button
-        variant="secondary"
-        loading={pending}
-        disabled={pending}
-        className={compactBtn}
-        onClick={canCoinBuy ? buyWithCoins : needMoreCoins}
-      >
-        {pending ? "Buying…" : "Pay coins"}
-      </Button>
-      {moneyPay}
-    </div>
-  ) : (
-    <div className="grid gap-3">
+  if (paid) {
+    return (
+      <div className="grid gap-3 border-t border-line pt-4">
+        <p className="text-2xl font-semibold">{formatSkillPrice(listing.price_paise)}</p>
+        <Button loading={downloading} onClick={download} className="w-full">
+          {downloading ? "Downloading…" : "Download"}
+        </Button>
+      </div>
+    );
+  }
+
+  if (free) {
+    return (
+      <div className="grid gap-3 border-t border-line pt-4">
+        <p className="text-2xl font-semibold">Free</p>
+        <Button loading={pending} onClick={buyWithCoins} className="w-full">
+          {pending ? "Unlocking…" : "Get this product"}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 border-t border-line pt-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Choose how to pay</p>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-2">
         <div className="grid gap-2 rounded-2xl border border-line bg-surface-2/70 p-3 shadow-[var(--shadow-inset)]">
           <p className="text-sm font-semibold">Pay with coins</p>
           <p className="text-xs text-muted">🪙 {formatCoins(cost)}</p>
@@ -299,7 +340,6 @@ export function MarketplaceBuy({
                   loading={openingPlay}
                   className="h-9 px-2 text-xs"
                   onClick={() => {
-                    onClose?.();
                     startPlay(() => {
                       router.push("/play");
                     });
@@ -321,58 +361,6 @@ export function MarketplaceBuy({
           {moneyPay}
         </div>
       </div>
-    </div>
-  );
-
-  if (compact) {
-    return (
-      <article
-        className="relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-line bg-surface/90 shadow-[var(--shadow)]"
-        onClick={(event) => {
-          if (!onOpen) return;
-          if ((event.target as HTMLElement).closest("button, a")) return;
-          onOpen();
-        }}
-      >
-        <Link
-          href={`/marketplace/${listing.id}`}
-          prefetch
-          onClick={openSkill}
-          className="grid h-28 place-items-center bg-surface-2/80"
-        >
-          <span className="grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface text-muted shadow-[var(--shadow-inset)]">
-            <FileIcon className="h-5 w-5" />
-          </span>
-        </Link>
-        <div className="flex flex-1 flex-col gap-1.5 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-            {listing.kind === "bundle" ? "Bundle" : "Skill"}
-          </p>
-          <Link
-            href={`/marketplace/${listing.id}`}
-            prefetch
-            onClick={openSkill}
-            className="line-clamp-2 text-sm font-semibold leading-5 hover:text-accent"
-          >
-            {listing.title}
-          </Link>
-          <p className="line-clamp-2 text-xs leading-4 text-muted">{listing.description}</p>
-          <div className="mt-auto pt-1">
-            <p className="text-base font-semibold">{formatSkillPrice(listing.price_paise)}</p>
-            {free ? null : <p className="text-[11px] text-muted">🪙 {formatCoins(cost)}</p>}
-            <div className="relative z-10 mt-2">{actions}</div>
-          </div>
-        </div>
-      </article>
-    );
-  }
-
-  return (
-    <div className="grid gap-3 border-t border-line pt-4">
-      {paid || free ? (
-        <p className="text-2xl font-semibold">{formatSkillPrice(listing.price_paise)}</p>
-      ) : null}
-      {actions}
     </div>
   );
 }

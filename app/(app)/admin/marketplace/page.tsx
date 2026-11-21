@@ -22,7 +22,7 @@ export default async function MarketplaceAdminPage() {
       <PageHeader
         eyebrow="Admin"
         title="Skill shop desk"
-        description="Set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out."
+        description="List skills and other digital products. Set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out."
       />
       <MarketplaceAdmin listings={listings} pending={pending} />
     </div>

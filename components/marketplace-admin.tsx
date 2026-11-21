@@ -8,6 +8,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, choiceClass, Field, TextArea, TextInput } from "@/components/ui";
 import { deleteMarketplaceListing, fulfillMoneyPurchase, saveMarketplaceListing } from "@/lib/actions/marketplace";
 import { formatCoinBalance, priceInCoins } from "@/lib/game-coins";
+import { listingKindLabel } from "@/lib/marketplace-catalog";
 import { formatSkillPrice } from "@/lib/marketplace-file";
 import { rupeesToPaise } from "@/lib/validation";
 import type { MarketplaceListing, MarketplacePurchase } from "@/lib/types";
@@ -26,9 +27,9 @@ export function MarketplaceAdmin({
   return (
     <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
       <Card>
-        <h2 className="font-semibold">{editing ? "Edit listing" : "List a skill"}</h2>
+        <h2 className="font-semibold">{editing ? "Edit listing" : "List a product"}</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Upload a .md skill or a .zip bundle and set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out or transferred.
+          Upload a .md skill or a .zip digital product and set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out or transferred.
         </p>
         <ListingForm
           key={editing?.id ?? "new"}
@@ -85,7 +86,7 @@ export function MarketplaceAdmin({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
-                  {listing.listed ? "Listed" : "Draft"} · {listing.kind}
+                  {listing.listed ? "Listed" : "Draft"} · {listingKindLabel(listing.kind)}
                 </p>
                 <h3 className="mt-1 truncate font-semibold">{listing.title}</h3>
               </div>
@@ -193,7 +194,7 @@ function ListingForm({
               className={choiceClass(kind === value)}
               onClick={() => setKind(value)}
             >
-              {value === "skill" ? "Single skill" : "Bundle"}
+              {value === "skill" ? "Skill" : "Digital product"}
             </button>
           ))}
         </div>

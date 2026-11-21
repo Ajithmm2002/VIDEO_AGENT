@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { FileArchive, FileText } from "lucide-react";
+import { listingKindLabel } from "@/lib/marketplace-catalog";
 import type { MarketplaceListing } from "@/lib/types";
 
 export function SkillPreview({
@@ -21,7 +22,7 @@ export function SkillPreview({
       <div className="grid gap-4 p-5">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-            {listing.kind === "bundle" ? "Bundle" : "Skill"}
+            {listingKindLabel(listing.kind)}
           </p>
           <Title className="mt-1 text-xl font-semibold tracking-tight">{listing.title}</Title>
           {listing.description ? (
