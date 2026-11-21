@@ -20,7 +20,7 @@ export default async function MarketplacePage() {
       <PageHeader
         eyebrow="Marketplace"
         title="Skill shop"
-        description="Preview Claude and LLM skills. Buy with Fun mode coins (100 coins = ₹1), or tap Buy now for Razorpay (coming soon)."
+        description="Preview Claude and LLM skills. Redeem studio coins in this shop, or tap Buy now to pay with money when Razorpay is ready. Coins are not cash and cannot be transferred."
       />
       <MarketplaceBrowser listings={listings} purchases={purchases} isAdmin={isMarketplaceAdmin(email)} coins={coins} />
     </div>

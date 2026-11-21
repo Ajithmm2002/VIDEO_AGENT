@@ -28,7 +28,7 @@ export function MarketplaceAdmin({
       <Card>
         <h2 className="font-semibold">{editing ? "Edit listing" : "List a skill"}</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Upload a .md skill or a .zip bundle and set the rupee price only. Coin cost for buyers is calculated automatically (100 coins = ₹1).
+          Upload a .md skill or a .zip bundle and set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out or transferred.
         </p>
         <ListingForm
           key={editing?.id ?? "new"}
@@ -201,7 +201,7 @@ function ListingForm({
       </div>
       <Field
         label="Selling price (INR)"
-        hint="Enter rupees only. 0 is free. Coin cost is calculated for buyers at 100 coins = ₹1. You never enter coins."
+        hint="Enter rupees only. 0 is free. Coin cost is an in-app shop price (100 coins per ₹1 on the tag), not a cash payout. You never enter coins."
       >
         <TextInput
           name="price"

@@ -167,7 +167,7 @@ export function AppShell({
       <p className="truncate text-xs font-medium">{email ?? (configured ? "Workspace" : "Local draft mode")}</p>
       <p className="mt-1 text-[11px] leading-4 text-muted">
         {email
-          ? `${formatCoinBalance(earned)} earned · ${formatCoins(coins)} to spend`
+          ? `${formatCoinBalance(earned)} earned · ${formatCoins(coins)} in-app only`
           : "Connect Supabase to save your work."}
       </p>
     </div>

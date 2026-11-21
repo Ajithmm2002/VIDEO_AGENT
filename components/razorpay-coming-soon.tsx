@@ -9,12 +9,15 @@ export function RazorpayComingSoon({
   title,
   amountPaise,
   compact = false,
+  disabled = false,
 }: {
   title: string;
   amountPaise: number;
   compact?: boolean;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [opening, setOpening] = useState(false);
   const [mounted, setMounted] = useState(false);
   const titleId = useId();
   const messageId = useId();
@@ -23,6 +26,10 @@ export function RazorpayComingSoon({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (open && mounted) setOpening(false);
+  }, [open, mounted]);
 
   useEffect(() => {
     if (!open) return;
@@ -41,8 +48,16 @@ export function RazorpayComingSoon({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className={compact ? "h-8 w-full px-2.5 py-1 text-xs" : "w-full"}>
-        Buy now
+      <Button
+        loading={opening}
+        disabled={disabled || opening}
+        className={compact ? "h-8 w-full px-2.5 py-1 text-xs" : "w-full"}
+        onClick={() => {
+          setOpening(true);
+          setOpen(true);
+        }}
+      >
+        {opening ? "Opening…" : "Buy now"}
       </Button>
       {mounted && open
         ? createPortal(
@@ -67,7 +82,7 @@ export function RazorpayComingSoon({
                   Pay {formatSkillPrice(amountPaise)} for {title}
                 </h2>
                 <p id={messageId} className="mt-2 text-sm leading-6 text-muted">
-                  Razorpay checkout is coming soon. Card, UPI, and net banking will open in this popup. Until then, buy with Fun mode coins.
+                  Razorpay checkout is coming soon. Card, UPI, and net banking pay the listed rupee price. Studio coins stay in this shop: they are not converted into cash or gift cards.
                 </p>
                 <div className="mt-5 rounded-2xl border border-dashed border-line bg-surface-2/80 px-4 py-3 text-sm text-muted shadow-[var(--shadow-inset)]">
                   Secure payment by Razorpay · Coming soon

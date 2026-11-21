@@ -19,6 +19,7 @@ export function previewGameCoins(score: number, durationMs: number) {
   return Math.min(MAX_COINS_PER_CLAIM, Math.floor(scoreCap / 30) + Math.floor(duration / 40_000));
 }
 
+/** In-app shop price only. This is not a cash-out or currency conversion. */
 export function priceInCoins(paise: number) {
   if (paise <= 0) return 0;
   return Math.ceil((Math.max(0, paise) * COINS_PER_RUPEE) / 100);
@@ -41,3 +42,15 @@ export function clampWalletCoins(value: unknown) {
 export function isGameId(value: string): value is GameId {
   return gameIds.includes(value as GameId);
 }
+
+export const COIN_REWARD_HEADLINE = "Studio coins are an in-app reward, not money.";
+
+export const COIN_REWARD_SUMMARY =
+  "Spend them only in this skill shop, on your own account. They cannot be transferred, withdrawn, or exchanged for cash, gift cards, or other real-world payment.";
+
+export const COIN_REWARD_TERMS = [
+  "Redeemable only inside this Content Studio skill shop.",
+  "Tied to your signed-in account and not transferable to anyone else.",
+  "No cash value. They cannot be converted into cash, gift cards, UPI, bank credit, or other real-world payment methods.",
+  "A listed rupee price is for paying with money. Coin cost is an in-app shop price, not a payout or cash-out rate.",
+] as const;

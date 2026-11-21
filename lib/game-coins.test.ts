@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { previewGameCoins, priceInCoins } from "@/lib/game-coins";
+import { COIN_REWARD_HEADLINE, COIN_REWARD_TERMS, previewGameCoins, priceInCoins } from "@/lib/game-coins";
 
 describe("game coins", () => {
   it("gives nothing for a short round", () => {
@@ -17,5 +17,13 @@ describe("game coins", () => {
     expect(priceInCoins(100)).toBe(100);
     expect(priceInCoins(9900)).toBe(9_900);
     expect(priceInCoins(150)).toBe(150);
+  });
+
+  it("states that coins are an in-app reward with no cash value", () => {
+    expect(COIN_REWARD_HEADLINE.toLowerCase()).toContain("not money");
+    expect(COIN_REWARD_TERMS.join(" ").toLowerCase()).toMatch(/not transferable/);
+    expect(COIN_REWARD_TERMS.join(" ").toLowerCase()).toMatch(/cash/);
+    expect(COIN_REWARD_TERMS.join(" ").toLowerCase()).toMatch(/gift cards/);
+    expect(COIN_REWARD_TERMS.join(" ").toLowerCase()).toMatch(/skill shop/);
   });
 });

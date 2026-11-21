@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { CoinRewardNotice } from "@/components/coin-reward-notice";
 import { CatchEndless, MemoryMarathon, SparkRush } from "@/components/fun-games";
 import { Button, Card, choiceClass } from "@/components/ui";
 import { claimGameCoins } from "@/lib/actions/game";
@@ -35,11 +36,11 @@ export function FunMode({ coins, earned }: { coins: number; earned: number }) {
         <div>
           <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.18em]">Studio coins</p>
           <p className="mt-1 text-2xl font-semibold">{formatCoinBalance(totalEarned)}</p>
-          <p className="mt-1 text-sm font-semibold">earned in total · {formatCoins(balance)} to spend</p>
+          <p className="mt-1 text-sm font-semibold">earned in total · {formatCoins(balance)} for this shop</p>
           <p className="mt-1 text-sm text-muted">
-            100 coins = ₹1. Up to 12 coins per run, 400 a day.{" "}
+            Up to 12 coins per run, 400 a day.{" "}
             <Link href="/marketplace" className="font-semibold text-accent">
-              Spend in the skill shop
+              Redeem only in the skill shop
             </Link>
           </p>
         </div>
@@ -87,6 +88,7 @@ export function FunMode({ coins, earned }: { coins: number; earned: number }) {
           </div>
         ) : null}
       </Card>
+      <CoinRewardNotice />
       <div className="flex flex-wrap gap-2">
         {games.map((item) => (
           <button
