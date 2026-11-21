@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { createFromWriting } from "@/lib/actions/generate";
 import { onGenerationResult, startAffiliateGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyButton } from "@/components/copy-button";
-import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Button, Card, choiceClass, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { affiliateProductTypeLabels, googleFlowUrl, languageLabels, platformLabels } from "@/lib/labels";
 import type { AffiliateAd, AffiliateProductType, Language, Platform, ProductPreview } from "@/lib/types";
 import { affiliateProductTypes, languages, platforms } from "@/lib/types";
@@ -281,7 +281,7 @@ export function AffiliateStudio({
                   key={type}
                   type="button"
                   onClick={() => setProductType(type)}
-                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
+                  className={choiceClass(on)}
                 >
                   {affiliateProductTypeLabels[type]}
                 </button>

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CopyButton } from "@/components/copy-button";
 import { StatusBadge } from "@/components/badges";
-import { Card, EmptyState } from "@/components/ui";
+import { Card, choiceClass, EmptyState } from "@/components/ui";
 import type { Content, HashtagCollection } from "@/lib/types";
 import { visiblePrompt } from "@/lib/utils";
 
@@ -59,7 +59,7 @@ export function LibraryBrowser({
             key={id}
             type="button"
             onClick={() => open(id)}
-            className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm ${view === id ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
+            className={choiceClass(view === id, "shrink-0 px-3.5")}
           >
             {label}
           </button>

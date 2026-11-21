@@ -10,7 +10,7 @@ import { LanguageBadge, PlatformBadge, StatusBadge } from "@/components/badges";
 import { Card, EmptyState } from "@/components/ui";
 import { deleteContents } from "@/lib/actions/content";
 import type { Content } from "@/lib/types";
-import { checklistProgress, formatDate } from "@/lib/utils";
+import { checklistProgress, cn, formatDate } from "@/lib/utils";
 
 function toggleId(current: Set<string>, id: string, on: boolean) {
   const next = new Set(current);
@@ -71,7 +71,7 @@ export function ContentList({ contents }: { contents: Content[] }) {
       {contents.map((item) => {
         const on = selected.has(item.id);
         return (
-          <Card key={item.id} className="flex flex-wrap items-center justify-between gap-4 hover:border-accent/35">
+          <Card key={item.id} className={cn("flex flex-wrap items-center justify-between gap-4 hover:border-accent/35", on && "selected-row")}>
             <div className="flex min-w-0 items-start gap-3">
               <input
                 type="checkbox"

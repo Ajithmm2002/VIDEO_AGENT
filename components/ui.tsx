@@ -83,6 +83,14 @@ export function SubmitButton({
   );
 }
 
+export function choiceClass(on: boolean, className?: string) {
+  return cn(
+    "rounded-full px-3 py-1.5 text-sm",
+    on ? "choice-selected" : "border border-line bg-surface font-medium text-ink shadow-[var(--shadow)]",
+    className,
+  );
+}
+
 const control =
   "w-full rounded-2xl border border-line bg-surface px-3 text-sm text-ink shadow-[var(--shadow-inset)] placeholder:text-muted/70";
 

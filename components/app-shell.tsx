@@ -80,11 +80,12 @@ export function AppShell({
                   prefetch
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium",
+                    "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
                     active
-                      ? "bg-surface text-ink shadow-[var(--shadow)]"
-                      : "text-muted hover:bg-surface-2 hover:text-ink",
+                      ? "nav-item-active"
+                      : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
                   )}
+                  aria-current={active ? "page" : undefined}
                 >
                   <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", active ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
                     <Icon className="h-4 w-4" />
@@ -103,11 +104,12 @@ export function AppShell({
           prefetch
           onClick={() => setOpen(false)}
           className={cn(
-            "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium",
+            "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
             pathname.startsWith("/settings")
-              ? "bg-surface text-ink shadow-[var(--shadow)]"
-              : "text-muted hover:bg-surface-2 hover:text-ink",
+              ? "nav-item-active"
+              : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
           )}
+          aria-current={pathname.startsWith("/settings") ? "page" : undefined}
         >
           <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", pathname.startsWith("/settings") ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
             <Settings className="h-4 w-4" />

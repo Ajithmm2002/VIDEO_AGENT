@@ -7,7 +7,7 @@ import { saveContentPlan } from "@/lib/actions/generate";
 import { onGenerationResult, startPlanGeneration, startScriptGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyButton } from "@/components/copy-button";
 import { ConfirmButton } from "@/components/confirm-button";
-import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Button, Card, choiceClass, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { ideaThemeLabels, languageLabels, planDayLabel, platformLabels, videoDurationLabels } from "@/lib/labels";
 import type { Category, IdeaTheme, Language, Platform, VideoDuration } from "@/lib/types";
 import { ideaThemes, languages, planDays, platforms, videoDurations } from "@/lib/types";
@@ -46,7 +46,7 @@ function DurationPills({
             type="button"
             disabled={disabled}
             onClick={() => onChange(seconds)}
-            className={`rounded-full px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-60 ${on ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
+            className={choiceClass(on, "disabled:cursor-not-allowed disabled:opacity-60")}
           >
             {videoDurationLabels[seconds]}
           </button>
@@ -316,7 +316,7 @@ export function PlannerStudio({
                   key={theme}
                   type="button"
                   onClick={() => toggleTheme(theme)}
-                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
+                  className={choiceClass(on)}
                 >
                   {ideaThemeLabels[theme]}
                 </button>
@@ -340,7 +340,7 @@ export function PlannerStudio({
                   key={count}
                   type="button"
                   onClick={() => setDays(count)}
-                  className={`rounded-full px-3 py-1.5 text-sm ${on ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface text-ink shadow-[var(--shadow)]"}`}
+                  className={choiceClass(on)}
                 >
                   {planDayLabel(count)}
                 </button>

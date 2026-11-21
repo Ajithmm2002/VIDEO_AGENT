@@ -76,8 +76,8 @@ export default async function CalendarPage({
           <SubmitButton pendingLabel="Filtering…">Filter</SubmitButton>
         </form>
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={query(format(anchor, "yyyy-MM-dd"), "month")} className={cn("rounded-full px-3 py-1.5 text-sm", view === "month" ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface shadow-[var(--shadow)]")}>Month</Link>
-          <Link href={query(format(anchor, "yyyy-MM-dd"), "week")} className={cn("rounded-full px-3 py-1.5 text-sm", view === "week" ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "border border-line bg-surface shadow-[var(--shadow)]")}>Week</Link>
+          <Link href={query(format(anchor, "yyyy-MM-dd"), "month")} className={cn("rounded-full px-3 py-1.5 text-sm", view === "month" ? "choice-selected" : "border border-line bg-surface font-medium text-ink shadow-[var(--shadow)]")}>Month</Link>
+          <Link href={query(format(anchor, "yyyy-MM-dd"), "week")} className={cn("rounded-full px-3 py-1.5 text-sm", view === "week" ? "choice-selected" : "border border-line bg-surface font-medium text-ink shadow-[var(--shadow)]")}>Week</Link>
           <Link href={query(previous)} className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm">Previous</Link>
           <Link href={query(today)} className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm">Today</Link>
           <Link href={query(next)} className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm">Next</Link>
