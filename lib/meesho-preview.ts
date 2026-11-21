@@ -1,4 +1,4 @@
-import { formatListingPrice } from "@/lib/listing-price";
+import { cleanListingTitle, formatListingPrice } from "@/lib/listing-price";
 import { assertPublicHost, parsePublicHttpsUrl } from "@/lib/safe-url";
 import type { ProductPreview } from "@/lib/types";
 
@@ -16,6 +16,7 @@ type MeeshoProduct = {
   id?: unknown;
   name?: unknown;
   price?: unknown;
+  discounted_price?: unknown;
   rating?: unknown;
   rating_count?: unknown;
   images?: unknown;
@@ -163,8 +164,8 @@ export async function tryMeeshoProductPreview(url: URL, originalUrl: string): Pr
     throw new Error("No product was found for that Meesho link.");
   }
 
-  const title = typeof product.name === "string" ? product.name.trim() : "";
-  const price = typeof product.price === "number" ? formatListingPrice(product.price, "INR") : "";
+  const title = typeof product.name === "string" ? cleanListingTitle(product.name) : "";
+  const price = formatListingPrice(product.price ?? product.discounted_price, "INR");
   return {
     url: originalUrl,
     title: (title || "Meesho product").slice(0, 200),

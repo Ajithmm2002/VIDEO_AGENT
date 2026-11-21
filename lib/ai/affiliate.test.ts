@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { localAffiliateAd, withCaptionCredit } from "@/lib/ai/affiliate";
 import { containsMalayalam } from "@/lib/ai/local";
-import { formatListingPrice, normalizeListingPrice } from "@/lib/listing-price";
+import { cleanListingTitle, formatListingPrice, normalizeListingPrice, priceFromJsonData } from "@/lib/listing-price";
 import { isBlockedHost, parsePublicHttpsUrl } from "@/lib/safe-url";
 
 describe("affiliate ads", () => {
@@ -17,7 +17,7 @@ describe("affiliate ads", () => {
       creditName: "FindByAish",
       price: "₹1807",
     });
-    expect(result.title.toLowerCase()).toContain("gold");
+    expect(result.title).toBe("18k gold hoop earrings");
     expect(result.postDescription.toLowerCase()).toContain("affiliate");
     expect(result.postDescription).toContain("https://example.com/gold-hoops");
     expect(result.imagePrompt.toLowerCase()).toContain("jewellery");
@@ -85,6 +85,20 @@ describe("listing price", () => {
   it("formats rupee prices from Meesho amounts", () => {
     expect(formatListingPrice(1807, "INR")).toBe("₹1807");
     expect(normalizeListingPrice("Rs. 1,807")).toBe("₹1807");
+    expect(formatListingPrice(undefined)).toBe("");
+  });
+
+  it("reads a price from product JSON-LD", () => {
+    expect(
+      priceFromJsonData({
+        "@type": "Product",
+        offers: { "@type": "Offer", price: "1807", priceCurrency: "INR" },
+      }),
+    ).toBe("₹1807");
+  });
+
+  it("strips marketplace suffixes from listing titles", () => {
+    expect(cleanListingTitle("Embroidered Anarkali Kurta Set | Meesho")).toBe("Embroidered Anarkali Kurta Set");
   });
 });
 

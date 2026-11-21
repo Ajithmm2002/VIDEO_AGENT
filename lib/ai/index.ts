@@ -174,6 +174,7 @@ export async function generateAffiliateAd(input: AffiliateAdInput): Promise<Affi
     const remote = await remoteAffiliateAd(input);
     return {
       ...remote,
+      title: (input.productName.trim() || remote.title).slice(0, 80),
       hashtags: toEnglishHashtags([...remote.hashtags, ...local.hashtags], input.hashtagCount),
     };
   } catch {

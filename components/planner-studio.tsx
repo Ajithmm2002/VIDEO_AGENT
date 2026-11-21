@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { saveContentPlan } from "@/lib/actions/generate";
 import { onGenerationResult, startPlanGeneration, startScriptGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyButton } from "@/components/copy-button";
+import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { ideaThemeLabels, languageLabels, planDayLabel, platformLabels, videoDurationLabels } from "@/lib/labels";
 import type { Category, IdeaTheme, Language, Platform, VideoDuration } from "@/lib/types";
@@ -219,6 +220,23 @@ export function PlannerStudio({
     setItems((current) => current.map((item) => (item.id === id ? { ...item, ...partial } : item)));
   }
 
+  const selectedCount = items.filter((item) => item.included).length;
+  const allSelected = items.length > 0 && selectedCount === items.length;
+  const someSelected = selectedCount > 0 && !allSelected;
+
+  function toggleSelectAll(on: boolean) {
+    setItems((current) => current.map((item) => ({ ...item, included: on })));
+  }
+
+  function deleteSelected() {
+    if (!selectedCount) {
+      toast.error("Select at least one idea.");
+      return;
+    }
+    setItems((current) => current.filter((item) => !item.included).map((item) => ({ ...item, included: true })));
+    toast.success(selectedCount === 1 ? "Idea removed" : `${selectedCount} ideas removed`);
+  }
+
   function onGenerate() {
     startPlanGeneration({
       language,
@@ -357,6 +375,27 @@ export function PlannerStudio({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">Suggested videos</h2>
             <p className="text-sm text-muted">Title is the idea. Description is how to shoot it. Write an audio script only when you need one.</p>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                ref={(element) => {
+                  if (element) element.indeterminate = someSelected;
+                }}
+                onChange={(event) => toggleSelectAll(event.target.checked)}
+              />
+              Select all
+            </label>
+            <ConfirmButton
+              label={selectedCount ? `Delete selected (${selectedCount})` : "Delete selected"}
+              title="Delete selected ideas?"
+              message="This removes the checked ideas from this plan. It does not delete saved content."
+              confirmLabel="Delete selected"
+              disabled={!selectedCount}
+              onConfirm={deleteSelected}
+            />
           </div>
           {items.map((item, index) => (
             <Card key={item.id} className="grid gap-3">

@@ -1,4 +1,4 @@
-import { formatListingPrice, normalizeListingPrice } from "@/lib/listing-price";
+import { cleanListingTitle, formatListingPrice, normalizeListingPrice, priceFromJsonData, priceFromPreviewText } from "@/lib/listing-price";
 import { isMeeshoAffiliateShell, isMeeshoHost, tryMeeshoProductPreview } from "@/lib/meesho-preview";
 import { assertPublicHost, parsePublicHttpsUrl } from "@/lib/safe-url";
 import type { ProductPreview } from "@/lib/types";
@@ -43,16 +43,29 @@ function listingPriceFromHtml(html: string) {
     const formatted = /^[₹$€£]/.test(amount.trim()) ? normalizeListingPrice(amount) : formatListingPrice(amount, currency);
     if (formatted) return formatted;
   }
-  const offer = html.match(/"offers"\s*:\s*\{[^}]{0,400}/i);
-  if (offer?.[0]) {
-    const price = offer[0].match(/"price"\s*:\s*"?([\d.]+)"?/i);
-    const offerCurrency = offer[0].match(/"priceCurrency"\s*:\s*"([A-Z]{3})"/i);
-    if (price?.[1]) {
-      const formatted = formatListingPrice(price[1], offerCurrency?.[1] ?? currency);
+
+  const scripts = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+  for (const script of scripts) {
+    const body = script[1]?.trim().slice(0, 80_000) ?? "";
+    if (!body) continue;
+    try {
+      const formatted = priceFromJsonData(JSON.parse(body));
       if (formatted) return formatted;
+    } catch {
+      continue;
     }
   }
-  return "";
+
+  const itemprop =
+    html.match(/itemprop=["']price["'][^>]*content=["']([^"']+)["']/i)?.[1] ||
+    html.match(/content=["']([^"']+)["'][^>]*itemprop=["']price["']/i)?.[1] ||
+    "";
+  if (itemprop) {
+    const formatted = /^[₹$€£]/.test(itemprop.trim()) ? normalizeListingPrice(itemprop) : formatListingPrice(itemprop, currency);
+    if (formatted) return formatted;
+  }
+
+  return priceFromPreviewText(html.slice(0, 20_000));
 }
 
 export async function fetchProductPreview(rawUrl: string): Promise<ProductPreview> {
@@ -113,10 +126,10 @@ export async function fetchProductPreview(rawUrl: string): Promise<ProductPrevie
 
   return {
     url: finalUrl.toString(),
-    title: title.slice(0, 200),
+    title: cleanListingTitle(title) || title.slice(0, 200),
     description: description.slice(0, 500),
     image,
     siteName: metaContent(html, ["og:site_name"]).slice(0, 80),
-    price: listingPriceFromHtml(html) || null,
+    price: listingPriceFromHtml(html) || priceFromPreviewText(description) || null,
   };
 }

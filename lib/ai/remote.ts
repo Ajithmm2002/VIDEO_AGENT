@@ -410,7 +410,7 @@ Image style: ${professionalImageAd ? "professional ad with listing price on the 
       models: geminiLiteModelOrder(),
     },
   );
-  const title = typeof data.title === "string" ? data.title.trim() : "";
+  const title = input.productName.trim() || (typeof data.title === "string" ? data.title.trim() : "");
   const postDescription = typeof data.postDescription === "string" ? data.postDescription.trim() : "";
   const instagramCaption = typeof data.instagramCaption === "string" ? data.instagramCaption.trim() : postDescription;
   const imagePrompt = typeof data.imagePrompt === "string" ? data.imagePrompt.trim() : "";

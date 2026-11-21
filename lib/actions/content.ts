@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/session";
 import type { ActionResult, ContentInput } from "@/lib/types";
-import { contentSchema, firstIssue } from "@/lib/validation";
+import { contentIdsSchema, contentSchema, firstIssue } from "@/lib/validation";
 
 function saveError(error: { message?: string; code?: string } | null, fallback: string) {
   const message = (error?.message ?? "").toLowerCase();
@@ -153,17 +153,28 @@ export async function saveAsTemplate(id: string) {
 }
 
 export async function deleteContent(id: string): Promise<ActionResult> {
+  return deleteContents([id]);
+}
+
+export async function deleteContents(ids: string[]): Promise<ActionResult> {
+  const parsed = contentIdsSchema.safeParse({ ids });
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
   const session = await requireSession();
   if (!session.ok) return session;
-  const existing = await session.supabase.from("contents").select("thumbnail_path").eq("id", id).maybeSingle();
-  const path = (existing.data as { thumbnail_path?: string | null } | null)?.thumbnail_path;
-  const { error } = await session.supabase.from("contents").delete().eq("id", id);
-  if (error) return { ok: false, error: "Could not delete this content." };
-  if (path) {
-    void session.supabase.storage.from("thumbnails").remove([path]);
+  const unique = [...new Set(parsed.data.ids)];
+  const existing = await session.supabase.from("contents").select("id, thumbnail_path").in("id", unique);
+  if (existing.error) return { ok: false, error: "Could not delete the selected content." };
+  const rows = (existing.data ?? []) as Array<{ id: string; thumbnail_path?: string | null }>;
+  if (!rows.length) return { ok: false, error: "Those items could not be deleted." };
+  const { error } = await session.supabase.from("contents").delete().in("id", rows.map((row) => row.id));
+  if (error) return { ok: false, error: "Could not delete the selected content." };
+  const paths = rows.map((row) => row.thumbnail_path).filter((path): path is string => Boolean(path));
+  if (paths.length) {
+    void session.supabase.storage.from("thumbnails").remove(paths);
   }
   refresh();
-  return { ok: true, message: "Content deleted." };
+  const count = rows.length;
+  return { ok: true, message: count === 1 ? "Content deleted." : `${count} items deleted.` };
 }
 
 export async function updatePlannedDate(id: string, plannedDate: string | null): Promise<ActionResult> {

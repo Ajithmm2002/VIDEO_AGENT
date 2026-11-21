@@ -12,7 +12,7 @@ import { affiliateProductTypeLabels, googleFlowUrl, languageLabels, platformLabe
 import type { AffiliateAd, AffiliateProductType, Language, Platform, ProductPreview } from "@/lib/types";
 import { affiliateProductTypes, languages, platforms } from "@/lib/types";
 import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
-import { priceFromPreviewText } from "@/lib/listing-price";
+import { cleanListingTitle, priceFromPreviewText } from "@/lib/listing-price";
 import { defaultChecklist, newId } from "@/lib/utils";
 
 function DraftField({
@@ -179,10 +179,13 @@ export function AffiliateStudio({
       }
       setPreview(data.preview);
       setProductUrl(data.preview.url);
-      if (!productName.trim() && data.preview.title) setProductName(data.preview.title);
-      if (!notes.trim() && data.preview.description) setNotes(data.preview.description.slice(0, 400));
+      const listingTitle = cleanListingTitle(data.preview.title);
+      if (listingTitle) setProductName(listingTitle);
       const listingPrice = data.preview.price || priceFromPreviewText(data.preview.description);
-      if (listingPrice) setPrice(listingPrice);
+      setPrice(listingPrice);
+      if (!creditName.trim() && accountName) setCreditName(accountName);
+      const highlight = data.preview.description.trim();
+      if (!notes.trim() && highlight && !priceFromPreviewText(highlight)) setNotes(highlight.slice(0, 400));
     } catch {
       setPreview(null);
       setPreviewError("Could not load that product link.");
@@ -326,12 +329,13 @@ export function AffiliateStudio({
             <div>
               <p className="font-medium">{preview.title || "Product listing"}</p>
               {preview.siteName ? <p className="text-xs text-muted">{preview.siteName}</p> : null}
+              {preview.price ? <p className="text-sm font-medium">{preview.price}</p> : null}
               {preview.description ? <p className="mt-1 line-clamp-3 text-sm text-muted">{preview.description}</p> : null}
             </div>
           </div>
         ) : null}
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Product name" hint="Filled from the link when possible.">
+          <Field label="Product title" hint="Auto-filled from the product link.">
             <TextInput value={productName} onChange={(event) => setProductName(event.target.value)} maxLength={200} />
           </Field>
           <Field label="What to highlight" hint="Optional. Example: 18k gold, wireless ANC, 50% off.">
@@ -345,7 +349,7 @@ export function AffiliateStudio({
               placeholder={accountName || "Your name or company"}
             />
           </Field>
-          <Field label="Listing price" hint="Filled from the product link when possible. Shown in the end credit.">
+          <Field label="Listing price" hint="Auto-filled from the product link. Used in the end credit and professional image ads.">
             <TextInput value={price} onChange={(event) => setPrice(event.target.value)} maxLength={40} placeholder="₹" />
           </Field>
           <Field label="Language">

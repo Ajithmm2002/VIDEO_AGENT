@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ContentActions } from "@/components/content-actions";
-import { LanguageBadge, PlatformBadge, StatusBadge } from "@/components/badges";
-import { Card, EmptyState, PageHeader, SelectInput, SubmitButton, TextInput } from "@/components/ui";
+import { ContentList } from "@/components/content-list";
+import { Card, PageHeader, SelectInput, SubmitButton, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
 import { listCategories, listContents, type ContentFilters } from "@/lib/queries";
-import { checklistProgress, formatDate } from "@/lib/utils";
 import { languages, platforms, statuses } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Content" };
@@ -72,29 +70,7 @@ export default async function ContentPage({
           <SubmitButton className="w-fit" pendingLabel="Applying…">Apply</SubmitButton>
         </form>
       </Card>
-      <div className="grid gap-3">
-        {contents.length ? contents.map((item) => (
-          <Card key={item.id} className="flex flex-wrap items-center justify-between gap-4 hover:border-accent/35">
-            <div>
-              <Link href={`/content/${item.id}`} className="font-semibold hover:text-accent">{item.title}</Link>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                <StatusBadge status={item.status} />
-                <PlatformBadge platform={item.platform} />
-                <LanguageBadge language={item.language} />
-                {item.category ? <span className="text-xs text-muted">{item.category.name}</span> : null}
-                {item.is_template ? <span className="text-xs text-muted">Template</span> : null}
-                <span className="text-xs text-muted">{formatDate(item.planned_date)}</span>
-                {checklistProgress(item.checklist) ? <span className="text-xs text-muted">{checklistProgress(item.checklist)}</span> : null}
-              </div>
-            </div>
-            <ContentActions id={item.id} />
-          </Card>
-        )) : (
-          <Card>
-            <EmptyState title="No matching content" body="Try another search, or create a new idea from this page." />
-          </Card>
-        )}
-      </div>
+      <ContentList contents={contents} />
     </div>
   );
 }

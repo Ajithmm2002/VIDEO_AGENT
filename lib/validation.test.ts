@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contentSchema, firstIssue, passwordSchema } from "@/lib/validation";
+import { contentIdsSchema, contentSchema, firstIssue, passwordSchema } from "@/lib/validation";
 import { csvCell, defaultChecklist, safeNextPath } from "@/lib/utils";
 import type { ContentInput } from "@/lib/types";
 
@@ -67,6 +67,21 @@ describe("passwords and redirects", () => {
     expect(safeNextPath("//evil.example")).toBe("/dashboard");
     expect(safeNextPath("/\\evil.example")).toBe("/dashboard");
     expect(safeNextPath("/%2F%2Fevil.example")).toBe("/dashboard");
+  });
+});
+
+describe("content ids", () => {
+  it("accepts a batch of content ids", () => {
+    const parsed = contentIdsSchema.safeParse({
+      ids: ["11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"],
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects an empty selection", () => {
+    const parsed = contentIdsSchema.safeParse({ ids: [] });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) expect(firstIssue(parsed.error)).toMatch(/at least one/i);
   });
 });
 

@@ -96,6 +96,13 @@ export const contentSchema = z.object({
   is_template: z.boolean(),
 });
 
+export const contentIdsSchema = z.object({
+  ids: z
+    .array(z.uuid())
+    .min(1, "Select at least one item.")
+    .max(100, "Select up to 100 items at a time."),
+});
+
 export const affiliateRequestSchema = z
   .object({
     productType: z.enum(affiliateProductTypes),

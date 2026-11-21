@@ -274,7 +274,7 @@ export function localAffiliateAd(input: AffiliateAdInput): AffiliateAd {
 
   return applyAffiliateCredits(
     {
-      title: `${name} | ${look.subject}`.slice(0, 80),
+      title: name.slice(0, 80),
       postDescription,
       instagramCaption,
       hashtags,
