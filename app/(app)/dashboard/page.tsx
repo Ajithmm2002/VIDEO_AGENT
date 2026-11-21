@@ -22,9 +22,11 @@ const statMeta = [
 ] as const;
 
 export default async function DashboardPage() {
-  const data = await dashboardData();
   const configured = isSupabaseConfigured();
-  const wallet = configured ? await getGameWallet() : { coins: 0, earned: 0 };
+  const [data, wallet] = await Promise.all([
+    dashboardData(),
+    configured ? getGameWallet() : Promise.resolve({ coins: 0, earned: 0 }),
+  ]);
   const values = {
     total: data.total,
     drafts: data.drafts,

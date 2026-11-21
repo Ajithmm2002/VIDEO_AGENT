@@ -2,18 +2,31 @@ import type { Metadata } from "next";
 import { Noto_Sans_Malayalam, Outfit } from "next/font/google";
 import { AppThemeProvider } from "@/components/theme-provider";
 import { AppToaster } from "@/components/toaster";
+import { isSupabaseConfigured, supabaseUrl } from "@/lib/env";
 import "./globals.css";
 
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
+  display: "swap",
 });
 
 const malayalam = Noto_Sans_Malayalam({
   subsets: ["malayalam"],
   weight: ["400", "600", "700"],
   variable: "--font-malayalam",
+  display: "swap",
+  preload: false,
 });
+
+function supabaseOrigin() {
+  if (!isSupabaseConfigured()) return "";
+  try {
+    return new URL(supabaseUrl()).origin;
+  } catch {
+    return "";
+  }
+}
 
 export const metadata: Metadata = {
   title: {
@@ -24,9 +37,16 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const origin = supabaseOrigin();
   return (
     <html lang="en" className={`${outfit.variable} ${malayalam.variable} h-full`} suppressHydrationWarning>
       <body className="min-h-full antialiased">
+        {origin ? (
+          <>
+            <link rel="preconnect" href={origin} />
+            <link rel="dns-prefetch" href={origin} />
+          </>
+        ) : null}
         <AppThemeProvider>
           {children}
           <AppToaster />

@@ -1,7 +1,4 @@
-"use client";
-
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
-import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tagCountOptions } from "@/lib/types";
@@ -64,22 +61,6 @@ export function Button({
       {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
       {children}
     </button>
-  );
-}
-
-export function SubmitButton({
-  pendingLabel,
-  children,
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger" | "ghost";
-  pendingLabel: string;
-}) {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" loading={pending} {...props}>
-      {pending ? pendingLabel : children}
-    </Button>
   );
 }
 

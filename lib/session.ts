@@ -15,10 +15,10 @@ export const getCurrentUser = cache(async () => {
   }
 });
 
-export async function requestUserEmail() {
+export const requestUserEmail = cache(async () => {
   const headerStore = await headers();
   return headerStore.get("x-user-email");
-}
+});
 
 export async function requestOrigin() {
   const headerStore = await headers();

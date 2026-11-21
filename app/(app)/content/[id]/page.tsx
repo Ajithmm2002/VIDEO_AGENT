@@ -9,13 +9,13 @@ export const metadata: Metadata = { title: "Edit content" };
 
 export default async function EditContentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const content = await getContent(id);
-  if (!content) notFound();
-  const [categories, collections, thumbnailUrl] = await Promise.all([
+  const [content, categories, collections] = await Promise.all([
+    getContent(id),
     listCategories(),
     listCollections(),
-    signedThumbnailUrl(content.thumbnail_path),
   ]);
+  if (!content) notFound();
+  const thumbnailUrl = await signedThumbnailUrl(content.thumbnail_path);
 
   return (
     <div>

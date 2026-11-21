@@ -20,8 +20,7 @@ export default async function ThumbnailsPage({
 }) {
   const params = await searchParams;
   const language = first(params.language);
-  const prompts = await listPrompts();
-  const contents = await listContentOptions();
+  const [prompts, contents] = await Promise.all([listPrompts(), listContentOptions()]);
 
   return (
     <div>

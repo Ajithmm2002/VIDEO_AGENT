@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { BadgePercent, CalendarDays, Gamepad2, ImageIcon, PenLine, Sparkles, Store } from "lucide-react";
 import { AmbientGlow } from "@/components/ambient-glow";

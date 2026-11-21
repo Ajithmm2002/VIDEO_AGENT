@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { CalendarDays, Gamepad2, ImageIcon, Sparkles, Store } from "lucide-react";

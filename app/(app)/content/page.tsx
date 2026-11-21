@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentList } from "@/components/content-list";
-import { Card, PageHeader, SelectInput, SubmitButton, TextInput } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
+import { Card, PageHeader, SelectInput, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
 import { listCategories, listContents, type ContentFilters } from "@/lib/queries";
 import { languages, platforms, statuses } from "@/lib/types";

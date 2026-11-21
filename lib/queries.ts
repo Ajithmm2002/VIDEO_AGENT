@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { asCategory, asCollection, asContent, asListing, asPrompt, asPurchase } from "@/lib/records";
 import { clampWalletCoins, type GameWallet } from "@/lib/game-coins";
@@ -5,6 +6,7 @@ import type { Content, ContentOption, MarketplaceListing, MarketplacePurchase, S
 import { statuses } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
+import { getCurrentUser } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 function parseContents(rows: unknown[]) {
@@ -35,12 +37,12 @@ async function attachCategories(supabase: SupabaseClient, rows: unknown[]) {
   }));
 }
 
-async function client() {
+const client = cache(async () => {
   if (!isSupabaseConfigured()) return null;
   return createClient();
-}
+});
 
-export async function listCategories() {
+export const listCategories = cache(async () => {
   const supabase = await client();
   if (!supabase) return [];
   const { data, error } = await supabase.from("categories").select("id, name, color").order("name");
@@ -49,9 +51,9 @@ export async function listCategories() {
     const category = asCategory(row);
     return category ? [category] : [];
   });
-}
+});
 
-export async function listCollections() {
+export const listCollections = cache(async () => {
   const supabase = await client();
   if (!supabase) return [];
   const { data, error } = await supabase
@@ -60,9 +62,9 @@ export async function listCollections() {
     .order("name");
   if (error) throw new Error("Could not load hashtag collections.");
   return (data ?? []).map(asCollection);
-}
+});
 
-export async function listContentOptions(): Promise<ContentOption[]> {
+export const listContentOptions = cache(async (): Promise<ContentOption[]> => {
   const supabase = await client();
   if (!supabase) return [];
   const { data, error } = await supabase
@@ -83,7 +85,7 @@ export async function listContentOptions(): Promise<ContentOption[]> {
       topic: record.topic ?? null,
     }];
   });
-}
+});
 
 export type ContentFilters = {
   q?: string;
@@ -131,7 +133,7 @@ export async function listContents(filters: ContentFilters) {
   return attachCategories(supabase, data ?? []);
 }
 
-export async function getContent(id: string) {
+export const getContent = cache(async (id: string) => {
   const supabase = await client();
   if (!supabase) return null;
   const { data, error } = await supabase.from("contents").select("*").eq("id", id).maybeSingle();
@@ -142,15 +144,15 @@ export async function getContent(id: string) {
   if (!data) return null;
   const [content] = await attachCategories(supabase, [data]);
   return content ?? null;
-}
+});
 
-export async function signedThumbnailUrl(path: string | null) {
+export const signedThumbnailUrl = cache(async (path: string | null) => {
   if (!path) return null;
   const supabase = await client();
   if (!supabase) return null;
   const { data } = await supabase.storage.from("thumbnails").createSignedUrl(path, 60 * 60);
   return data?.signedUrl ?? null;
-}
+});
 
 export async function signedThumbnailMap(contents: Content[]) {
   const paths = contents.flatMap((item) => (item.thumbnail_path ? [item.thumbnail_path] : []));
@@ -165,7 +167,7 @@ export async function signedThumbnailMap(contents: Content[]) {
   return map;
 }
 
-export async function dashboardData() {
+export const dashboardData = cache(async () => {
   const supabase = await client();
   const empty = {
     total: 0,
@@ -186,37 +188,52 @@ export async function dashboardData() {
     day: "2-digit",
     timeZone: "UTC",
   }).format(new Date());
+  const cardFields = "id, title, status, planned_date, updated_at, checklist";
 
-  const { data, error, count } = await supabase
-    .from("contents")
-    .select("id, title, status, platform, planned_date, updated_at, checklist", { count: "exact" })
-    .eq("is_template", false)
-    .order("updated_at", { ascending: false })
-    .limit(1000);
+  const [statsResult, recentResult, upcomingResult] = await Promise.all([
+    supabase.from("contents").select("status, platform", { count: "exact" }).eq("is_template", false),
+    supabase
+      .from("contents")
+      .select(cardFields)
+      .eq("is_template", false)
+      .order("updated_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("contents")
+      .select(cardFields)
+      .eq("is_template", false)
+      .gte("planned_date", today)
+      .neq("status", "published")
+      .order("planned_date", { ascending: true })
+      .limit(6),
+  ]);
 
+  const error = statsResult.error ?? recentResult.error ?? upcomingResult.error;
   if (error) {
     console.error("dashboardData", error);
     throw new Error("Could not load the dashboard.");
   }
 
-  const rows = parseContents(data ?? []);
-  const upcoming = [...rows]
-    .filter((item) => item.planned_date && item.planned_date >= today && item.status !== "published")
-    .sort((a, b) => (a.planned_date ?? "").localeCompare(b.planned_date ?? ""))
-    .slice(0, 6);
+  const stats = (statsResult.data ?? []) as Array<{ status?: string; platform?: string }>;
+  const drafts = stats.filter((item) => item.status === "idea" || item.status === "planning" || item.status === "in_progress").length;
+  const ready = stats.filter((item) => item.status === "ready").length;
+  const scheduled = stats.filter((item) => item.status === "scheduled").length;
+  const published = stats.filter((item) => item.status === "published").length;
+  const youtube = stats.filter((item) => item.platform === "youtube" || item.platform === "both").length;
+  const instagram = stats.filter((item) => item.platform === "instagram" || item.platform === "both").length;
 
   return {
-    total: count ?? rows.length,
-    drafts: rows.filter((item) => item.status === "idea" || item.status === "planning" || item.status === "in_progress").length,
-    ready: rows.filter((item) => item.status === "ready").length,
-    scheduled: rows.filter((item) => item.status === "scheduled").length,
-    published: rows.filter((item) => item.status === "published").length,
-    youtube: rows.filter((item) => item.platform === "youtube" || item.platform === "both").length,
-    instagram: rows.filter((item) => item.platform === "instagram" || item.platform === "both").length,
-    recent: rows.slice(0, 6),
-    upcoming,
+    total: statsResult.count ?? stats.length,
+    drafts,
+    ready,
+    scheduled,
+    published,
+    youtube,
+    instagram,
+    recent: parseContents(recentResult.data ?? []),
+    upcoming: parseContents(upcomingResult.data ?? []),
   };
-}
+});
 
 export async function calendarContents(start: string, end: string, platform?: string, status?: string) {
   const supabase = await client();
@@ -249,9 +266,12 @@ export async function calendarContents(start: string, end: string, platform?: st
     console.error("calendarContents", datedResult.error ?? undatedResult.error);
     throw new Error("Could not load the calendar.");
   }
+  const datedRows = datedResult.data ?? [];
+  const all = await attachCategories(supabase, [...datedRows, ...(undatedResult.data ?? [])]);
+  const datedIds = new Set(datedRows.map((row) => (row as { id?: string }).id).filter(Boolean));
   return {
-    dated: await attachCategories(supabase, datedResult.data ?? []),
-    undated: await attachCategories(supabase, undatedResult.data ?? []),
+    dated: all.filter((item) => datedIds.has(item.id)),
+    undated: all.filter((item) => !datedIds.has(item.id)),
   };
 }
 
@@ -271,22 +291,22 @@ export async function libraryContents() {
   return attachCategories(supabase, data ?? []);
 }
 
-export async function getProfile() {
+export const getProfile = cache(async () => {
   const supabase = await client();
   if (!supabase) return null;
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) return null;
+  const user = await getCurrentUser();
+  if (!user) return null;
   const { data } = await supabase
     .from("profiles")
     .select("id, display_name")
-    .eq("id", userData.user.id)
+    .eq("id", user.id)
     .maybeSingle();
   const row = data as { id?: string; display_name?: string | null } | null;
-  if (!row?.id) return { id: userData.user.id, display_name: null };
+  if (!row?.id) return { id: user.id, display_name: null };
   return { id: row.id, display_name: row.display_name ?? null };
-}
+});
 
-export async function listMarketplaceListings(options: { includeDrafts?: boolean } = {}) {
+const loadMarketplaceListings = cache(async (includeDrafts: boolean) => {
   const supabase = await client();
   if (!supabase) return [] as MarketplaceListing[];
   let query = supabase
@@ -294,7 +314,7 @@ export async function listMarketplaceListings(options: { includeDrafts?: boolean
     .select("id, title, description, offerings, kind, price_paise, currency, listed, file_name, file_ext, created_at")
     .order("created_at", { ascending: false })
     .limit(100);
-  if (!options.includeDrafts) query = query.eq("listed", true);
+  if (!includeDrafts) query = query.eq("listed", true);
   const { data, error } = await query;
   if (error) {
     console.error("listMarketplaceListings", error);
@@ -304,9 +324,13 @@ export async function listMarketplaceListings(options: { includeDrafts?: boolean
     const listing = asListing(row);
     return listing ? [listing] : [];
   });
+});
+
+export function listMarketplaceListings(options: { includeDrafts?: boolean } = {}) {
+  return loadMarketplaceListings(Boolean(options.includeDrafts));
 }
 
-export async function getMarketplaceListing(id: string) {
+export const getMarketplaceListing = cache(async (id: string) => {
   const supabase = await client();
   if (!supabase) return null;
   const { data, error } = await supabase
@@ -316,9 +340,9 @@ export async function getMarketplaceListing(id: string) {
     .maybeSingle();
   if (error) return null;
   return asListing(data);
-}
+});
 
-export async function getGameWallet(): Promise<GameWallet> {
+export const getGameWallet = cache(async (): Promise<GameWallet> => {
   const supabase = await client();
   if (!supabase) return { coins: 0, earned: 0 };
   const { data, error } = await supabase.from("game_wallets").select("coins, earned").maybeSingle();
@@ -330,13 +354,13 @@ export async function getGameWallet(): Promise<GameWallet> {
   const coins = clampWalletCoins(data?.coins);
   const earned = Math.max(coins, clampWalletCoins(data?.earned));
   return { coins, earned };
-}
+});
 
 export async function getGameCoins() {
   return (await getGameWallet()).coins;
 }
 
-export async function listMyPurchases() {
+export const listMyPurchases = cache(async () => {
   const supabase = await client();
   if (!supabase) return [] as MarketplacePurchase[];
   const { data, error } = await supabase
@@ -349,14 +373,14 @@ export async function listMyPurchases() {
     const purchase = asPurchase(row);
     return purchase ? [purchase] : [];
   });
-}
+});
 
 export async function listPendingMoneyPurchases() {
   const purchases = await listMyPurchases();
   return purchases.filter((item) => item.status === "checkout_soon" && item.buyer_id);
 }
 
-export async function listPrompts() {
+export const listPrompts = cache(async () => {
   const supabase = await client();
   if (!supabase) return [];
   const { data, error } = await supabase
@@ -366,4 +390,4 @@ export async function listPrompts() {
     .limit(20);
   if (error) throw new Error("Could not load saved prompts.");
   return (data ?? []).map(asPrompt);
-}
+});

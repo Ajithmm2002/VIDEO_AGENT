@@ -25,7 +25,8 @@ import {
 import { signOut } from "@/lib/actions/auth";
 import { BrandMark } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button, SubmitButton } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
+import { Button } from "@/components/ui";
 import { useGenerationJobs } from "@/lib/background-generate";
 import { formatCoinBalance, formatCoins } from "@/lib/game-coins";
 import { cn } from "@/lib/utils";

@@ -15,7 +15,11 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+  },
   experimental: {
+    optimizePackageImports: ["lucide-react", "date-fns"],
     staleTimes: {
       dynamic: 30,
       static: 180,

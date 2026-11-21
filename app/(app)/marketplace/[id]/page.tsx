@@ -13,9 +13,12 @@ export default async function MarketplaceListingPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const listing = await getMarketplaceListing(id);
+  const [listing, purchases, coins] = await Promise.all([
+    getMarketplaceListing(id),
+    listMyPurchases(),
+    getGameCoins(),
+  ]);
   if (!listing || !listing.listed) notFound();
-  const [purchases, coins] = await Promise.all([listMyPurchases(), getGameCoins()]);
   const purchase = purchases.find((item) => item.listing_id === listing.id);
   const FileIcon = listing.file_ext === "zip" ? FileArchive : FileText;
 
