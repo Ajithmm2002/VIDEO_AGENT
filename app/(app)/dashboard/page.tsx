@@ -46,7 +46,7 @@ export default async function DashboardPage() {
         action={
           <Link
             href="/content/new"
-            className="ig-gradient relative z-10 inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold text-white"
+            className="ig-gradient relative z-10 inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold text-accent-ink"
           >
             New content
           </Link>
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
               <div className="flex flex-wrap justify-center gap-2">
                 <Link
                   href="/planner"
-                  className="ig-gradient inline-flex items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
+                  className="ig-gradient inline-flex items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
                 >
                   Plan a week of ideas
                 </Link>

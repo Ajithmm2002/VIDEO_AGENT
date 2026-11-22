@@ -42,7 +42,7 @@ export function DashboardWelcome({
               href={chip.href}
               className="inline-flex min-h-11 min-w-[9.5rem] items-center gap-2 rounded-md border border-line bg-surface px-3 py-2 text-sm font-semibold"
             >
-              <span className="ig-gradient grid h-7 w-7 place-items-center rounded-md text-white">
+              <span className="ig-gradient grid h-7 w-7 place-items-center rounded-md text-accent-ink">
                 <Icon className="h-3.5 w-3.5" />
               </span>
               {chip.label}

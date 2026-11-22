@@ -120,7 +120,7 @@ export function AppShell({
                   )}
                   aria-current={active ? "page" : undefined}
                 >
-                  <span className={cn("grid h-8 w-8 place-items-center rounded-md", active ? "ig-gradient text-white" : "bg-surface-2")}>
+                  <span className={cn("grid h-8 w-8 place-items-center rounded-md", active ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
                     <Icon className="h-4 w-4" />
                   </span>
                   {link.label}
@@ -145,7 +145,7 @@ export function AppShell({
             )}
             aria-current={navActive(pathname, "/admin/marketplace") ? "page" : undefined}
           >
-            <span className={cn("grid h-8 w-8 place-items-center rounded-md", navActive(pathname, "/admin/marketplace") ? "ig-gradient text-white" : "bg-surface-2")}>
+            <span className={cn("grid h-8 w-8 place-items-center rounded-md", navActive(pathname, "/admin/marketplace") ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
               <Shield className="h-4 w-4" />
             </span>
             Sell
@@ -167,7 +167,7 @@ export function AppShell({
           )}
           aria-current={pathname.startsWith("/purchases") ? "page" : undefined}
         >
-          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/purchases") ? "ig-gradient text-white" : "bg-surface-2")}>
+          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/purchases") ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
             <ShoppingBag className="h-4 w-4" />
           </span>
           Purchases
@@ -184,7 +184,7 @@ export function AppShell({
           )}
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
         >
-          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/settings") ? "ig-gradient text-white" : "bg-surface-2")}>
+          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/settings") ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
             <Settings className="h-4 w-4" />
           </span>
           Settings
@@ -298,7 +298,7 @@ export function AppShell({
               <SubmitButton variant="secondary" className="px-2.5 text-xs sm:px-3.5 sm:text-sm" pendingLabel="Signing out…">Sign out</SubmitButton>
             </form>
           ) : (
-            <Link href="/login" className="ig-gradient inline-flex h-11 items-center rounded-md px-3.5 text-sm font-semibold text-white">
+            <Link href="/login" className="ig-gradient inline-flex h-11 items-center rounded-md px-3.5 text-sm font-semibold text-accent-ink">
               Sign in
             </Link>
           )}

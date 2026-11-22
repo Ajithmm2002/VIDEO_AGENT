@@ -106,7 +106,7 @@ export function AuthFrame({
                   className="flex gap-3 rounded-md border border-line bg-surface p-4"
                   style={{ animationDelay: `${260 + index * 90}ms` }}
                 >
-                  <span className="ig-gradient grid h-10 w-10 shrink-0 place-items-center rounded-md text-white">
+                  <span className="ig-gradient grid h-10 w-10 shrink-0 place-items-center rounded-md text-accent-ink">
                     <Icon className="h-4 w-4" />
                   </span>
                   <span>

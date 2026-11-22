@@ -16,7 +16,7 @@ export function CoinBalanceCard({ wallet }: { wallet: GameWallet }) {
         <CoinRewardNotice compact />
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
-        <Link href="/play" className="ig-gradient inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold text-white">
+        <Link href="/play" className="ig-gradient inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold text-accent-ink">
           Play Fun mode
         </Link>
         <Link href="/play#coin-packs" className="inline-flex min-h-11 items-center rounded-md border border-line bg-surface px-3.5 text-sm font-semibold">

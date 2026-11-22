@@ -72,7 +72,7 @@ export function ShopCatalog({
           {isAdmin ? (
             <Link
               href="/admin/marketplace"
-              className="ig-gradient inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-white"
+              className="ig-gradient inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
             >
               Sell
             </Link>

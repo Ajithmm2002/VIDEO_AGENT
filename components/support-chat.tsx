@@ -191,7 +191,7 @@ export function SupportChat() {
                 key={item.id}
                 className={cn(
                   "max-w-[90%] whitespace-pre-wrap rounded-md px-3 py-2 text-base leading-6 sm:text-sm",
-                  item.role === "user" ? "ml-auto bg-accent text-white" : "bg-surface-2 text-ink",
+                  item.role === "user" ? "ml-auto bg-accent text-accent-ink" : "bg-surface-2 text-ink",
                 )}
               >
                 {item.content}
@@ -237,7 +237,7 @@ export function SupportChat() {
             />
             <button
               type="submit"
-              className="ig-gradient grid h-11 w-11 place-items-center rounded-md text-white disabled:opacity-60"
+              className="ig-gradient grid h-11 w-11 place-items-center rounded-md text-accent-ink disabled:opacity-60"
               disabled={pending || !input.trim()}
               aria-label="Send"
             >
@@ -262,7 +262,7 @@ export function SupportChat() {
             setOpen((value) => !value);
           }
         }}
-        className="pointer-events-auto absolute grid h-12 w-12 touch-none place-items-center rounded-full bg-accent text-white shadow-[var(--shadow-glow)]"
+        className="pointer-events-auto absolute grid h-12 w-12 touch-none place-items-center rounded-full bg-accent text-accent-ink shadow-[var(--shadow-glow)]"
         style={{ left: point.x, top: point.y }}
       >
         <Headset className="h-5 w-5" aria-hidden />

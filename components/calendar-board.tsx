@@ -103,7 +103,7 @@ export function CalendarBoard({
                   <div
                     className={cn(
                       "mb-2 grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-semibold",
-                      day === today ? "ig-gradient text-white" : "text-muted",
+                      day === today ? "ig-gradient text-accent-ink" : "text-muted",
                     )}
                   >
                     {Number(day.slice(8))}

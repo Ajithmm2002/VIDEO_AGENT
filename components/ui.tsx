@@ -39,9 +39,9 @@ export const Button = forwardRef<
   ref,
 ) {
   const styles = {
-    primary: "ig-gradient text-white shadow-[var(--shadow-glow)] hover:brightness-105",
+    primary: "ig-gradient text-accent-ink shadow-[var(--shadow-glow)] hover:brightness-105",
     secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:bg-surface-2 dark:shadow-none",
-    danger: "bg-danger text-white shadow-[0_12px_24px_-14px_rgb(237_73_86_/_0.7)] hover:opacity-90",
+    danger: "bg-danger text-accent-ink shadow-[var(--shadow-glow)] hover:opacity-90",
     ghost: "text-ink hover:bg-surface-2",
   };
   return (
@@ -170,7 +170,7 @@ export function EmptyState({
 }) {
   return (
     <div className="grid place-items-center rounded-[1.75rem] border border-dashed border-line bg-surface-2/70 px-6 py-10 text-center shadow-[var(--shadow-inset)] dark:rounded-md dark:bg-surface-2 dark:shadow-none">
-      <div className="ig-gradient mb-4 grid h-12 w-12 place-items-center rounded-2xl text-white shadow-[var(--shadow-glow)] dark:rounded-md dark:shadow-none">
+      <div className="ig-gradient mb-4 grid h-12 w-12 place-items-center rounded-2xl text-accent-ink shadow-[var(--shadow-glow)] dark:rounded-md dark:shadow-none">
         <Sparkles className="h-5 w-5" aria-hidden />
       </div>
       <p className="font-semibold">{title}</p>

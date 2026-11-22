@@ -65,7 +65,7 @@ export function MarketplaceBuy({
         <p className="text-sm leading-6 text-muted">You already own this. Downloads are in Purchases.</p>
         <Link
           href="/purchases"
-          className="ig-gradient inline-flex h-11 items-center justify-center rounded-2xl px-3.5 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
+          className="ig-gradient inline-flex h-11 items-center justify-center rounded-2xl px-3.5 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
         >
           Open Purchases
         </Link>

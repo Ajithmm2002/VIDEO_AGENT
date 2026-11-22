@@ -36,7 +36,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
           </Link>
           <Link
             href={startHref}
-            className="ig-gradient inline-flex min-h-11 items-center rounded-md px-4 text-base font-semibold text-white sm:text-sm"
+            className="ig-gradient inline-flex min-h-11 items-center rounded-md px-4 text-base font-semibold text-accent-ink sm:text-sm"
           >
             {configured ? "Get started" : "Open studio"}
           </Link>
@@ -56,7 +56,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
                 href={startHref}
-                className="ig-gradient inline-flex min-h-12 items-center gap-2 rounded-md px-5 text-base font-semibold text-white sm:text-sm"
+                className="ig-gradient inline-flex min-h-12 items-center gap-2 rounded-md px-5 text-base font-semibold text-accent-ink sm:text-sm"
               >
                 <Sparkles className="h-4 w-4" aria-hidden />
                 {configured ? "Start a workspace" : "Open the studio"}
@@ -84,7 +84,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
                   key={item.title}
                   className="rounded-md border border-line bg-surface p-6"
                 >
-                  <span className="ig-gradient grid h-11 w-11 place-items-center rounded-md text-white">
+                  <span className="ig-gradient grid h-11 w-11 place-items-center rounded-md text-accent-ink">
                     <Icon className="h-5 w-5" aria-hidden />
                   </span>
                   <h3 className="mt-5 text-lg font-semibold">{item.title}</h3>

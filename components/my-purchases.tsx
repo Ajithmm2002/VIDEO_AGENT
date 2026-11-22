@@ -44,7 +44,7 @@ export function MyPurchases({ records }: { records: PurchaseRecord[] }) {
         <div className="mt-4">
           <Link
             href="/marketplace"
-            className="ig-gradient inline-flex rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
+            className="ig-gradient inline-flex rounded-2xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
           >
             Open marketplace
           </Link>

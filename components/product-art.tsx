@@ -20,7 +20,7 @@ export function ProductArt({
       aria-hidden
     >
       <span className="grid gap-2 place-items-center">
-        <span className="ig-gradient grid h-14 w-14 place-items-center rounded-md text-white">
+        <span className="ig-gradient grid h-14 w-14 place-items-center rounded-md text-accent-ink">
           <FileIcon className="h-6 w-6" />
         </span>
         <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">{listingKindLabel(listing.kind)}</span>
