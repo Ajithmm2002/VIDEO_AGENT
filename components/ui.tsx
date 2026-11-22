@@ -39,7 +39,7 @@ export const Button = forwardRef<
   ref,
 ) {
   const styles = {
-    primary: "ig-gradient text-white shadow-[var(--shadow-glow)] hover:brightness-105 dark:shadow-none",
+    primary: "ig-gradient text-white shadow-[var(--shadow-glow)] hover:brightness-105",
     secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:bg-surface-2 dark:shadow-none",
     danger: "bg-danger text-white shadow-[0_12px_24px_-14px_rgb(237_73_86_/_0.7)] hover:opacity-90",
     ghost: "text-ink hover:bg-surface-2",

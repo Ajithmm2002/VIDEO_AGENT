@@ -31,28 +31,28 @@
 .dark {
   color-scheme: dark;
   --bg: #000000;
-  --bg-2: #141414;
-  --surface: #181818;
-  --surface-2: #2f2f2f;
+  --bg-2: color-mix(in srgb, #830000 16%, #000000);
+  --surface: color-mix(in srgb, #830000 22%, #000000);
+  --surface-2: color-mix(in srgb, #830000 38%, #000000);
   --ink: #ffffff;
   --muted: #d4d4d4;
-  --line: #3d3d3d;
-  --accent: #e50914;
-  --accent-2: #b81d24;
+  --line: #830000;
+  --accent: #ff0000;
+  --accent-2: #bc0202;
   --accent-ink: #ffffff;
-  --warn: #e87c03;
-  --danger: #e50914;
+  --warn: #bc0202;
+  --danger: #ff0000;
   --ok: #46d369;
-  --ig-orange: #e87c03;
-  --ig-pink: #e50914;
-  --ig-purple: #b3b3b3;
-  --ig-blue: #808080;
-  --glow: 229 9 20;
-  --glow-warm: 184 29 36;
-  --glow-cool: 20 20 20;
-  --accent-gradient: linear-gradient(90deg, #e50914 0%, #b81d24 100%);
-  --shadow: 0 8px 24px rgb(0 0 0 / 0.55);
-  --shadow-glow: 0 10px 24px rgb(229 9 20 / 0.35);
+  --ig-orange: #ff0000;
+  --ig-pink: #ff0000;
+  --ig-purple: #bc0202;
+  --ig-blue: #830000;
+  --glow: 255 0 0;
+  --glow-warm: 188 2 2;
+  --glow-cool: 131 0 0;
+  --accent-gradient: linear-gradient(90deg, #830000 0%, #bc0202 52%, #ff0000 100%);
+  --shadow: 0 8px 24px rgb(0 0 0 / 0.7);
+  --shadow-glow: 0 12px 28px rgb(255 0 0 / 0.38);
   --shadow-inset: none;
 }
 
@@ -96,19 +96,23 @@ body {
 }
 
 .dark body {
-  background: #000;
+  background:
+    radial-gradient(920px 520px at 108% -8%, rgb(255 0 0 / 0.2), transparent 58%),
+    radial-gradient(780px 460px at -12% 108%, rgb(131 0 0 / 0.55), transparent 52%),
+    radial-gradient(640px 380px at 72% 42%, rgb(188 2 2 / 0.14), transparent 62%),
+    #000000;
 }
 
 .dark .ig-gradient {
-  background-image: none;
-  background-color: var(--accent);
+  background-image: var(--accent-gradient);
+  background-color: #bc0202;
 }
 
 .dark .ig-text {
-  background-image: none;
-  color: var(--accent);
-  -webkit-background-clip: unset;
-  background-clip: unset;
+  background-image: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .dark .orb {
@@ -150,9 +154,9 @@ body {
 }
 
 .dark .nav-item-active {
-  background: transparent;
-  color: #fff;
-  box-shadow: none;
+  background: color-mix(in srgb, #ff0000 14%, #000000);
+  color: #ffffff;
+  box-shadow: inset 3px 0 0 #ff0000;
   font-weight: 700;
 }
 
@@ -230,6 +234,20 @@ dialog {
 dialog::backdrop {
   background: color-mix(in srgb, #12040c 62%, transparent);
   backdrop-filter: blur(10px);
+}
+
+.dark dialog::backdrop {
+  background: color-mix(in srgb, #000000 72%, #830000);
+  backdrop-filter: none;
+}
+
+.dark ::selection {
+  background: color-mix(in srgb, #ff0000 42%, transparent);
+  color: #ffffff;
+}
+
+.dark .skip-link {
+  background: #bc0202;
 }
 
 .orb {
@@ -380,8 +398,8 @@ dialog::backdrop {
 
 .dark .billboard {
   background:
-    linear-gradient(90deg, #000 8%, rgb(0 0 0 / 0.72) 42%, rgb(20 20 20 / 0.4) 72%, #141414 100%),
-    #141414;
+    linear-gradient(90deg, #000000 8%, rgb(0 0 0 / 0.78) 40%, rgb(131 0 0 / 0.42) 76%, #830000 100%),
+    #000000;
 }
 
 a,
