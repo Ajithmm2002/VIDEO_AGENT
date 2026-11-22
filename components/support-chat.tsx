@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Headset, Loader2, Minus, Send, X } from "lucide-react";
-import { SUPPORT_QUICK_PROMPTS } from "@/lib/ai/support";
+import { SUPPORT_QUICK_PROMPTS } from "@/lib/ai/support-public";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = { id: string; role: "user" | "assistant"; content: string };
@@ -57,7 +57,7 @@ export function SupportChat() {
     {
       id: "hello",
       role: "assistant",
-      content: "Hi. Support is on 24 hours a day. I can help with errors, sign-in, the shop, and how to reach us. Ask for the support email or phone if you want a person — those details are an example desk for now.",
+      content: "Hi. Support is on 24 hours a day. I can help with how each page works, errors, sign-in, the shop, and how to reach us. Ask for the support email or phone if you want a person — those details are an example desk for now.",
     },
   ]);
   const drag = useRef<{ pointerId: number; dx: number; dy: number; moved: boolean } | null>(null);

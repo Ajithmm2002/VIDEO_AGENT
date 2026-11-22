@@ -50,4 +50,20 @@ describe("support replies", () => {
     expect(reply.toLowerCase()).toMatch(/try again|refresh/);
     expect(reply).toContain(EXAMPLE_SUPPORT_EMAIL);
   });
+
+  it("explains the planner from the working guide", () => {
+    const reply = localSupportReply("how does the planner work for a week of videos?");
+    expect(reply.toLowerCase()).toMatch(/1 to 7|audio script/);
+  });
+
+  it("explains affiliate ads from the working guide", () => {
+    const reply = localSupportReply("how do I make an affiliate product link ad?");
+    expect(reply.toLowerCase()).toMatch(/affiliate|https/);
+  });
+
+  it("explains Fun mode coin caps", () => {
+    const reply = localSupportReply("how do I claim Fun mode coins?");
+    expect(reply.toLowerCase()).toMatch(/20 seconds|400/);
+    expect(reply.toLowerCase()).toMatch(/not money|in-app/);
+  });
 });

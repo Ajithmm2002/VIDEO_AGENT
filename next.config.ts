@@ -29,6 +29,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  outputFileTracingIncludes: {
+    "/api/support": ["./lib/ai/app-working.md"],
+    "/api/support/**": ["./lib/ai/app-working.md"],
+  },
   async headers() {
     const shared = [
       { key: "X-Content-Type-Options", value: "nosniff" },
