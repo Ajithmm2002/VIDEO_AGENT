@@ -6,8 +6,8 @@
   --bg-2: #f8eaf3;
   --surface: #ffffff;
   --surface-2: #fbf3f8;
-  --ink: #262626;
-  --muted: #8e8e8e;
+  --ink: #171717;
+  --muted: #4a4a4a;
   --line: color-mix(in srgb, #dd2a7b 12%, #f3e6ee);
   --accent: #dd2a7b;
   --accent-2: #f77737;
@@ -35,8 +35,8 @@
   --surface: #181818;
   --surface-2: #2f2f2f;
   --ink: #ffffff;
-  --muted: #b3b3b3;
-  --line: #2f2f2f;
+  --muted: #d4d4d4;
+  --line: #3d3d3d;
   --accent: #e50914;
   --accent-2: #b81d24;
   --accent-ink: #ffffff;
@@ -89,6 +89,8 @@ body {
     var(--bg);
   color: var(--ink);
   font-family: var(--font-outfit), var(--font-malayalam), sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
   max-width: 100%;
   overflow-x: clip;
 }
@@ -162,8 +164,8 @@ body {
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--accent);
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1.25rem;
+  height: 1.25rem;
   color: var(--accent);
 }
 
@@ -198,8 +200,24 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 3px solid var(--accent);
   outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -5rem;
+  z-index: 100;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 1rem;
 }
 
 dialog {

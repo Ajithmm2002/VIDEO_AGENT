@@ -24,16 +24,16 @@ export function DashboardWelcome({
   return (
     <section className="mb-8">
       <div className="billboard rounded-md px-5 py-8 sm:px-8 sm:py-12">
-        <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.22em]">{eyebrow}</p>
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+        <p className="ig-text text-xs font-semibold uppercase tracking-[0.18em]">{eyebrow}</p>
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{title}</h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-muted">{description}</p>
+            <p className="mt-3 max-w-xl text-base leading-7 text-muted">{description}</p>
           </div>
           {action}
         </div>
       </div>
-      <div className="media-row mt-4">
+      <div className="media-row mt-6">
         {chips.map((chip) => {
           const Icon = chip.icon;
           return (

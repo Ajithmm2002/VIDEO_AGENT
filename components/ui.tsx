@@ -1,5 +1,5 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
-import { Loader2 } from "lucide-react";
+import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
+import { Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tagCountOptions } from "@/lib/types";
 
@@ -15,31 +15,29 @@ export function PageHeader({
   eyebrow?: string;
 }) {
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
       <div className="max-w-2xl">
         {eyebrow ? (
-          <p className="ig-text mb-2 text-[11px] font-semibold uppercase tracking-[0.22em]">{eyebrow}</p>
+          <p className="ig-text mb-3 text-xs font-semibold uppercase tracking-[0.18em]">{eyebrow}</p>
         ) : null}
         <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{title}</h1>
-        {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{description}</p> : null}
+        {description ? <p className="mt-3 max-w-2xl text-base leading-7 text-muted">{description}</p> : null}
       </div>
       {action}
     </div>
   );
 }
 
-export function Button({
-  variant = "primary",
-  className,
-  type = "button",
-  loading = false,
-  disabled,
-  children,
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger" | "ghost";
-  loading?: boolean;
-}) {
+export const Button = forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: "primary" | "secondary" | "danger" | "ghost";
+    loading?: boolean;
+  }
+>(function Button(
+  { variant = "primary", className, type = "button", loading = false, disabled, children, ...props },
+  ref,
+) {
   const styles = {
     primary: "ig-gradient text-white shadow-[var(--shadow-glow)] hover:brightness-105 dark:shadow-none",
     secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:bg-surface-2 dark:shadow-none",
@@ -48,11 +46,12 @@ export function Button({
   };
   return (
     <button
+      ref={ref}
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-3.5 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 dark:rounded-md",
+        "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-2xl px-3.5 py-2 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm dark:rounded-md",
         styles[variant],
         className,
       )}
@@ -62,18 +61,18 @@ export function Button({
       {children}
     </button>
   );
-}
+});
 
 export function choiceClass(on: boolean, className?: string) {
   return cn(
-    "rounded-full px-3 py-1.5 text-sm",
+    "inline-flex min-h-11 items-center rounded-full px-3.5 py-2 text-sm",
     on ? "choice-selected" : "border border-line bg-surface font-medium text-ink shadow-[var(--shadow)]",
     className,
   );
 }
 
 const control =
-  "w-full min-w-0 rounded-2xl border border-line bg-surface px-3 text-base text-ink shadow-[var(--shadow-inset)] placeholder:text-muted/70 md:text-sm dark:rounded-md dark:shadow-none";
+  "w-full min-w-0 rounded-2xl border border-line bg-surface px-3 text-base text-ink shadow-[var(--shadow-inset)] placeholder:text-muted dark:rounded-md dark:shadow-none";
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cn(control, "h-11", props.className)} />;
@@ -104,7 +103,7 @@ export function Field({
       {action}
     </span>
   );
-  const hintNode = hint ? <span className="text-xs leading-5 text-muted">{hint}</span> : null;
+  const hintNode = hint ? <span className="text-sm leading-6 text-muted">{hint}</span> : null;
   if (action) {
     return (
       <div className="grid min-w-0 gap-1.5 text-sm">
@@ -151,7 +150,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return (
     <section
       className={cn(
-        "rounded-[1.75rem] border border-line bg-surface/90 p-5 shadow-[var(--shadow)] backdrop-blur-xl dark:rounded-md dark:bg-surface dark:shadow-none dark:backdrop-blur-none",
+        "rounded-[1.75rem] border border-line bg-surface/90 p-6 shadow-[var(--shadow)] backdrop-blur-xl dark:rounded-md dark:bg-surface dark:shadow-none dark:backdrop-blur-none",
         className,
       )}
     >
@@ -171,9 +170,11 @@ export function EmptyState({
 }) {
   return (
     <div className="grid place-items-center rounded-[1.75rem] border border-dashed border-line bg-surface-2/70 px-6 py-10 text-center shadow-[var(--shadow-inset)] dark:rounded-md dark:bg-surface-2 dark:shadow-none">
-      <div className="ig-gradient mb-3 grid h-12 w-12 place-items-center rounded-2xl text-lg text-white shadow-[var(--shadow-glow)] dark:rounded-md dark:shadow-none">✦</div>
+      <div className="ig-gradient mb-4 grid h-12 w-12 place-items-center rounded-2xl text-white shadow-[var(--shadow-glow)] dark:rounded-md dark:shadow-none">
+        <Sparkles className="h-5 w-5" aria-hidden />
+      </div>
       <p className="font-semibold">{title}</p>
-      <p className="mt-1 max-w-md text-sm leading-6 text-muted">{body}</p>
+      <p className="mt-2 max-w-md text-base leading-7 text-muted">{body}</p>
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );

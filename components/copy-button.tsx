@@ -65,7 +65,7 @@ export function CopyButton({
         onClick={onCopy}
         disabled={!text.trim() || copying}
         aria-label={copied ? "Copied" : label}
-        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-surface text-ink disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-line bg-surface text-ink disabled:cursor-not-allowed disabled:opacity-50"
       >
         {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
       </button>

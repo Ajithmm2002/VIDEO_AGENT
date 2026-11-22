@@ -105,7 +105,7 @@ export function LibraryBrowser({
                 <>
                   {/* Signed Supabase URLs expire, so the image optimizer cannot cache them. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={images[item.thumbnail_path]} alt="" className="max-h-48 rounded-xl object-cover" />
+                  <img src={images[item.thumbnail_path]} alt={`${item.title} thumbnail preview`} className="max-h-48 rounded-xl object-cover" />
                 </>
               ) : null}
               {view === "thumbnails" && visiblePrompt(item.thumbnail_prompt) ? (

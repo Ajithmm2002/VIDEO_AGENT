@@ -404,7 +404,7 @@ export function ContentForm({
           <div>
             {/* Signed Supabase URLs expire, so the image optimizer cannot cache them. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={thumbnailUrl} alt="" className="max-h-40 rounded-xl border border-line object-cover" />
+            <img src={thumbnailUrl} alt={`${form.title || "Content"} thumbnail preview`} className="max-h-40 rounded-xl border border-line object-cover" />
             {content ? (
               <div className="mt-2">
                 <ConfirmButton

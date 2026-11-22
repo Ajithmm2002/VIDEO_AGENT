@@ -2,15 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Headset, Loader2, Minus, Send, X } from "lucide-react";
+import { SUPPORT_QUICK_PROMPTS } from "@/lib/ai/support";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = { id: string; role: "user" | "assistant"; content: string };
 type Point = { x: number; y: number };
 
 const STORAGE_KEY = "cs-support-pos";
-const BUTTON = 52;
+const BUTTON = 48;
 const PANEL_WIDTH = 320;
-const PANEL_HEIGHT = 420;
+const PANEL_HEIGHT = 440;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -56,11 +57,13 @@ export function SupportChat() {
     {
       id: "hello",
       role: "assistant",
-      content: "Hi. I can help with Content Studio: sign-in, calendar, titles and tags, the shop, coins, or a bug on a page. What do you need?",
+      content: "Hi. Support is on 24 hours a day. I can help with sign-in, calendar, titles and tags, the shop, coins, or a bug. What do you need?",
     },
   ]);
   const drag = useRef<{ pointerId: number; dx: number; dy: number; moved: boolean } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setPoint(fitPoint(readPoint()));
@@ -83,6 +86,19 @@ export function SupportChat() {
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    inputRef.current?.focus();
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        launcherRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   function onPointerDown(event: React.PointerEvent<HTMLButtonElement>) {
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -109,8 +125,7 @@ export function SupportChat() {
     if (!current.moved) setOpen((value) => !value);
   }
 
-  async function send() {
-    const text = input.trim();
+  async function send(text = input.trim()) {
     if (!text || pending) return;
     const history = messages.map(({ role, content }) => ({ role, content }));
     const userMessage: ChatMessage = { id: crypto.randomUUID(), role: "user", content: text };
@@ -133,6 +148,7 @@ export function SupportChat() {
       ]);
     } finally {
       setPending(false);
+      inputRef.current?.focus();
     }
   }
 
@@ -149,17 +165,22 @@ export function SupportChat() {
     <div className="pointer-events-none fixed inset-0 z-50">
       {open ? (
         <section
-          className="pointer-events-auto absolute flex max-h-[min(26rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-md border border-line bg-surface shadow-[var(--shadow)]"
+          className="pointer-events-auto absolute flex max-h-[min(28rem,72vh)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-md border border-line bg-surface shadow-[var(--shadow)]"
           style={{ left: panelLeft, top: panelTop }}
+          role="dialog"
+          aria-modal="true"
           aria-label="Support chat"
         >
           <header className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
-            <p className="text-sm font-semibold">Support</p>
+            <div>
+              <p className="text-base font-semibold">Support</p>
+              <p className="text-sm text-muted">Always on · replies instantly</p>
+            </div>
             <div className="flex items-center gap-1">
-              <button type="button" className="grid h-8 w-8 place-items-center rounded-md text-muted hover:bg-surface-2" aria-label="Minimise support chat" onClick={() => setOpen(false)}>
+              <button type="button" className="grid h-11 w-11 place-items-center rounded-md text-muted hover:bg-surface-2" aria-label="Minimise support chat" onClick={() => setOpen(false)}>
                 <Minus className="h-4 w-4" />
               </button>
-              <button type="button" className="grid h-8 w-8 place-items-center rounded-md text-muted hover:bg-surface-2" aria-label="Close support chat" onClick={() => setOpen(false)}>
+              <button type="button" className="grid h-11 w-11 place-items-center rounded-md text-muted hover:bg-surface-2" aria-label="Close support chat" onClick={() => setOpen(false)}>
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -169,7 +190,7 @@ export function SupportChat() {
               <p
                 key={item.id}
                 className={cn(
-                  "max-w-[90%] rounded-md px-2.5 py-2 text-sm leading-5",
+                  "max-w-[90%] rounded-md px-3 py-2 text-base leading-6 sm:text-sm",
                   item.role === "user" ? "ml-auto bg-accent text-white" : "bg-surface-2 text-ink",
                 )}
               >
@@ -177,10 +198,25 @@ export function SupportChat() {
               </p>
             ))}
             {pending ? (
-              <p className="flex items-center gap-2 text-xs text-muted">
+              <p className="flex items-center gap-2 text-sm text-muted">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
                 Thinking…
               </p>
+            ) : null}
+            {messages.length < 3 ? (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {SUPPORT_QUICK_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    className="inline-flex min-h-11 items-center rounded-md border border-line bg-bg px-3 text-sm font-medium"
+                    onClick={() => void send(prompt)}
+                    disabled={pending}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             ) : null}
           </div>
           <form
@@ -191,16 +227,17 @@ export function SupportChat() {
             }}
           >
             <input
+              ref={inputRef}
               value={input}
               onChange={(event) => setInput(event.target.value)}
               maxLength={500}
               placeholder="Ask about this app"
               aria-label="Support message"
-              className="h-10 min-w-0 flex-1 rounded-md border border-line bg-bg px-2.5 text-base md:text-sm"
+              className="h-11 min-w-0 flex-1 rounded-md border border-line bg-bg px-3 text-base"
             />
             <button
               type="submit"
-              className="ig-gradient grid h-10 w-10 place-items-center rounded-md text-white disabled:opacity-60"
+              className="ig-gradient grid h-11 w-11 place-items-center rounded-md text-white disabled:opacity-60"
               disabled={pending || !input.trim()}
               aria-label="Send"
             >
@@ -210,16 +247,25 @@ export function SupportChat() {
         </section>
       ) : null}
       <button
+        ref={launcherRef}
         type="button"
         aria-label={open ? "Move or close support chat" : "Open support chat"}
+        aria-expanded={open}
+        aria-haspopup="dialog"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        className="pointer-events-auto absolute grid h-[52px] w-[52px] touch-none place-items-center rounded-full bg-accent text-white shadow-[var(--shadow-glow)]"
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setOpen((value) => !value);
+          }
+        }}
+        className="pointer-events-auto absolute grid h-12 w-12 touch-none place-items-center rounded-full bg-accent text-white shadow-[var(--shadow-glow)]"
         style={{ left: point.x, top: point.y }}
       >
-        <Headset className="h-5 w-5" />
+        <Headset className="h-5 w-5" aria-hidden />
       </button>
     </div>
   );

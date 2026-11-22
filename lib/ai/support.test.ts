@@ -16,4 +16,9 @@ describe("support replies", () => {
     const reply = localSupportReply("how do I copy the description and tags?");
     expect(reply.toLowerCase()).toMatch(/copy/);
   });
+
+  it("explains the phone menu", () => {
+    const reply = localSupportReply("where is the hamburger menu on my phone?");
+    expect(reply.toLowerCase()).toMatch(/menu/);
+  });
 });

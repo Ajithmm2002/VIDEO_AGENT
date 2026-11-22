@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     default: "Content Studio",
     template: "%s · Content Studio",
   },
-  description: "Plan YouTube and Instagram content, thumbnail prompts, and a publishing calendar.",
+  description: "Plan YouTube and Instagram videos in a private studio: titles, captions, tags, thumbnail prompts, and a publishing calendar.",
 };
 
 export const viewport: Viewport = {
@@ -61,6 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </>
         ) : null}
         <AppThemeProvider>
+          <a href="#main" className="skip-link">Skip to content</a>
           {children}
           <SupportChat />
           <AppToaster />

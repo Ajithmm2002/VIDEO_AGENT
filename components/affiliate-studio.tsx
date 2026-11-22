@@ -316,7 +316,7 @@ export function AffiliateStudio({
             {preview.image && !imageBroken ? (
               <img
                 src={preview.image}
-                alt=""
+                alt={`${preview.title || productName || "Product"} listing photo`}
                 referrerPolicy="no-referrer"
                 className="h-32 w-full rounded-xl object-cover sm:h-24 sm:w-32"
                 onError={() => setImageBroken(true)}

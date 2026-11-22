@@ -1,70 +1,110 @@
 import { remoteAiEnabled } from "@/lib/env";
 
-export const SUPPORT_SYSTEM = `You are the in-app support assistant for Content Studio, a private workspace for planning YouTube and Instagram videos.
+export const HELP_ARTICLES = [
+  {
+    title: "Sign in and accounts",
+    keywords: ["sign in", "login", "log in", "password", "register", "account", "forgot"],
+    body: "Use Sign in with your email and password, or Create an account. If you cannot get in, open Forgot password. After 14 days, or 7 days without a visit, the app signs you out. That is normal. Sign in again to keep working.",
+  },
+  {
+    title: "Session length",
+    keywords: ["session", "timeout", "logged out", "sign out", "expire", "days"],
+    body: "A session lasts 14 days from the last sign-in. If you do not open the app for 7 days, it also signs you out. Sign in again. Your content stays on your account.",
+  },
+  {
+    title: "Copy titles, tags, and descriptions",
+    keywords: ["copy", "tag", "hashtag", "title", "description", "caption", "clipboard"],
+    body: "Title, description, caption, tag, and hashtag fields have a copy button on the right of the label. Writing, Planner, Thumbnails, and Library also copy those texts. Tap or press Enter on the copy button.",
+  },
+  {
+    title: "Calendar",
+    keywords: ["calendar", "schedule", "date", "week", "month"],
+    body: "Open Calendar from the Plan menu (or Menu on a phone). Drag a content card onto a day, or pick a date on the card. On a phone, swipe the week grid sideways. Undated items sit under the grid.",
+  },
+  {
+    title: "Marketplace and Purchases",
+    keywords: ["market", "shop", "purchase", "download", "skill", "buy"],
+    body: "Marketplace is for browsing and buying. After a purchase, open Purchases in the Account menu to download the file. Skills are .md or .zip listings. Pay with coins, or use Buy now when rupee checkout is available.",
+  },
+  {
+    title: "Studio coins",
+    keywords: ["coin", "fun mode", "wallet", "rupee", "razorpay", "pay", "cash"],
+    body: "Fun mode coins are an in-app reward, not money. 100 coins = ₹1 when you redeem them in the marketplace. Earn coins in Fun mode or buy a coin pack (Razorpay is coming soon). Files you already paid for stay in Purchases.",
+  },
+  {
+    title: "Thumbnails",
+    keywords: ["thumbnail", "image", "flow", "prompt", "picture"],
+    body: "Thumbnails writes English prompts you paste into Google Flow. This app does not create the image file. Save the prompt with a content item if you want it in the library.",
+  },
+  {
+    title: "Phone layout",
+    keywords: ["zoom", "mobile", "phone", "responsive", "small screen", "hamburger", "menu"],
+    body: "The studio is built to fit a phone. Home, Content, Shop, and Play sit on the bottom bar. Open Menu (☰) for Calendar, Writing, Settings, and the rest. Buttons are large enough to tap. The calendar week grid scrolls sideways on purpose.",
+  },
+  {
+    title: "Writing and planner",
+    keywords: ["writing", "planner", "script", "assistant", "generate", "draft"],
+    body: "Writing builds titles, captions, tags, and a script outline. Planner makes 1–7 day video ideas and optional audio scripts. Generate needs a signed-in account once the database is connected. You can edit every field before you save.",
+  },
+  {
+    title: "Keyboard and contrast",
+    keywords: ["keyboard", "tab", "screen reader", "contrast", "font", "accessible", "skip"],
+    body: "You can move through the studio with Tab and Enter. Skip to content jumps past the header. Text uses two sans-serif fonts at 16px or larger, with high contrast on light and dark backgrounds. Press Escape to close the menu or this chat.",
+  },
+];
 
-Answer only about this app: sign-in, calendar, content, planner, writing, thumbnails, hashtags, marketplace, purchases, Fun mode coins, sessions, and bugs people hit while using it.
-Keep replies short (2–6 sentences). Be concrete. Do not invent emails, phone numbers, or off-app payment links.
+export const SUPPORT_QUICK_PROMPTS = [
+  "How do I sign in?",
+  "Where are my downloads?",
+  "How do I copy tags?",
+  "Why was I signed out?",
+];
+
+function helpCentreText() {
+  return HELP_ARTICLES.map((article) => `${article.title}: ${article.body}`).join("\n");
+}
+
+export const SUPPORT_SYSTEM = `You are the in-app support assistant for Content Studio, available 24 hours a day.
+
+Answer only from the help centre below and from the person's question. Keep replies short (2–6 sentences). Be concrete. Do not invent emails, phone numbers, or off-app payment links.
 If you do not know, say so and suggest Settings, Purchases, or signing in again.
 Never ask for passwords. Never claim coins are cash.
 Reply in the same language the person used when you can. Return JSON only: {"reply":"..."}.
 
-Product facts:
-- Each account sees only its own rows.
-- Sign in / register with email. Sessions last 14 days from sign-in, or 7 days with no visit, then the person must sign in again.
-- Content holds titles, descriptions, YouTube tags, hashtags, scripts, and thumbnail prompts. Each of those fields has a copy button.
-- Planner makes 1–7 day video ideas and optional audio scripts.
-- Thumbnails writes English prompts for Google Flow. The app does not generate images.
-- Marketplace is for buying/selling digital skills. Downloads are on Purchases. Fun mode coins: 100 coins = ₹1. Coins are an in-app reward with no cash value. Razorpay pay-with-rupees is coming soon.
-- Generating drafts needs a signed-in account once Supabase is connected.
-- Dark mode is a simple black layout. The site is meant to fit a phone without pinch-zooming.`;
+Help centre:
+${helpCentreText()}`;
 
-const replies: Array<{ test: (text: string) => boolean; reply: string }> = [
-  {
-    test: (text) => /sign in|login|log in|password|register|account/.test(text),
-    reply: "Use Sign in with your email and password, or Create an account from the login page. After 14 days, or 7 days without a visit, the app signs you out and you need to sign in again. Use Forgot password if you cannot get in.",
-  },
-  {
-    test: (text) => /session|timeout|logged out|sign out|expire/.test(text),
-    reply: "A session lasts 14 days from the last sign-in. If you do not open the app for 7 days, it also signs you out. That is normal. Sign in again to keep working.",
-  },
-  {
-    test: (text) => /coin|fun mode|wallet|rupee|razorpay|pay/.test(text),
-    reply: "Fun mode coins are an in-app reward, not money. 100 coins = ₹1 when you redeem them in the marketplace. You can earn coins in Fun mode or buy a coin pack (coming soon with Razorpay). Files you already paid for stay in Purchases.",
-  },
-  {
-    test: (text) => /market|shop|purchase|download|skill/.test(text),
-    reply: "Marketplace is only for browsing and buying. After a purchase, open Purchases to download the file. Skills are .md or .zip listings. Pay with coins, or use Buy now when rupee checkout is available.",
-  },
-  {
-    test: (text) => /calendar|schedule|date/.test(text),
-    reply: "Open Calendar to drag a content card onto a day, or pick a date on the card. On a phone, swipe the week grid sideways. Undated items sit in the list under the grid.",
-  },
-  {
-    test: (text) => /copy|tag|hashtag|title|description|caption/.test(text),
-    reply: "Title, description, caption, tag, and hashtag fields have a small copy button on the right of the label. Writing, Planner, Thumbnails, and Library also copy those texts.",
-  },
-  {
-    test: (text) => /thumbnail|image|flow/.test(text),
-    reply: "Thumbnails writes English prompts you can paste into Google Flow. This app does not create the image file. Save the prompt with a content item if you want it in the library.",
-  },
-  {
-    test: (text) => /zoom|mobile|phone|responsive|small screen/.test(text),
-    reply: "The layout is meant to fit the phone width. If a page still looks too wide, double-tap the empty background or use the browser reset-zoom control, then reload. The calendar week grid scrolls sideways on purpose.",
-  },
-];
+function matchScore(question: string, article: (typeof HELP_ARTICLES)[number]) {
+  const text = question.toLowerCase();
+  return article.keywords.reduce((score, keyword) => score + (text.includes(keyword) ? 1 : 0), 0);
+}
 
 export function localSupportReply(question: string) {
-  const text = question.toLowerCase();
-  for (const item of replies) {
-    if (item.test(text)) return item.reply;
+  const text = question.trim();
+  if (!text) return "Write a short question about Content Studio.";
+  let best = HELP_ARTICLES[0];
+  let bestScore = 0;
+  for (const article of HELP_ARTICLES) {
+    const score = matchScore(text, article);
+    if (score > bestScore) {
+      best = article;
+      bestScore = score;
+    }
   }
-  return "I can help with Content Studio: sign-in, calendar, writing, tags, the shop, coins, and common bugs. Tell me what page you are on and what went wrong. For account access, use Sign in or Forgot password. I cannot change data in your workspace from this chat.";
+  if (bestScore > 0) return best.body;
+  return "I can help with Content Studio around the clock: sign-in, calendar, writing, tags, the shop, coins, and common bugs. Tell me what page you are on and what went wrong. For account access, use Sign in or Forgot password. I cannot change data in your workspace from this chat.";
+}
+
+export function hasLocalSupportMatch(question: string) {
+  return HELP_ARTICLES.some((article) => matchScore(question, article) > 0);
 }
 
 export async function answerSupport(question: string, history: Array<{ role: "user" | "assistant"; content: string }>) {
   const trimmed = question.trim().slice(0, 500);
   if (!trimmed) return "Write a short question about Content Studio.";
-  if (!remoteAiEnabled()) return localSupportReply(trimmed);
+  if (hasLocalSupportMatch(trimmed) || !remoteAiEnabled()) {
+    return localSupportReply(trimmed);
+  }
   try {
     const { completeSupport } = await import("@/lib/ai/remote");
     const transcript = JSON.stringify({

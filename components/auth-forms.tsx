@@ -84,13 +84,13 @@ export function AuthFrame({
   footer: React.ReactNode;
 }) {
   return (
-    <main className="grid min-h-screen bg-bg lg:grid-cols-[1.1fr_0.9fr]">
+    <main id="main" tabIndex={-1} className="grid min-h-screen bg-bg lg:grid-cols-[1.1fr_0.9fr]">
       <section className="billboard relative hidden overflow-hidden px-12 py-12 text-ink lg:flex lg:flex-col lg:justify-between">
         <div className="relative z-10">
           <BrandMark href="/" />
         </div>
         <div className="relative z-10 max-w-lg">
-          <p className="animate-fade-up ig-text text-[11px] font-semibold uppercase tracking-[0.22em]">Personal workspace</p>
+          <p className="animate-fade-up ig-text text-xs font-semibold uppercase tracking-[0.18em]">Personal workspace</p>
           <h1 className="animate-fade-up mt-4 text-5xl font-semibold tracking-tight text-balance" style={{ animationDelay: "90ms" }}>
             Plan the next video before you record it.
           </h1>
