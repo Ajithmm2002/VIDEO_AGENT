@@ -9,7 +9,7 @@ export function BrandMark({ compact = false, href = "/dashboard" }: { compact?: 
       </span>
       {compact ? null : (
         <span className="hidden min-[420px]:block">
-          <span className="block text-base font-semibold tracking-tight">Content Studio</span>
+          <span className="block text-lg font-bold tracking-tight">Content Studio</span>
           <span className="block text-sm text-muted">YouTube · Instagram</span>
         </span>
       )}

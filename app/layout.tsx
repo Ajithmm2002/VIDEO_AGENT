@@ -1,14 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans_Malayalam, Outfit } from "next/font/google";
+import { Inter, Inter_Tight, Noto_Sans_Malayalam } from "next/font/google";
 import { AppThemeProvider } from "@/components/theme-provider";
 import { SupportChat } from "@/components/support-chat";
 import { AppToaster } from "@/components/toaster";
 import { isSupabaseConfigured, supabaseUrl } from "@/lib/env";
 import "./globals.css";
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const display = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-inter-tight",
   display: "swap",
 });
 
@@ -44,15 +50,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fcf1d0" },
-    { media: "(prefers-color-scheme: dark)", color: "#010736" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f1" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const origin = supabaseOrigin();
   return (
-    <html lang="en" className={`${outfit.variable} ${malayalam.variable} h-full overflow-x-clip`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${display.variable} ${malayalam.variable} h-full overflow-x-clip`} suppressHydrationWarning>
       <body className="min-h-full max-w-full overflow-x-clip antialiased">
         {origin ? (
           <>

@@ -2,57 +2,57 @@
 
 :root {
   color-scheme: light;
-  --bg: #fcf1d0;
-  --bg-2: color-mix(in srgb, #22396f 10%, #fcf1d0);
-  --surface: #fcf1d0;
-  --surface-2: color-mix(in srgb, #22396f 14%, #fcf1d0);
-  --ink: #010736;
-  --muted: #22396f;
-  --line: color-mix(in srgb, #22396f 32%, #fcf1d0);
-  --accent: #22396f;
-  --accent-2: #0d1c42;
-  --accent-ink: #fcf1d0;
-  --warn: #0d1c42;
-  --danger: #0d1c42;
+  --bg: #f5f5f1;
+  --bg-2: #ecece8;
+  --surface: #ffffff;
+  --surface-2: #f0f0ec;
+  --ink: #141414;
+  --muted: #4a4a4a;
+  --line: #e5e5e5;
+  --accent: #e50914;
+  --accent-2: #b81d24;
+  --accent-ink: #ffffff;
+  --warn: #e87c03;
+  --danger: #e50914;
   --ok: #22c55e;
-  --ig-orange: #22396f;
-  --ig-pink: #0d1c42;
-  --ig-purple: #010736;
-  --ig-blue: #22396f;
-  --glow: 34 57 111;
-  --glow-warm: 13 28 66;
-  --glow-cool: 1 7 54;
-  --accent-gradient: linear-gradient(135deg, #010736 0%, #0d1c42 48%, #22396f 100%);
-  --shadow: 10px 14px 28px rgb(1 7 54 / 0.12), -8px -8px 22px rgb(252 241 208 / 0.7);
-  --shadow-glow: 0 16px 32px -16px rgb(1 7 54 / 0.45);
-  --shadow-inset: inset 3px 3px 8px rgb(1 7 54 / 0.08), inset -3px -3px 8px rgb(252 241 208 / 0.7);
+  --ig-orange: #e87c03;
+  --ig-pink: #e50914;
+  --ig-purple: #b81d24;
+  --ig-blue: #564d4d;
+  --glow: 229 9 20;
+  --glow-warm: 184 29 36;
+  --glow-cool: 20 20 20;
+  --accent-gradient: linear-gradient(90deg, #e50914 0%, #b81d24 100%);
+  --shadow: 0 8px 24px rgb(0 0 0 / 0.08);
+  --shadow-glow: 0 10px 24px rgb(229 9 20 / 0.28);
+  --shadow-inset: inset 0 0 0 1px rgb(20 20 20 / 0.06);
 }
 
 .dark {
   color-scheme: dark;
-  --bg: #010736;
-  --bg-2: #0d1c42;
-  --surface: #0d1c42;
-  --surface-2: #22396f;
-  --ink: #fcf1d0;
-  --muted: color-mix(in srgb, #fcf1d0 78%, #22396f);
-  --line: #22396f;
-  --accent: #fcf1d0;
-  --accent-2: #22396f;
-  --accent-ink: #010736;
-  --warn: #fcf1d0;
-  --danger: #fcf1d0;
+  --bg: #000000;
+  --bg-2: #141414;
+  --surface: #181818;
+  --surface-2: #2f2f2f;
+  --ink: #ffffff;
+  --muted: #d4d4d4;
+  --line: #3d3d3d;
+  --accent: #e50914;
+  --accent-2: #b81d24;
+  --accent-ink: #ffffff;
+  --warn: #e87c03;
+  --danger: #e50914;
   --ok: #46d369;
-  --ig-orange: #fcf1d0;
-  --ig-pink: #fcf1d0;
-  --ig-purple: #22396f;
-  --ig-blue: #0d1c42;
-  --glow: 252 241 208;
-  --glow-warm: 34 57 111;
-  --glow-cool: 13 28 66;
-  --accent-gradient: linear-gradient(90deg, #fcf1d0 0%, #fcf1d0 100%);
-  --shadow: 0 8px 24px rgb(1 7 54 / 0.7);
-  --shadow-glow: 0 12px 28px rgb(252 241 208 / 0.22);
+  --ig-orange: #e87c03;
+  --ig-pink: #e50914;
+  --ig-purple: #b3b3b3;
+  --ig-blue: #808080;
+  --glow: 229 9 20;
+  --glow-warm: 184 29 36;
+  --glow-cool: 20 20 20;
+  --accent-gradient: linear-gradient(90deg, #e50914 0%, #b81d24 100%);
+  --shadow: 0 8px 24px rgb(0 0 0 / 0.55);
+  --shadow-glow: 0 10px 24px rgb(229 9 20 / 0.35);
   --shadow-inset: none;
 }
 
@@ -70,7 +70,7 @@
   --color-warn: var(--warn);
   --color-danger: var(--danger);
   --color-ok: var(--ok);
-  --font-sans: var(--font-outfit), var(--font-malayalam), sans-serif;
+  --font-sans: var(--font-inter), var(--font-malayalam), "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 html {
@@ -82,35 +82,38 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(1100px 560px at -8% -12%, rgb(var(--glow) / 0.18), transparent 58%),
-    radial-gradient(900px 460px at 108% -6%, rgb(var(--glow-warm) / 0.16), transparent 52%),
-    radial-gradient(780px 420px at 88% 112%, rgb(var(--glow-cool) / 0.14), transparent 58%),
-    var(--bg);
+  background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-outfit), var(--font-malayalam), sans-serif;
+  font-family: var(--font-inter), var(--font-malayalam), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.5;
   max-width: 100%;
   overflow-x: clip;
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--font-inter-tight), var(--font-inter), var(--font-malayalam), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
 .dark body {
-  background:
-    radial-gradient(780px 460px at -12% 108%, rgb(34 57 111 / 0.45), transparent 52%),
-    radial-gradient(640px 380px at 88% 8%, rgb(13 28 66 / 0.55), transparent 58%),
-    #010736;
+  background: #000;
 }
 
-.dark .ig-gradient {
+.dark .ig-gradient,
+.ig-gradient {
   background-image: none;
-  background-color: #fcf1d0;
-  color: #010736;
+  background-color: var(--accent);
+  color: var(--accent-ink);
 }
 
-.dark .ig-text {
+.dark .ig-text,
+.ig-text {
   background-image: none;
-  color: #fcf1d0;
+  color: var(--accent);
   -webkit-background-clip: unset;
   background-clip: unset;
 }
@@ -132,24 +135,12 @@ body {
   -webkit-backdrop-filter: none;
 }
 
-.ig-gradient {
-  background-image: var(--accent-gradient);
-  color: var(--accent-ink);
-}
-
 .choice-selected {
   border: 1px solid transparent;
-  background-image: var(--accent-gradient);
+  background: var(--accent);
   color: var(--accent-ink);
   font-weight: 600;
   box-shadow: var(--shadow-glow);
-  text-shadow: 0 1px 2px rgb(1 7 54 / 0.35);
-}
-
-.dark .choice-selected {
-  background-image: none;
-  background-color: #fcf1d0;
-  color: #010736;
   text-shadow: none;
 }
 
@@ -161,9 +152,9 @@ body {
 }
 
 .dark .nav-item-active {
-  background: color-mix(in srgb, #fcf1d0 12%, #010736);
-  color: #fcf1d0;
-  box-shadow: inset 3px 0 0 #fcf1d0;
+  background: transparent;
+  color: #ffffff;
+  box-shadow: inset 3px 0 0 #e50914;
   font-weight: 700;
 }
 
@@ -189,13 +180,6 @@ select option:checked {
   background-color: var(--accent);
   background-image: linear-gradient(0deg, var(--accent) 0%, var(--accent) 100%);
   color: var(--accent-ink);
-}
-
-.ig-text {
-  background-image: var(--accent-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
 }
 
 ::selection {
@@ -239,29 +223,22 @@ dialog {
 }
 
 dialog::backdrop {
-  background: color-mix(in srgb, #010736 62%, transparent);
-  backdrop-filter: blur(10px);
-}
-
-.dark dialog::backdrop {
-  background: color-mix(in srgb, #010736 78%, #0d1c42);
+  background: rgb(0 0 0 / 0.72);
   backdrop-filter: none;
 }
 
 .dark ::selection {
-  background: color-mix(in srgb, #fcf1d0 42%, transparent);
-  color: #010736;
+  background: color-mix(in srgb, #e50914 42%, transparent);
+  color: #ffffff;
 }
 
 .dark .skip-link {
-  background: #fcf1d0;
-  color: #010736;
+  background: #e50914;
+  color: #ffffff;
 }
 
 .orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(64px);
+  display: none;
 }
 
 .orb-pink {
@@ -406,8 +383,8 @@ dialog::backdrop {
 
 .dark .billboard {
   background:
-    linear-gradient(90deg, #010736 8%, rgb(1 7 54 / 0.82) 40%, rgb(13 28 66 / 0.55) 76%, #22396f 100%),
-    #010736;
+    linear-gradient(90deg, #000 8%, rgb(0 0 0 / 0.78) 42%, rgb(20 20 20 / 0.4) 72%, #141414 100%),
+    #141414;
 }
 
 a,

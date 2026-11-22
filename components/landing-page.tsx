@@ -47,7 +47,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
         <section className="billboard px-4 py-20 sm:px-8 sm:py-28 lg:min-h-[68vh] lg:py-32">
           <div className="mx-auto max-w-3xl">
             <p className="ig-text text-xs font-semibold uppercase tracking-[0.18em]">Personal workspace</p>
-            <h1 className="mt-5 max-w-xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
+            <h1 className="mt-5 max-w-xl text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
               Plan the next video before you record it.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-muted">
