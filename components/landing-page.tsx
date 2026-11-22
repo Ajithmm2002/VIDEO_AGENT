@@ -44,26 +44,40 @@ export function LandingPage({ configured }: { configured: boolean }) {
       </header>
 
       <main id="main" tabIndex={-1}>
-        <section className="billboard px-4 py-20 sm:px-8 sm:py-28 lg:min-h-[68vh] lg:py-32">
-          <div className="mx-auto max-w-3xl">
-            <p className="ig-text text-xs font-semibold uppercase tracking-[0.18em]">Personal workspace</p>
-            <h1 className="mt-5 max-w-xl text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-              Plan the next video before you record it.
+        <section className="billboard px-4 py-24 sm:px-8 sm:py-32 lg:min-h-[80vh] lg:py-36">
+          <div className="mx-auto max-w-6xl">
+            <p className="animate-hero-mark ig-text text-sm font-semibold uppercase tracking-[0.18em] sm:text-base">
+              Personal workspace
+            </p>
+            <h1 className="mt-6 max-w-5xl text-5xl font-bold tracking-tight leading-[1.05] sm:text-6xl lg:text-7xl xl:text-8xl">
+              <span className="block overflow-hidden">
+                <span className="animate-hero-in block" style={{ animationDelay: "80ms" }}>
+                  Plan the next video
+                </span>
+              </span>
+              <span className="block overflow-hidden">
+                <span className="animate-hero-in block" style={{ animationDelay: "220ms" }}>
+                  before you record it.
+                </span>
+              </span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-muted">
+            <p
+              className="animate-hero-in mt-8 max-w-3xl text-xl leading-8 text-muted sm:text-2xl sm:leading-9"
+              style={{ animationDelay: "380ms" }}
+            >
               YouTube and Instagram ideas, thumbnail prompts, captions, and publishing dates in one private studio.
             </p>
-            <div className="mt-10 flex flex-wrap gap-3">
+            <div className="animate-hero-in mt-12 flex flex-wrap gap-3" style={{ animationDelay: "520ms" }}>
               <Link
                 href={startHref}
-                className="ig-gradient inline-flex min-h-12 items-center gap-2 rounded-md px-5 text-base font-semibold text-accent-ink sm:text-sm"
+                className="ig-gradient inline-flex min-h-12 items-center gap-2 rounded-md px-6 text-base font-semibold text-accent-ink sm:min-h-14 sm:px-7 sm:text-lg"
               >
                 <Sparkles className="h-4 w-4" aria-hidden />
                 {configured ? "Start a workspace" : "Open the studio"}
               </Link>
               <Link
                 href="/login"
-                className="inline-flex min-h-12 items-center rounded-md border border-line bg-surface px-5 text-base font-semibold sm:text-sm"
+                className="inline-flex min-h-12 items-center rounded-md border border-line bg-surface px-6 text-base font-semibold sm:min-h-14 sm:px-7 sm:text-lg"
               >
                 Sign in
               </Link>

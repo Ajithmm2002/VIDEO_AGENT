@@ -288,6 +288,36 @@ dialog::backdrop {
   animation: fade-up 700ms ease both;
 }
 
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-in {
+  animation: hero-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes hero-mark {
+  from {
+    opacity: 0;
+    letter-spacing: 0.4em;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.18em;
+  }
+}
+
+.animate-hero-mark {
+  animation: hero-mark 800ms ease both;
+}
+
 .animate-float {
   animation: float-y 5.6s ease-in-out infinite;
 }
@@ -412,6 +442,8 @@ select {
   }
 
   .animate-fade-up,
+  .animate-hero-in,
+  .animate-hero-mark,
   .animate-float,
   .animate-ig-drift,
   .animate-ig-drift-slow,
