@@ -120,7 +120,7 @@ export function ShopCatalog({
             {visible.length} of {listings.length} {listings.length === 1 ? "product" : "products"}
           </p>
           {visible.length ? (
-            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <ul className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
               {visible.map((listing) => (
                 <li key={listing.id}>
                   <ProductCard listing={listing} owned={purchasedIds.has(listing.id)} rating={stats.get(listing.id)} />
@@ -160,21 +160,21 @@ function ProductCard({
     <Link
       href={`/marketplace/${listing.id}`}
       className={cn(
-        "grid overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--shadow)] transition hover:border-accent dark:rounded-md dark:shadow-none",
+        "grid overflow-hidden rounded-xl border border-line bg-surface shadow-[var(--shadow)] transition hover:border-accent dark:rounded-md dark:shadow-none",
       )}
     >
-      <ProductArt listing={listing} />
-      <span className="grid gap-2 p-4">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+      <ProductArt listing={listing} compact />
+      <span className="grid gap-1 p-2.5">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
           {listingKindLabel(listing.kind)}
           {owned ? " · Owned" : ""}
         </span>
-        <span className="line-clamp-2 text-base font-semibold leading-6">{listing.title}</span>
-        <span className="line-clamp-2 text-sm leading-6 text-muted">{listing.description}</span>
+        <span className="line-clamp-2 text-sm font-semibold leading-5">{listing.title}</span>
+        <span className="line-clamp-1 text-xs leading-5 text-muted">{listing.description}</span>
         <StarRating value={rating?.average ?? 0} count={rating?.count} size="sm" />
-        <span className="flex flex-wrap items-end justify-between gap-2">
-          <span className="text-lg font-semibold">{price}</span>
-          {listing.price_paise > 0 ? <span className="text-sm text-muted">🪙 {formatCoins(cost)}</span> : null}
+        <span className="flex flex-wrap items-end justify-between gap-1">
+          <span className="text-sm font-semibold">{price}</span>
+          {listing.price_paise > 0 ? <span className="text-xs text-muted">🪙 {formatCoins(cost)}</span> : null}
         </span>
       </span>
     </Link>

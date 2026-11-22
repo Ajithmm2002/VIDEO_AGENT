@@ -19,16 +19,22 @@ export function StarRating({
   count?: number;
   size?: "sm" | "md";
 }) {
-  const icon = size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
+  const icon = size === "sm" ? "h-3 w-3" : "h-4 w-4";
   return (
-    <p className="flex flex-wrap items-center gap-1.5 text-sm text-muted">
+    <p className={cn("flex flex-wrap items-center text-muted", size === "sm" ? "gap-1 text-xs" : "gap-1.5 text-sm")}>
       <span className="inline-flex items-center gap-0.5 text-accent" aria-hidden>
         {starsFor(value).map(({ star, filled }) => (
           <Star key={star} className={cn(icon, filled ? "fill-current" : "opacity-35")} />
         ))}
       </span>
       <span>
-        {count ? `${value.toFixed(1)} (${count})` : value > 0 ? value.toFixed(1) : "No reviews yet"}
+        {count
+          ? `${value.toFixed(1)} (${count})`
+          : value > 0
+            ? value.toFixed(1)
+            : size === "sm"
+              ? "New"
+              : "No reviews yet"}
       </span>
     </p>
   );
