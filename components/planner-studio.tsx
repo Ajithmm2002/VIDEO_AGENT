@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveContentPlan } from "@/lib/actions/generate";
 import { onGenerationResult, startPlanGeneration, startScriptGeneration, useGenerationJobs } from "@/lib/background-generate";
-import { CopyButton } from "@/components/copy-button";
+import { CopyField } from "@/components/copy-button";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, choiceClass, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { ideaThemeLabels, languageLabels, planDayLabel, platformLabels, videoDurationLabels } from "@/lib/labels";
@@ -327,9 +327,9 @@ export function PlannerStudio({
         <Field label="Other categories" hint="Optional. Comma-separated, for example travel, gaming.">
           <TextInput value={extraThemes} onChange={(event) => setExtraThemes(event.target.value)} maxLength={200} />
         </Field>
-        <Field label="What should these videos be about?" hint="A topic or a few lines. Malayalam or English. Each idea becomes a video title.">
+        <CopyField label="What should these videos be about?" hint="A topic or a few lines. Malayalam or English. Each idea becomes a video title." text={description}>
           <TextArea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={2000} />
-        </Field>
+        </CopyField>
         <div className="grid gap-2">
           <p className="text-sm font-medium">Plan length</p>
           <div className="flex flex-wrap gap-2">
@@ -412,20 +412,17 @@ export function PlannerStudio({
                   Remove
                 </Button>
               </div>
-              <div className="grid gap-3 md:grid-cols-[1fr_10rem_auto] md:items-end">
-                <Field label="Video title" hint="Paste this onto YouTube or Instagram.">
+              <div className="grid gap-3 md:grid-cols-[1fr_10rem] md:items-end">
+                <CopyField label="Video title" hint="Paste this onto YouTube or Instagram." text={item.title}>
                   <TextInput value={item.title} onChange={(event) => patchItem(item.id, { title: event.target.value })} maxLength={80} />
-                </Field>
+                </CopyField>
                 <Field label="Date">
                   <TextInput type="date" value={item.planned_date} onChange={(event) => patchItem(item.id, { planned_date: event.target.value })} />
                 </Field>
-                <div className="md:pb-6">
-                  <CopyButton text={item.title} label="Copy title" />
-                </div>
               </div>
-              <Field label="How to execute" hint="Shot order, what to film, and how to perform it.">
+              <CopyField label="How to execute" hint="Shot order, what to film, and how to perform it." text={item.description}>
                 <TextArea value={item.description} onChange={(event) => patchItem(item.id, { description: event.target.value })} />
-              </Field>
+              </CopyField>
               <div className="grid gap-2">
                 <p className="text-sm font-medium">Audio length</p>
                 <DurationPills
@@ -434,9 +431,9 @@ export function PlannerStudio({
                   disabled={scriptingId === item.id}
                 />
               </div>
-              <Field label="Audio script" hint="Stays empty until you generate it. Edit freely after that.">
+              <CopyField label="Audio script" hint="Stays empty until you generate it. Edit freely after that." text={item.script}>
                 <TextArea className="min-h-40" value={item.script} onChange={(event) => patchItem(item.id, { script: event.target.value, scriptSource: "user" })} placeholder="Click Write audio script when you want spoken words for this idea." />
-              </Field>
+              </CopyField>
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="secondary"
@@ -454,7 +451,6 @@ export function PlannerStudio({
                 >
                   {scriptingId === item.id ? "Writing script…" : `Write ${videoDurationLabels[item.durationSeconds]} audio script`}
                 </Button>
-                <CopyButton text={item.script} label="Copy script" />
               </div>
             </Card>
           ))}

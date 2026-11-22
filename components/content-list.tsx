@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { CopyButton } from "@/components/copy-button";
 import { ContentActions } from "@/components/content-actions";
 import { ConfirmButton } from "@/components/confirm-button";
 import { LanguageBadge, PlatformBadge, StatusBadge } from "@/components/badges";
@@ -80,8 +81,11 @@ export function ContentList({ contents }: { contents: Content[] }) {
                 aria-label={`Select ${item.title}`}
                 onChange={(event) => setSelected((current) => toggleId(current, item.id, event.target.checked))}
               />
-              <div>
-                <Link href={`/content/${item.id}`} className="font-semibold hover:text-accent">{item.title}</Link>
+              <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Link href={`/content/${item.id}`} className="min-w-0 truncate font-semibold hover:text-accent">{item.title}</Link>
+                  <CopyButton compact text={item.title} label="Copy title" />
+                </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
                   <StatusBadge status={item.status} />
                   <PlatformBadge platform={item.platform} />

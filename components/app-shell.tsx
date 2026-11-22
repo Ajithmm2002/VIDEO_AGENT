@@ -202,7 +202,7 @@ export function AppShell({
   ];
 
   return (
-    <div className="min-h-screen bg-bg text-ink">
+    <div className="min-h-screen max-w-full overflow-x-clip bg-bg text-ink">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-hidden border-r border-line bg-bg p-4 lg:flex">
         <div className="mb-6 shrink-0">
           <BrandMark />
@@ -235,8 +235,8 @@ export function AppShell({
         </div>
       ) : null}
 
-      <div className="lg:pl-60">
-        <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-bg/95 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
+      <div className="min-w-0 max-w-full lg:pl-60">
+        <header className="sticky top-0 z-20 flex min-w-0 items-center gap-2 border-b border-line bg-bg/95 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
           {usesContentSearch(pathname) ? (
             <form
               className="relative flex min-w-0 flex-1"
@@ -252,7 +252,7 @@ export function AppShell({
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search titles and topics"
                 aria-label="Search content"
-                className="h-11 w-full rounded-md border border-line bg-surface pl-10 pr-3 text-sm"
+                className="h-11 w-full min-w-0 rounded-md border border-line bg-surface pl-10 pr-3 text-base md:text-sm"
               />
             </form>
           ) : (
@@ -283,8 +283,8 @@ export function AppShell({
           ) : null}
           <ThemeToggle />
           {email ? (
-            <form action={signOut}>
-              <SubmitButton variant="secondary" pendingLabel="Signing out…">Sign out</SubmitButton>
+            <form action={signOut} className="shrink-0">
+              <SubmitButton variant="secondary" className="px-2.5 text-xs sm:px-3.5 sm:text-sm" pendingLabel="Signing out…">Sign out</SubmitButton>
             </form>
           ) : (
             <Link href="/login" className="ig-gradient inline-flex h-11 items-center rounded-md px-3.5 text-sm font-semibold text-white">
@@ -292,7 +292,7 @@ export function AppShell({
             </Link>
           )}
         </header>
-        <main className="px-4 py-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 lg:py-8 lg:pb-8">
+        <main className="min-w-0 max-w-full px-4 py-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 lg:py-8 lg:pb-8">
           {configured ? null : (
             <div className="mb-6 overflow-hidden rounded-md border border-line bg-surface p-4 sm:p-5">
               <p className="text-sm font-semibold">This device is in local draft mode</p>

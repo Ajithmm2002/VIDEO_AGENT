@@ -2,9 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { cookies } from "next/headers";
 import { clientAddress, requestOrigin, requireSession } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
+import { SESSION_ACTIVE_COOKIE, sessionCookieOptions } from "@/lib/session-timeout";
 import { tooManyAttempts } from "@/lib/security/attempts";
 import { authSchema, firstIssue, passwordSchema } from "@/lib/validation";
 import { safeNextPath } from "@/lib/utils";
@@ -125,6 +127,12 @@ export async function updatePassword(
 export async function signOut() {
   if (!isSupabaseConfigured()) redirect("/login");
   const supabase = await createClient();
+  try {
+    const store = await cookies();
+    store.set(SESSION_ACTIVE_COOKIE, "", { ...sessionCookieOptions(), maxAge: 0 });
+  } catch {
+    // proxy.ts still clears the activity cookie on the next request.
+  }
   await supabase.auth.signOut();
   redirect("/login");
 }

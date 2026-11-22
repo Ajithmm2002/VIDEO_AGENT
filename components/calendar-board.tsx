@@ -66,8 +66,8 @@ export function CalendarBoard({
           Updating calendar…
         </p>
       ) : null}
-      <div className="overflow-x-auto">
-        <div className="min-w-[64rem] overflow-hidden rounded-md border border-line">
+      <div className="max-w-full overflow-x-auto overscroll-x-contain">
+        <div className="min-w-[48rem] overflow-hidden rounded-md border border-line sm:min-w-[56rem]">
           <div className="grid grid-cols-7 bg-surface-2">
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
               <div key={label} className="px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-muted">

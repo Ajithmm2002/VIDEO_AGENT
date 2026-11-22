@@ -6,7 +6,7 @@ import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { createFromWriting } from "@/lib/actions/generate";
 import { onGenerationResult, startAffiliateGeneration, useGenerationJobs } from "@/lib/background-generate";
-import { CopyButton } from "@/components/copy-button";
+import { CopyButton, CopyField } from "@/components/copy-button";
 import { Button, Card, choiceClass, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { affiliateProductTypeLabels, googleFlowUrl, languageLabels, platformLabels } from "@/lib/labels";
 import type { AffiliateAd, AffiliateProductType, Language, Platform, ProductPreview } from "@/lib/types";
@@ -335,9 +335,9 @@ export function AffiliateStudio({
           </div>
         ) : null}
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Product title" hint="Auto-filled from the product link.">
+          <CopyField label="Product title" hint="Auto-filled from the product link." text={productName}>
             <TextInput value={productName} onChange={(event) => setProductName(event.target.value)} maxLength={200} />
-          </Field>
+          </CopyField>
           <Field label="What to highlight" hint="Optional. Example: 18k gold, wireless ANC, 50% off.">
             <TextInput value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={1000} />
           </Field>

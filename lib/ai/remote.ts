@@ -436,3 +436,15 @@ Image style: ${professionalImageAd ? "professional ad with listing price on the 
     professionalImageAd,
   );
 }
+
+export async function completeSupport(system: string, user: string) {
+  const data = await complete(system, user, {
+    maxOutputTokens: 500,
+    timeoutMs: 16000,
+    temperature: 0.3,
+    models: geminiLiteModelOrder(),
+  });
+  const reply = typeof data.reply === "string" ? data.reply.trim() : "";
+  if (!reply) throw new Error("The support assistant returned an empty reply.");
+  return reply.slice(0, 1200);
+}

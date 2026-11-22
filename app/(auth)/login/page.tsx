@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthFrame, LoginForm } from "@/components/auth-forms";
 import { isSupabaseConfigured } from "@/lib/env";
+import { SESSION_IDLE_DAYS, SESSION_MAX_AGE_DAYS } from "@/lib/session-timeout";
 import { safeNextPath } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -9,7 +10,7 @@ export const metadata: Metadata = { title: "Sign in" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; session?: string }>;
 }) {
   const params = await searchParams;
   const next = safeNextPath(params.next);
@@ -25,6 +26,11 @@ export default async function LoginPage({
         </>
       }
     >
+      {params.session === "expired" ? (
+        <p className="mb-3 text-sm text-danger">
+          Your session ended after {SESSION_MAX_AGE_DAYS} days, or after {SESSION_IDLE_DAYS} days without a visit. Sign in again.
+        </p>
+      ) : null}
       {params.error ? <p className="mb-3 text-sm text-danger">The sign-in link expired. Request a new one.</p> : null}
       {isSupabaseConfigured() ? <LoginForm next={next} /> : <SetupNeeded />}
     </AuthFrame>

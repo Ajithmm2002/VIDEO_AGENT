@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured, supabasePublicKey, supabaseUrl } from "@/lib/env";
+import {
+  SESSION_ACTIVE_COOKIE,
+  sessionCookieOptions,
+  sessionTimeoutReason,
+} from "@/lib/session-timeout";
 import { safeNextPath } from "@/lib/utils";
 
 const protectedPrefixes = [
@@ -22,6 +27,7 @@ const protectedPrefixes = [
 ];
 
 function isProtected(pathname: string) {
+  if (pathname === "/api/support") return false;
   return protectedPrefixes.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
@@ -33,6 +39,23 @@ function copyCookies(from: NextResponse, to: NextResponse) {
     to.headers.append("set-cookie", cookie);
   }
   return to;
+}
+
+function stampSessionCookies(response: NextResponse) {
+  response.cookies.set(SESSION_ACTIVE_COOKIE, String(Date.now()), sessionCookieOptions());
+}
+
+function clearSessionCookies(response: NextResponse) {
+  response.cookies.set(SESSION_ACTIVE_COOKIE, "", { ...sessionCookieOptions(), maxAge: 0 });
+}
+
+function loginExpiredUrl(request: NextRequest, nextPath?: string) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/login";
+  url.search = "";
+  url.searchParams.set("session", "expired");
+  if (nextPath) url.searchParams.set("next", nextPath);
+  return url;
 }
 
 function withRequestHeaders(request: NextRequest, email: string | null) {
@@ -81,15 +104,33 @@ export async function updateSession(request: NextRequest) {
   });
 
   const { data } = await supabase.auth.getUser();
-  const user = data.user;
+  let user = data.user;
   const { pathname } = request.nextUrl;
   const authPage = pathname === "/login" || pathname === "/register";
+  let timedOut = false;
+
+  if (user) {
+    const activeAt = request.cookies.get(SESSION_ACTIVE_COOKIE)?.value ?? null;
+    if (sessionTimeoutReason({ lastSignInAt: user.last_sign_in_at, activeAt })) {
+      await supabase.auth.signOut();
+      clearSessionCookies(response);
+      timedOut = true;
+      user = null;
+    }
+  }
 
   if (!user && isProtected(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
+    const nextPath = `${pathname}${request.nextUrl.search}`;
+    const url = timedOut ? loginExpiredUrl(request, nextPath) : request.nextUrl.clone();
+    if (!timedOut) {
+      url.pathname = "/login";
+      url.searchParams.set("next", nextPath);
+    }
     return copyCookies(response, NextResponse.redirect(url));
+  }
+
+  if (timedOut && pathname === "/login" && request.nextUrl.searchParams.get("session") !== "expired") {
+    return copyCookies(response, NextResponse.redirect(loginExpiredUrl(request)));
   }
 
   if (user && authPage) {
@@ -99,5 +140,7 @@ export async function updateSession(request: NextRequest) {
     return copyCookies(response, NextResponse.redirect(url));
   }
 
-  return copyCookies(response, withRequestHeaders(request, user?.email ?? null));
+  const next = copyCookies(response, withRequestHeaders(request, user?.email ?? null));
+  if (user) stampSessionCookies(next);
+  return next;
 }

@@ -73,6 +73,14 @@
   --font-sans: var(--font-outfit), var(--font-malayalam), sans-serif;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  touch-action: manipulation;
+}
+
 body {
   background:
     radial-gradient(1100px 560px at -8% -12%, rgb(var(--glow) / 0.18), transparent 58%),
@@ -81,6 +89,8 @@ body {
     var(--bg);
   color: var(--ink);
   font-family: var(--font-outfit), var(--font-malayalam), sans-serif;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .dark body {

@@ -1,14 +1,17 @@
 import { cache } from "react";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { SESSION_ACTIVE_COOKIE, sessionTimeoutReason } from "@/lib/session-timeout";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 export const getCurrentUser = cache(async () => {
   if (!isSupabaseConfigured()) return null;
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.getUser();
-    if (error) return null;
+    if (error || !data.user) return null;
+    if (await expireTimedOutSession(supabase, data.user)) return null;
     return data.user;
   } catch {
     return null;
@@ -64,5 +67,23 @@ export async function requireSession() {
   if (error || !data.user) {
     return { ok: false as const, error: "Sign in to continue." };
   }
+  if (await expireTimedOutSession(supabase, data.user)) {
+    return { ok: false as const, error: "Your session timed out. Sign in again." };
+  }
   return { ok: true as const, supabase, user: data.user };
+}
+
+async function expireTimedOutSession(supabase: SupabaseClient, user: User) {
+  const store = await cookies();
+  const reason = sessionTimeoutReason({
+    lastSignInAt: user.last_sign_in_at,
+    activeAt: store.get(SESSION_ACTIVE_COOKIE)?.value,
+  });
+  if (!reason) return false;
+  try {
+    await supabase.auth.signOut();
+  } catch {
+    // proxy.ts is the primary place cookies are cleared.
+  }
+  return true;
 }

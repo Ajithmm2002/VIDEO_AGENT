@@ -81,13 +81,26 @@ export function LibraryBrowser({
       ) : (
         <div className="grid gap-3">
           {visible.length ? visible.map((item) => (
-            <Card key={item.id} className="grid gap-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Link href={`/content/${item.id}`} className="font-semibold">{item.title}</Link>
-                <StatusBadge status={item.status} />
+            <Card key={item.id} className="grid min-w-0 gap-2">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <Link href={`/content/${item.id}`} className="min-w-0 truncate font-semibold">{item.title}</Link>
+                <div className="flex shrink-0 items-center gap-2">
+                  <CopyButton compact text={item.title} label="Copy title" />
+                  <StatusBadge status={item.status} />
+                </div>
               </div>
-              {view === "published" && item.published_url ? <a className="text-sm text-accent break-all" href={item.published_url} target="_blank" rel="noreferrer">{item.published_url}</a> : null}
-              {view === "drafts" && item.video_url ? <a className="text-sm text-accent break-all" href={item.video_url} target="_blank" rel="noreferrer">{item.video_url}</a> : null}
+              {view === "published" && item.published_url ? (
+                <div className="flex min-w-0 items-start gap-2">
+                  <a className="min-w-0 flex-1 text-sm text-accent break-all" href={item.published_url} target="_blank" rel="noreferrer">{item.published_url}</a>
+                  <CopyButton compact text={item.published_url} label="Copy published URL" />
+                </div>
+              ) : null}
+              {view === "drafts" && item.video_url ? (
+                <div className="flex min-w-0 items-start gap-2">
+                  <a className="min-w-0 flex-1 text-sm text-accent break-all" href={item.video_url} target="_blank" rel="noreferrer">{item.video_url}</a>
+                  <CopyButton compact text={item.video_url} label="Copy video URL" />
+                </div>
+              ) : null}
               {view === "thumbnails" && item.thumbnail_path && images[item.thumbnail_path] ? (
                 <>
                   {/* Signed Supabase URLs expire, so the image optimizer cannot cache them. */}
@@ -95,12 +108,32 @@ export function LibraryBrowser({
                   <img src={images[item.thumbnail_path]} alt="" className="max-h-48 rounded-xl object-cover" />
                 </>
               ) : null}
-              {view === "thumbnails" && visiblePrompt(item.thumbnail_prompt) ? <p className="whitespace-pre-wrap text-sm text-muted">{visiblePrompt(item.thumbnail_prompt)}</p> : null}
-              {view === "descriptions" ? <p className="whitespace-pre-wrap text-sm text-muted">{item.youtube_description || item.instagram_caption || item.description}</p> : null}
-              {view === "ideas" ? <p className="text-sm text-muted">{item.topic || "No topic yet"}</p> : null}
+              {view === "thumbnails" && visiblePrompt(item.thumbnail_prompt) ? (
+                <div className="flex min-w-0 items-start gap-2">
+                  <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-muted">{visiblePrompt(item.thumbnail_prompt)}</p>
+                  <CopyButton compact text={visiblePrompt(item.thumbnail_prompt)} label="Copy thumbnail prompt" />
+                </div>
+              ) : null}
+              {view === "descriptions" ? (
+                <div className="flex min-w-0 items-start gap-2">
+                  <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-muted">{item.youtube_description || item.instagram_caption || item.description}</p>
+                  <CopyButton compact text={item.youtube_description || item.instagram_caption || item.description || ""} label="Copy description" />
+                </div>
+              ) : null}
+              {view === "ideas" ? (
+                <div className="flex min-w-0 items-start gap-2">
+                  <p className="min-w-0 flex-1 text-sm text-muted">{item.topic || "No topic yet"}</p>
+                  {item.topic ? <CopyButton compact text={item.topic} label="Copy topic" /> : null}
+                </div>
+              ) : null}
               {view === "references" ? (
                 <div className="grid gap-1 text-sm">
-                  {item.notes ? <p className="text-muted">{item.notes}</p> : null}
+                  {item.notes ? (
+                    <div className="flex min-w-0 items-start gap-2">
+                      <p className="min-w-0 flex-1 text-muted">{item.notes}</p>
+                      <CopyButton compact text={item.notes} label="Copy notes" />
+                    </div>
+                  ) : null}
                   {item.reference_links.map((link) => (
                     <a key={link.id} href={link.url} className="text-accent" target="_blank" rel="noreferrer">{link.title}</a>
                   ))}

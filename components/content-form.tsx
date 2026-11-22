@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { deleteContent, duplicateContent, saveAsTemplate, saveContent, setThumbnailPath } from "@/lib/actions/content";
 import { onGenerationResult, startTopicGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { ConfirmButton } from "@/components/confirm-button";
+import { CopyField } from "@/components/copy-button";
 import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
 import type { Category, Content, ContentInput, HashtagCollection } from "@/lib/types";
@@ -252,12 +253,12 @@ export function ContentForm({
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       <Card className="grid gap-4 md:grid-cols-2">
-        <Field label="Title">
+        <CopyField label="Title" text={form.title}>
           <TextInput value={form.title} onChange={(event) => patch({ title: event.target.value })} required maxLength={200} />
-        </Field>
-        <Field label="Topic or idea">
+        </CopyField>
+        <CopyField label="Topic or idea" text={form.topic ?? ""}>
           <TextInput value={form.topic ?? ""} onChange={(event) => patch({ topic: event.target.value || null })} maxLength={500} />
-        </Field>
+        </CopyField>
         <Field label="Platform">
           <SelectInput value={form.platform} onChange={(event) => patch({ platform: event.target.value as ContentInput["platform"] })}>
             {platforms.map((platform) => (
@@ -323,24 +324,24 @@ export function ContentForm({
       </Card>
 
       <Card className="grid gap-4">
-        <Field label="Content description">
+        <CopyField label="Content description" text={form.description ?? ""}>
           <TextArea value={form.description ?? ""} onChange={(event) => patch({ description: event.target.value || null })} />
-        </Field>
-        <Field label="YouTube description">
+        </CopyField>
+        <CopyField label="YouTube description" text={form.youtube_description ?? ""}>
           <TextArea value={form.youtube_description ?? ""} onChange={(event) => patch({ youtube_description: event.target.value || null })} />
-        </Field>
-        <Field label="Instagram caption">
+        </CopyField>
+        <CopyField label="Instagram caption" text={form.instagram_caption ?? ""}>
           <TextArea value={form.instagram_caption ?? ""} onChange={(event) => patch({ instagram_caption: event.target.value || null })} />
-        </Field>
+        </CopyField>
       </Card>
 
       <Card className="grid gap-4 md:grid-cols-2">
-        <Field label="YouTube tags" hint="Separate tags with commas. These are SEO tags, not hashtags.">
+        <CopyField label="YouTube tags" hint="Separate tags with commas. These are SEO tags, not hashtags." text={tagsText}>
           <TextArea value={tagsText} onChange={(event) => setTagsText(event.target.value)} />
-        </Field>
-        <Field label="Hashtags" hint="Spaces, commas, or new lines. A hash is added if you leave it off.">
+        </CopyField>
+        <CopyField label="Hashtags" hint="Spaces, commas, or new lines. A hash is added if you leave it off." text={hashText}>
           <TextArea value={hashText} onChange={(event) => setHashText(event.target.value)} />
-        </Field>
+        </CopyField>
         {collections.length ? (
           <div className="flex flex-wrap items-end gap-2 md:col-span-2">
             <Field label="Add a hashtag collection">
@@ -366,12 +367,12 @@ export function ContentForm({
       </Card>
 
       <Card className="grid gap-4">
-        <Field label="Video script or notes">
+        <CopyField label="Video script or notes" text={form.script_notes ?? ""}>
           <TextArea className="min-h-40" value={form.script_notes ?? ""} onChange={(event) => patch({ script_notes: event.target.value || null })} />
-        </Field>
-        <Field label="Thumbnail prompt" hint="Paste a prompt from the thumbnail studio, or write your own.">
+        </CopyField>
+        <CopyField label="Thumbnail prompt" hint="Paste a prompt from the thumbnail studio, or write your own." text={form.thumbnail_prompt ?? ""}>
           <TextArea value={form.thumbnail_prompt ?? ""} onChange={(event) => patch({ thumbnail_prompt: event.target.value || null })} />
-        </Field>
+        </CopyField>
         {content ? (
           <div className="flex flex-wrap gap-2 text-sm">
             <Button variant="ghost" onClick={() => router.push(`/thumbnails?content=${content.id}&topic=${encodeURIComponent(form.topic ?? form.title)}&language=${form.language}`)}>
@@ -385,12 +386,12 @@ export function ContentForm({
       </Card>
 
       <Card className="grid gap-4 md:grid-cols-2">
-        <Field label="Video URL">
+        <CopyField label="Video URL" text={form.video_url ?? ""}>
           <TextInput type="url" placeholder="https://" value={form.video_url ?? ""} onChange={(event) => patch({ video_url: event.target.value || null })} />
-        </Field>
-        <Field label="Published post URL">
+        </CopyField>
+        <CopyField label="Published post URL" text={form.published_url ?? ""}>
           <TextInput type="url" placeholder="https://" value={form.published_url ?? ""} onChange={(event) => patch({ published_url: event.target.value || null })} />
-        </Field>
+        </CopyField>
         <Field label="Thumbnail image" hint="JPEG, PNG, WebP, or GIF. 5 MB maximum. Saved when you save the content.">
           <TextInput
             type="file"
@@ -486,9 +487,9 @@ export function ContentForm({
       </Card>
 
       <Card className="grid gap-4">
-        <Field label="Notes">
+        <CopyField label="Notes" text={form.notes ?? ""}>
           <TextArea value={form.notes ?? ""} onChange={(event) => patch({ notes: event.target.value || null })} />
-        </Field>
+        </CopyField>
         <div className="grid gap-2">
           <h2 className="font-semibold">Reference links</h2>
           {form.reference_links.map((link) => (

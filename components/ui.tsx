@@ -20,7 +20,7 @@ export function PageHeader({
         {eyebrow ? (
           <p className="ig-text mb-2 text-[11px] font-semibold uppercase tracking-[0.22em]">{eyebrow}</p>
         ) : null}
-        <h1 className="text-3xl font-semibold tracking-tight text-balance">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{title}</h1>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{description}</p> : null}
       </div>
       {action}
@@ -73,7 +73,7 @@ export function choiceClass(on: boolean, className?: string) {
 }
 
 const control =
-  "w-full rounded-2xl border border-line bg-surface px-3 text-sm text-ink shadow-[var(--shadow-inset)] placeholder:text-muted/70 dark:rounded-md dark:shadow-none";
+  "w-full min-w-0 rounded-2xl border border-line bg-surface px-3 text-base text-ink shadow-[var(--shadow-inset)] placeholder:text-muted/70 md:text-sm dark:rounded-md dark:shadow-none";
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cn(control, "h-11", props.className)} />;
@@ -91,16 +91,34 @@ export function Field({
   label,
   hint,
   children,
+  action,
 }: {
   label: string;
   hint?: string;
   children: ReactNode;
+  action?: ReactNode;
 }) {
+  const heading = (
+    <span className="flex items-center justify-between gap-2">
+      <span className="font-medium">{label}</span>
+      {action}
+    </span>
+  );
+  const hintNode = hint ? <span className="text-xs leading-5 text-muted">{hint}</span> : null;
+  if (action) {
+    return (
+      <div className="grid min-w-0 gap-1.5 text-sm">
+        {heading}
+        {children}
+        {hintNode}
+      </div>
+    );
+  }
   return (
-    <label className="grid gap-1.5 text-sm">
+    <label className="grid min-w-0 gap-1.5 text-sm">
       <span className="font-medium">{label}</span>
       {children}
-      {hint ? <span className="text-xs leading-5 text-muted">{hint}</span> : null}
+      {hintNode}
     </label>
   );
 }

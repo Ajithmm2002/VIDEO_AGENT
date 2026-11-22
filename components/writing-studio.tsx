@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { applyWriting, createFromWriting } from "@/lib/actions/generate";
 import { onGenerationResult, startWritingGeneration, useGenerationJobs } from "@/lib/background-generate";
-import { CopyButton } from "@/components/copy-button";
+import { CopyButton, CopyField } from "@/components/copy-button";
 import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels } from "@/lib/labels";
 import type { ContentInput, ContentOption, Language, Platform } from "@/lib/types";
@@ -179,9 +179,9 @@ export function WritingStudio({
           </span>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Topic">
+          <CopyField label="Topic" text={topic}>
             <TextInput value={topic} onChange={(event) => setTopic(event.target.value)} />
-          </Field>
+          </CopyField>
           <Field label="Tone" hint="Optional.">
             <TextInput value={tone} onChange={(event) => setTone(event.target.value)} />
           </Field>

@@ -7,7 +7,7 @@ import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { savePrompt } from "@/lib/actions/generate";
 import { onGenerationResult, startThumbnailGeneration, useGenerationJobs } from "@/lib/background-generate";
-import { CopyButton } from "@/components/copy-button";
+import { CopyButton, CopyField } from "@/components/copy-button";
 import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { googleFlowUrl, languageLabels } from "@/lib/labels";
 import type { ContentOption, Language } from "@/lib/types";
@@ -245,9 +245,9 @@ export function ThumbnailStudio({
             On the thumbnail: <span className="font-semibold">{selectedTitle}</span>
           </p>
         ) : null}
-        <Field label="Topic" hint="Visual subject. Malayalam or English. If you pick a project title above, that title is the text on the image.">
+        <CopyField label="Topic" hint="Visual subject. Malayalam or English. If you pick a project title above, that title is the text on the image." text={topic}>
           <TextInput value={topic} onChange={(event) => setTopic(event.target.value)} maxLength={500} />
-        </Field>
+        </CopyField>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Language">
             <SelectInput value={language} onChange={(event) => setLanguage(event.target.value as Language)}>

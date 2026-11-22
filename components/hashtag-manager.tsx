@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteHashtagCollection, saveHashtagCollection } from "@/lib/actions/catalog";
 import { ConfirmButton } from "@/components/confirm-button";
-import { CopyButton } from "@/components/copy-button";
+import { CopyButton, CopyField } from "@/components/copy-button";
 import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { platformLabels } from "@/lib/labels";
 import type { HashtagCollection, Platform } from "@/lib/types";
@@ -46,18 +46,18 @@ export function HashtagManager({ collections, configured }: { collections: Hasht
     <div className="grid gap-4 lg:grid-cols-[20rem_1fr]">
       <Card className="grid h-fit gap-3">
         <h2 className="font-semibold">{editing ? "Edit collection" : "New collection"}</h2>
-        <Field label="Name">
+        <CopyField label="Name" text={name}>
           <TextInput value={name} onChange={(event) => setName(event.target.value)} />
-        </Field>
+        </CopyField>
         <Field label="Platform">
           <SelectInput value={platform} onChange={(event) => setPlatform(event.target.value as Platform | "")}>
             <option value="">Any</option>
             {platforms.map((item) => <option key={item} value={item}>{platformLabels[item]}</option>)}
           </SelectInput>
         </Field>
-        <Field label="Hashtags" hint="One per line, or separated by commas.">
+        <CopyField label="Hashtags" hint="One per line, or separated by commas." text={hashtags}>
           <TextArea value={hashtags} onChange={(event) => setHashtags(event.target.value)} />
-        </Field>
+        </CopyField>
         <Button onClick={onSave} loading={saving} disabled={!configured}>
           {saving ? "Saving…" : "Save collection"}
         </Button>

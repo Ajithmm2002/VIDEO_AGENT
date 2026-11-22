@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_Malayalam, Outfit } from "next/font/google";
 import { AppThemeProvider } from "@/components/theme-provider";
+import { SupportChat } from "@/components/support-chat";
 import { AppToaster } from "@/components/toaster";
 import { isSupabaseConfigured, supabaseUrl } from "@/lib/env";
 import "./globals.css";
@@ -41,6 +42,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
+  interactiveWidget: "resizes-content",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fff7fb" },
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
@@ -50,8 +52,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const origin = supabaseOrigin();
   return (
-    <html lang="en" className={`${outfit.variable} ${malayalam.variable} h-full`} suppressHydrationWarning>
-      <body className="min-h-full antialiased">
+    <html lang="en" className={`${outfit.variable} ${malayalam.variable} h-full overflow-x-clip`} suppressHydrationWarning>
+      <body className="min-h-full max-w-full overflow-x-clip antialiased">
         {origin ? (
           <>
             <link rel="preconnect" href={origin} />
@@ -60,6 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         ) : null}
         <AppThemeProvider>
           {children}
+          <SupportChat />
           <AppToaster />
         </AppThemeProvider>
       </body>
