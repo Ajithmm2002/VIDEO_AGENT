@@ -30,30 +30,30 @@
 
 .dark {
   color-scheme: dark;
-  --bg: #07060a;
-  --bg-2: #121016;
-  --surface: #16141c;
-  --surface-2: #221e28;
-  --ink: #fafafa;
-  --muted: #a8a8a8;
-  --line: color-mix(in srgb, #ff4d8d 18%, #2a2430);
-  --accent: #ff4d8d;
-  --accent-2: #ff8a4c;
+  --bg: #000000;
+  --bg-2: #141414;
+  --surface: #181818;
+  --surface-2: #2f2f2f;
+  --ink: #ffffff;
+  --muted: #b3b3b3;
+  --line: #2f2f2f;
+  --accent: #e50914;
+  --accent-2: #b81d24;
   --accent-ink: #ffffff;
-  --warn: #ffb347;
-  --danger: #ff6b7a;
-  --ok: #4ade80;
-  --ig-orange: #f77737;
-  --ig-pink: #ff4d8d;
-  --ig-purple: #c084fc;
-  --ig-blue: #818cf8;
-  --glow: 255 77 141;
-  --glow-warm: 255 138 76;
-  --glow-cool: 192 132 252;
-  --accent-gradient: linear-gradient(135deg, #f77737 0%, #ff4d8d 50%, #a855f7 100%);
-  --shadow: 10px 16px 32px rgb(0 0 0 / 0.55), -4px -6px 16px rgb(255 255 255 / 0.035);
-  --shadow-glow: 0 18px 34px -16px rgb(255 77 141 / 0.55);
-  --shadow-inset: inset 3px 3px 10px rgb(0 0 0 / 0.45), inset -2px -2px 8px rgb(255 255 255 / 0.035);
+  --warn: #e87c03;
+  --danger: #e50914;
+  --ok: #46d369;
+  --ig-orange: #e87c03;
+  --ig-pink: #e50914;
+  --ig-purple: #b3b3b3;
+  --ig-blue: #808080;
+  --glow: 229 9 20;
+  --glow-warm: 184 29 36;
+  --glow-cool: 20 20 20;
+  --accent-gradient: linear-gradient(90deg, #e50914 0%, #b81d24 100%);
+  --shadow: 0 8px 24px rgb(0 0 0 / 0.55);
+  --shadow-glow: 0 10px 24px rgb(229 9 20 / 0.35);
+  --shadow-inset: none;
 }
 
 @theme inline {
@@ -83,6 +83,39 @@ body {
   font-family: var(--font-outfit), var(--font-malayalam), sans-serif;
 }
 
+.dark body {
+  background: #000;
+}
+
+.dark .ig-gradient {
+  background-image: none;
+  background-color: var(--accent);
+}
+
+.dark .ig-text {
+  background-image: none;
+  color: var(--accent);
+  -webkit-background-clip: unset;
+  background-clip: unset;
+}
+
+.dark .orb {
+  display: none;
+}
+
+.dark .animate-ig-drift,
+.dark .animate-ig-drift-slow,
+.dark .animate-float {
+  animation: none;
+}
+
+.dark .backdrop-blur-xl,
+.dark .backdrop-blur-md,
+.dark .backdrop-blur-sm {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .ig-gradient {
   background-image: var(--accent-gradient);
   color: #fff;
@@ -102,6 +135,13 @@ body {
   color: var(--accent);
   font-weight: 600;
   box-shadow: var(--shadow), inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.dark .nav-item-active {
+  background: transparent;
+  color: #fff;
+  box-shadow: none;
+  font-weight: 700;
 }
 
 .selected-row {
@@ -255,6 +295,37 @@ dialog::backdrop {
 
 .animate-veil-in {
   animation: veil-in 180ms ease both;
+}
+
+.media-row {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.media-row::-webkit-scrollbar {
+  display: none;
+}
+
+.media-row > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.billboard {
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .billboard {
+  background:
+    linear-gradient(90deg, #000 8%, rgb(0 0 0 / 0.72) 42%, rgb(20 20 20 / 0.4) 72%, #141414 100%),
+    #141414;
 }
 
 a,

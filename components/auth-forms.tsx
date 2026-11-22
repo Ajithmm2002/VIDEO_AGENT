@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { CalendarDays, ImageIcon, PenLine } from "lucide-react";
 import { requestPasswordReset, signIn, signUp, updatePassword } from "@/lib/actions/auth";
 import { BrandMark } from "@/components/brand";
-import { AmbientGlow } from "@/components/ambient-glow";
 import { Button, Card, Field, TextInput } from "@/components/ui";
 import type { ActionResult } from "@/lib/types";
 
@@ -85,9 +84,8 @@ export function AuthFrame({
   footer: React.ReactNode;
 }) {
   return (
-    <main className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
-      <section className="relative hidden overflow-hidden px-12 py-12 text-ink lg:flex lg:flex-col lg:justify-between">
-        <AmbientGlow />
+    <main className="grid min-h-screen bg-bg lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="billboard relative hidden overflow-hidden px-12 py-12 text-ink lg:flex lg:flex-col lg:justify-between">
         <div className="relative z-10">
           <BrandMark href="/" />
         </div>
@@ -105,10 +103,10 @@ export function AuthFrame({
               return (
                 <div
                   key={item.title}
-                  className="animate-fade-up flex gap-3 rounded-3xl border border-line bg-surface/80 p-4 shadow-[var(--shadow)] backdrop-blur-xl"
+                  className="flex gap-3 rounded-md border border-line bg-surface p-4"
                   style={{ animationDelay: `${260 + index * 90}ms` }}
                 >
-                  <span className="ig-gradient grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-white shadow-[var(--shadow-glow)]">
+                  <span className="ig-gradient grid h-10 w-10 shrink-0 place-items-center rounded-md text-white">
                     <Icon className="h-4 w-4" />
                   </span>
                   <span>

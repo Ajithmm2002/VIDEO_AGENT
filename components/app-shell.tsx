@@ -104,12 +104,12 @@ export function AppShell({
                   prefetch
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
-                    active ? "nav-item-active" : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
+                    "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm",
+                    active ? "nav-item-active" : "font-medium text-muted hover:text-ink",
                   )}
                   aria-current={active ? "page" : undefined}
                 >
-                  <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", active ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
+                  <span className={cn("grid h-8 w-8 place-items-center rounded-md", active ? "ig-gradient text-white" : "bg-surface-2")}>
                     <Icon className="h-4 w-4" />
                   </span>
                   {link.label}
@@ -127,14 +127,14 @@ export function AppShell({
             prefetch
             onClick={() => setOpen(false)}
             className={cn(
-              "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
+              "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm",
               navActive(pathname, "/admin/marketplace")
                 ? "nav-item-active"
-                : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
+                : "font-medium text-muted hover:text-ink",
             )}
             aria-current={navActive(pathname, "/admin/marketplace") ? "page" : undefined}
           >
-            <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", navActive(pathname, "/admin/marketplace") ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
+            <span className={cn("grid h-8 w-8 place-items-center rounded-md", navActive(pathname, "/admin/marketplace") ? "ig-gradient text-white" : "bg-surface-2")}>
               <Shield className="h-4 w-4" />
             </span>
             Sell
@@ -149,14 +149,14 @@ export function AppShell({
           prefetch
           onClick={() => setOpen(false)}
           className={cn(
-            "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
+            "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm",
             pathname.startsWith("/purchases")
               ? "nav-item-active"
-              : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
+              : "font-medium text-muted hover:text-ink",
           )}
           aria-current={pathname.startsWith("/purchases") ? "page" : undefined}
         >
-          <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", pathname.startsWith("/purchases") ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
+          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/purchases") ? "ig-gradient text-white" : "bg-surface-2")}>
             <ShoppingBag className="h-4 w-4" />
           </span>
           Purchases
@@ -166,14 +166,14 @@ export function AppShell({
           prefetch
           onClick={() => setOpen(false)}
           className={cn(
-            "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
+            "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm",
             pathname.startsWith("/settings")
               ? "nav-item-active"
-              : "font-medium text-muted hover:bg-surface-2 hover:text-ink",
+              : "font-medium text-muted hover:text-ink",
           )}
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
         >
-          <span className={cn("grid h-8 w-8 place-items-center rounded-2xl", pathname.startsWith("/settings") ? "ig-gradient text-white shadow-[var(--shadow-glow)]" : "bg-surface-2 shadow-[var(--shadow-inset)]")}>
+          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/settings") ? "ig-gradient text-white" : "bg-surface-2")}>
             <Settings className="h-4 w-4" />
           </span>
           Settings
@@ -184,7 +184,7 @@ export function AppShell({
   );
 
   const accountCard = (
-    <div className="rounded-3xl border border-line bg-surface-2/80 px-3 py-3 shadow-[var(--shadow-inset)]">
+    <div className="rounded-md border border-line bg-surface-2 px-3 py-3">
       <p className="truncate text-xs font-medium">{email ?? (configured ? "Workspace" : "Local draft mode")}</p>
       <p className="mt-1 text-[11px] leading-4 text-muted">
         {email
@@ -194,9 +194,16 @@ export function AppShell({
     </div>
   );
 
+  const mobileTabs = [
+    { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+    { href: "/content", label: "Content", icon: Clapperboard },
+    { href: "/marketplace", label: "Shop", icon: Store },
+    { href: "/play", label: "Play", icon: Gamepad2 },
+  ];
+
   return (
-    <div className="min-h-screen text-ink">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col overflow-hidden border-r border-line bg-surface/75 p-4 shadow-[var(--shadow)] backdrop-blur-xl lg:flex">
+    <div className="min-h-screen bg-bg text-ink">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-hidden border-r border-line bg-bg p-4 lg:flex">
         <div className="mb-6 shrink-0">
           <BrandMark />
         </div>
@@ -210,29 +217,26 @@ export function AppShell({
 
       {open ? (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <button className="absolute inset-0 bg-ink/50 backdrop-blur-sm" aria-label="Close menu" onClick={() => setOpen(false)} />
-          <div className="relative flex h-full w-80 max-w-[85vw] flex-col overflow-hidden bg-surface p-4 shadow-[var(--shadow)]">
+          <button className="absolute inset-0 bg-black/70" aria-label="Close menu" onClick={() => setOpen(false)} />
+          <div className="relative flex h-full w-[min(20rem,88vw)] flex-col overflow-hidden bg-bg p-4">
             <div className="mb-4 flex shrink-0 items-center justify-between">
               <BrandMark />
-              <Button variant="ghost" aria-label="Close menu" onClick={() => setOpen(false)}>
+              <Button variant="ghost" className="min-h-11 min-w-11" aria-label="Close menu" onClick={() => setOpen(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
               {nav}
             </div>
-            <div className="mt-3 shrink-0">
+            <div className="mt-3 shrink-0 pb-[env(safe-area-inset-bottom)]">
               {accountCard}
             </div>
           </div>
         </div>
       ) : null}
 
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-bg/75 px-4 py-3 backdrop-blur-xl sm:px-6">
-          <Button variant="secondary" className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}>
-            <Menu className="h-4 w-4" />
-          </Button>
+      <div className="lg:pl-60">
+        <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-bg/95 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
           {usesContentSearch(pathname) ? (
             <form
               className="relative flex min-w-0 flex-1"
@@ -248,7 +252,7 @@ export function AppShell({
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search titles and topics"
                 aria-label="Search content"
-                className="h-11 w-full rounded-2xl border border-line bg-surface pl-10 pr-3 text-sm shadow-[var(--shadow-inset)]"
+                className="h-11 w-full rounded-md border border-line bg-surface pl-10 pr-3 text-sm"
               />
             </form>
           ) : (
@@ -283,14 +287,14 @@ export function AppShell({
               <SubmitButton variant="secondary" pendingLabel="Signing out…">Sign out</SubmitButton>
             </form>
           ) : (
-            <Link href="/login" className="ig-gradient inline-flex h-11 items-center rounded-2xl px-3.5 text-sm font-semibold text-white shadow-[var(--shadow-glow)]">
+            <Link href="/login" className="ig-gradient inline-flex h-11 items-center rounded-md px-3.5 text-sm font-semibold text-white">
               Sign in
             </Link>
           )}
         </header>
-        <main className="px-4 py-8 sm:px-6 lg:px-8">
+        <main className="px-4 py-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 lg:py-8 lg:pb-8">
           {configured ? null : (
-            <div className="mb-6 overflow-hidden rounded-[1.75rem] border border-line bg-surface/90 p-4 shadow-[var(--shadow)] sm:p-5">
+            <div className="mb-6 overflow-hidden rounded-md border border-line bg-surface p-4 sm:p-5">
               <p className="text-sm font-semibold">This device is in local draft mode</p>
               <p className="mt-1 text-sm leading-6 text-muted">
                 Thumbnail prompts and writing drafts still work. <Link href="/login" className="font-medium text-ink underline decoration-accent/50 underline-offset-2">Sign in</Link> and <Link href="/register" className="font-medium text-ink underline decoration-accent/50 underline-offset-2">create an account</Link> after you add the project URL and anon key in <span className="font-medium text-ink">.env.local</span>.
@@ -300,6 +304,40 @@ export function AppShell({
           {children}
         </main>
       </div>
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-bg pb-[env(safe-area-inset-bottom)] lg:hidden"
+        aria-label="Primary"
+      >
+        {mobileTabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = navActive(pathname, tab.href);
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              prefetch
+              className={cn(
+                "grid min-h-12 place-items-center gap-0.5 px-1 py-2 text-[11px] font-semibold",
+                active ? "text-ink" : "text-muted",
+              )}
+              aria-current={active ? "page" : undefined}
+            >
+              <Icon className="h-5 w-5" />
+              {tab.label}
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          className="grid min-h-12 place-items-center gap-0.5 px-1 py-2 text-[11px] font-semibold text-muted"
+          aria-label="Open menu"
+          onClick={() => setOpen(true)}
+        >
+          <Menu className="h-5 w-5" />
+          Menu
+        </button>
+      </nav>
     </div>
   );
 }

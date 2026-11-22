@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BadgePercent, CalendarDays, Gamepad2, ImageIcon, PenLine, Sparkles, Store } from "lucide-react";
-import { AmbientGlow } from "@/components/ambient-glow";
 import { BrandMark } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -14,102 +13,100 @@ const features = [
 ];
 
 const previewCards = [
-  { delay: "0s", eyebrow: "Reel · 30s", title: "First 10 seconds of nostalgia", meta: "Comedy · Draft" },
-  { delay: "0.4s", eyebrow: "Affiliate", title: "Studio ad for the listing", meta: "Image prompt ready" },
-  { delay: "0.8s", eyebrow: "YouTube", title: "Thursday title, tags, and hook", meta: "Scheduled" },
+  { eyebrow: "Reel · 30s", title: "First 10 seconds of nostalgia", meta: "Comedy · Draft" },
+  { eyebrow: "Affiliate", title: "Studio ad for the listing", meta: "Image prompt ready" },
+  { eyebrow: "YouTube", title: "Thursday title, tags, and hook", meta: "Scheduled" },
+  { eyebrow: "Planner", title: "Seven days of how-to ideas", meta: "Ready to film" },
 ];
 
 export function LandingPage({ configured }: { configured: boolean }) {
+  const startHref = configured ? "/register" : "/dashboard";
+
   return (
-    <div className="relative min-h-screen overflow-hidden text-ink">
-      <AmbientGlow />
-      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
+    <div className="min-h-screen bg-bg text-ink">
+      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 bg-bg/90 px-4 py-3 sm:px-8">
         <BrandMark href="/" />
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Link href="/login" className="hidden rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)] sm:inline-flex">
+          <Link
+            href="/login"
+            className="hidden min-h-11 items-center rounded-md border border-line bg-surface px-3.5 text-sm font-semibold sm:inline-flex"
+          >
             Sign in
           </Link>
           <Link
-            href={configured ? "/register" : "/dashboard"}
-            className="ig-gradient inline-flex rounded-2xl px-3.5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
+            href={startHref}
+            className="ig-gradient inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold text-white"
           >
-            {configured ? "Create account" : "Open studio"}
+            {configured ? "Get started" : "Open studio"}
           </Link>
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto grid w-full max-w-6xl gap-16 px-4 pb-20 pt-8 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:pt-16">
-        <section>
-          <p className="animate-fade-up ig-text text-[11px] font-semibold uppercase tracking-[0.22em]">
-            Personal workspace
-          </p>
-          <h1 className="animate-fade-up mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-6xl" style={{ animationDelay: "90ms" }}>
+      <section className="billboard px-4 py-16 sm:px-8 sm:py-24 lg:min-h-[70vh] lg:py-28">
+        <div className="mx-auto max-w-3xl">
+          <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.22em]">Personal workspace</p>
+          <h1 className="mt-4 max-w-xl text-4xl font-semibold tracking-tight text-balance sm:text-6xl">
             Plan the next video before you record it.
           </h1>
-          <p className="animate-fade-up mt-5 max-w-xl text-base leading-7 text-muted" style={{ animationDelay: "180ms" }}>
-            Keep YouTube and Instagram ideas, thumbnail prompts, captions, and publishing dates in one soft, private studio.
+          <p className="mt-5 max-w-xl text-base leading-7 text-muted">
+            YouTube and Instagram ideas, thumbnail prompts, captions, and publishing dates in one private studio.
           </p>
-          <div className="animate-fade-up mt-8 flex flex-wrap gap-3" style={{ animationDelay: "270ms" }}>
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href={configured ? "/register" : "/dashboard"}
-              className="ig-gradient inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-glow)]"
+              href={startHref}
+              className="ig-gradient inline-flex min-h-12 items-center gap-2 rounded-md px-5 text-sm font-semibold text-white"
             >
               <Sparkles className="h-4 w-4" />
               {configured ? "Start a workspace" : "Open the studio"}
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center rounded-2xl border border-line bg-surface px-4 py-2.5 text-sm font-semibold shadow-[var(--shadow)]"
+              className="inline-flex min-h-12 items-center rounded-md border border-line bg-surface/80 px-5 text-sm font-semibold"
             >
               Sign in
             </Link>
           </div>
-          <div className="mt-10 grid gap-3 sm:grid-cols-2">
-            {features.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.title}
-                  className="animate-fade-up flex gap-3 rounded-[1.75rem] border border-line bg-surface/80 p-4 shadow-[var(--shadow)] backdrop-blur-xl"
-                  style={{ animationDelay: `${360 + index * 80}ms` }}
-                >
-                  <span className="ig-gradient grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-white shadow-[var(--shadow-glow)]">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span>
-                    <span className="block text-sm font-semibold">{item.title}</span>
-                    <span className="mt-1 block text-sm leading-5 text-muted">{item.body}</span>
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="relative mx-auto w-full max-w-md lg:max-w-none" aria-hidden>
-          <div className="orb orb-pink absolute inset-x-8 top-8 h-64 w-auto" />
-          <div className="relative grid gap-4">
-            {previewCards.map((card, index) => (
+      <section className="px-4 py-10 sm:px-8">
+        <h2 className="text-xl font-semibold tracking-tight">More reasons to join</h2>
+        <div className="media-row mt-4">
+          {features.map((item) => {
+            const Icon = item.icon;
+            return (
               <article
-                key={card.title}
-                className="animate-float rounded-[1.75rem] border border-line bg-surface/90 p-5 shadow-[var(--shadow)] backdrop-blur-xl"
-                style={{ animationDelay: card.delay, marginLeft: index === 1 ? "1.5rem" : index === 2 ? "0.5rem" : "0" }}
+                key={item.title}
+                className="w-[min(18rem,80vw)] rounded-md border border-line bg-surface p-4"
               >
-                <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.18em]">{card.eyebrow}</p>
-                <p className="mt-2 text-lg font-semibold tracking-tight">{card.title}</p>
-                <p className="mt-1 text-sm text-muted">{card.meta}</p>
-                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-2 shadow-[var(--shadow-inset)]">
-                  <span className="ig-gradient block h-full w-2/3 rounded-full" style={{ width: `${58 + index * 14}%` }} />
-                </div>
+                <span className="ig-gradient grid h-10 w-10 place-items-center rounded-md text-white">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <h3 className="mt-3 text-sm font-semibold">{item.title}</h3>
+                <p className="mt-1 text-sm leading-5 text-muted">{item.body}</p>
               </article>
-            ))}
-          </div>
-        </section>
-      </main>
-      <p className="relative z-10 mx-auto max-w-6xl px-4 pb-10 text-sm text-muted sm:px-6">
-        Malayalam and English. Your rows stay on your account.
-      </p>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="px-4 pb-16 sm:px-8">
+        <h2 className="text-xl font-semibold tracking-tight">On your board</h2>
+        <div className="media-row mt-4">
+          {previewCards.map((card) => (
+            <article
+              key={card.title}
+              className="w-[min(16rem,78vw)] rounded-md border border-line bg-surface-2 p-4"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{card.eyebrow}</p>
+              <p className="mt-2 text-base font-semibold tracking-tight">{card.title}</p>
+              <p className="mt-1 text-sm text-muted">{card.meta}</p>
+            </article>
+          ))}
+        </div>
+        <p className="mt-10 text-sm text-muted">Malayalam and English. Your rows stay on your account.</p>
+      </section>
     </div>
   );
 }

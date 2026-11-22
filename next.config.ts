@@ -11,6 +11,7 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
+  "upgrade-insecure-requests",
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -37,7 +38,7 @@ const nextConfig: NextConfig = {
     ];
     if (process.env.NODE_ENV === "production") {
       shared.push(
-        { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+        { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
         { key: "Content-Security-Policy", value: contentSecurityPolicy },
       );
     }

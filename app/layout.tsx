@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Sans_Malayalam, Outfit } from "next/font/google";
 import { AppThemeProvider } from "@/components/theme-provider";
 import { AppToaster } from "@/components/toaster";
@@ -34,6 +34,17 @@ export const metadata: Metadata = {
     template: "%s · Content Studio",
   },
   description: "Plan YouTube and Instagram content, thumbnail prompts, and a publishing calendar.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fff7fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
