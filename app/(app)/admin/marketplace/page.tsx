@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { MarketplaceAdmin } from "@/components/marketplace-admin";
+import { requireShopAdmin } from "@/app/(app)/admin/marketplace/guard";
+import { MarketplaceProductManager } from "@/components/marketplace-admin";
 import { PageHeader } from "@/components/ui";
-import { isMarketplaceAdmin, isSupabaseConfigured } from "@/lib/env";
 import { listMarketplaceListings, listPendingMoneyPurchases } from "@/lib/queries";
-import { getCurrentUser, requestUserEmail } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Sell products" };
+export const metadata: Metadata = { title: "Manage products" };
 
 export default async function MarketplaceAdminPage() {
-  if (!isSupabaseConfigured()) redirect("/marketplace");
-  const [email, user] = await Promise.all([requestUserEmail(), getCurrentUser()]);
-  if (!isMarketplaceAdmin(email ?? user?.email)) redirect("/marketplace");
+  await requireShopAdmin();
   const [listings, pending] = await Promise.all([
     listMarketplaceListings({ includeDrafts: true }),
     listPendingMoneyPurchases(),
@@ -21,10 +17,10 @@ export default async function MarketplaceAdminPage() {
     <div>
       <PageHeader
         eyebrow="Admin"
-        title="Sell products"
-        description="List skills and other digital products for the marketplace. Set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out."
+        title="Manage products"
+        description="See listed and draft products here. Listing a new product is a separate page. Set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag)."
       />
-      <MarketplaceAdmin listings={listings} pending={pending} />
+      <MarketplaceProductManager listings={listings} pending={pending} />
     </div>
   );
 }

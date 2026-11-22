@@ -13,6 +13,7 @@ export function ConfirmButton({
   pendingLabel = "Working…",
   onConfirm,
   disabled,
+  className,
 }: {
   label: string;
   title: string;
@@ -21,6 +22,7 @@ export function ConfirmButton({
   pendingLabel?: string;
   onConfirm: () => void | Promise<void>;
   disabled?: boolean;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -55,7 +57,13 @@ export function ConfirmButton({
 
   return (
     <>
-      <Button variant="danger" onClick={() => setOpen(true)} disabled={disabled || pending} loading={pending}>
+      <Button
+        variant="danger"
+        className={className}
+        onClick={() => setOpen(true)}
+        disabled={disabled || pending}
+        loading={pending}
+      >
         {pending ? pendingLabel : label}
       </Button>
       {mounted && open

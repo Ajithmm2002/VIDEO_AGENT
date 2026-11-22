@@ -20,5 +20,8 @@ describe("app shell search", () => {
     expect(headerContext("/marketplace")).toBe("Marketplace");
     expect(headerContext("/purchases")).toBe("Purchases");
     expect(headerContext("/play")).toBe("Fun mode");
+    expect(headerContext("/admin/marketplace")).toBe("Manage products");
+    expect(headerContext("/admin/marketplace/new")).toBe("List a product");
+    expect(headerContext("/admin/marketplace/abc/edit")).toBe("Edit product");
   });
 });
