@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Link from "next/link";
 import { restoreBackup } from "@/lib/actions/backup";
-import { deleteCategory, saveCategory, updateDisplayName } from "@/lib/actions/catalog";
+import { deleteCategory, saveCategory } from "@/lib/actions/catalog";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Button, Card, Field, TextInput } from "@/components/ui";
 import { CoinBalanceCard } from "@/components/coin-balance";
@@ -24,11 +25,9 @@ export function SettingsManager({
   wallet: GameWallet;
 }) {
   const router = useRouter();
-  const [name, setName] = useState(profile?.display_name ?? "");
   const [categoryName, setCategoryName] = useState("");
   const [color, setColor] = useState(categoryColors[0]);
   const [restoreText, setRestoreText] = useState("");
-  const [savingName, setSavingName] = useState(false);
   const [addingCategory, setAddingCategory] = useState(false);
 
   return (
@@ -38,30 +37,15 @@ export function SettingsManager({
       </div>
       <Card className="grid max-w-xl gap-3">
         <h2 className="font-semibold">Profile</h2>
-        <Field label="Display name">
-          <TextInput value={name} onChange={(event) => setName(event.target.value)} maxLength={80} />
-        </Field>
-        <Button
-          className="w-fit"
-          loading={savingName}
-          disabled={!configured}
-          onClick={async () => {
-            setSavingName(true);
-            try {
-              const result = await updateDisplayName(name);
-              if (!result.ok) {
-                toast.error(result.error);
-                return;
-              }
-              toast.success("Name saved");
-              router.refresh();
-            } finally {
-              setSavingName(false);
-            }
-          }}
+        <p className="text-sm leading-6 text-muted">
+          {profile?.display_name?.trim() ? `Signed in as ${profile.display_name.trim()}.` : "Your email and display name live on the Profile page."}
+        </p>
+        <Link
+          href="/profile"
+          className="ig-gradient inline-flex min-h-11 w-fit items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
         >
-          {savingName ? "Saving…" : "Save name"}
-        </Button>
+          Open profile
+        </Link>
       </Card>
 
       <Card className="grid gap-3">

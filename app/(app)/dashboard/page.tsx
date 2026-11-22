@@ -5,8 +5,10 @@ import { StatusBadge } from "@/components/badges";
 import { CoinBalanceCard } from "@/components/coin-balance";
 import { DashboardWelcome } from "@/components/dashboard-welcome";
 import { Card, EmptyState } from "@/components/ui";
+import { accountLabel } from "@/lib/account-label";
 import { isSupabaseConfigured } from "@/lib/env";
-import { dashboardData, getGameWallet } from "@/lib/queries";
+import { dashboardData, getGameWallet, getProfile } from "@/lib/queries";
+import { requestUserEmail } from "@/lib/session";
 import { checklistProgress, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -23,10 +25,13 @@ const statMeta = [
 
 export default async function DashboardPage() {
   const configured = isSupabaseConfigured();
-  const [data, wallet] = await Promise.all([
+  const [data, wallet, profile, email] = await Promise.all([
     dashboardData(),
     configured ? getGameWallet() : Promise.resolve({ coins: 0, earned: 0 }),
+    configured ? getProfile() : Promise.resolve(null),
+    configured ? requestUserEmail() : Promise.resolve(null),
   ]);
+  const name = accountLabel(profile?.display_name, email);
   const values = {
     total: data.total,
     drafts: data.drafts,
@@ -41,7 +46,7 @@ export default async function DashboardPage() {
     <div>
       <DashboardWelcome
         eyebrow="Workspace"
-        title="Your studio at a glance"
+        title={name === "Workspace" ? "Your studio at a glance" : `Hi, ${name}`}
         description="A private view of what you are planning, drafting, and publishing."
         action={
           <Link

@@ -24,7 +24,7 @@ A session lasts 14 days from the last sign-in. If you do not open the app for 7 
 Kind: help
 Keywords: zoom, mobile, phone, responsive, small screen, hamburger, menu, navigation, sidebar, bottom bar, where is, open calendar
 
-On a computer, the left sidebar lists Plan, Create, Discover, Purchases, and Settings. On a phone, Home, Content, Shop, and Play sit on the bottom bar. Open Menu (☰) for Calendar, Writing, Planner, Library, Thumbnails, Hashtags, Affiliate ads, Purchases, and Settings. Buttons are large enough to tap. The calendar week grid scrolls sideways on purpose.
+On a computer, the left sidebar lists Plan, Create, Discover, Profile, Purchases, and Settings. Your display name is at the top of the studio and in the account card. On a phone, Home, Content, Shop, and Play sit on the bottom bar. Open Menu (☰) for Calendar, Writing, Planner, Library, Thumbnails, Hashtags, Affiliate ads, Profile, Purchases, and Settings. Buttons are large enough to tap. The calendar week grid scrolls sideways on purpose.
 
 ## Dashboard
 Kind: help
@@ -128,11 +128,17 @@ Keywords: generate, ai, gemini, openai, draft for me, write for me, busy, quota
 
 Generate writes thumbnail prompts, writing drafts, topic copy, plans, audio scripts, and affiliate ads. On the live site you must be signed in. Enter a topic or title first. You can edit every result before you save. Studio coins do not pay for Generate. If the model is busy, wait a minute and tap Generate again. You can always type the fields by hand.
 
+## Profile
+Kind: help
+Keywords: profile, my email, my name, username, display name, who am i, account details
+
+Profile shows your display name at the top, plus your email, studio coins, whether you have the seller desk, and when the account was created. Open Profile from the Account menu or tap your name at the top. You can change the display name there. Other people cannot see this page.
+
 ## Settings
 Kind: help
 Keywords: settings, display name, profile, category, csv, backup, restore, export
 
-Settings holds your display name, content categories, coin balance, CSV export, and a JSON backup. CSV and JSON include only your account. Thumbnail image files are not inside the JSON backup. Restore adds rows; it does not delete what is already there. Categories organise content; deleting a category leaves the content.
+Settings holds content categories, coin balance, CSV export, and a JSON backup. Your name and email are on Profile. CSV and JSON include only your account. Thumbnail image files are not inside the JSON backup. Restore adds rows; it does not delete what is already there. Categories organise content; deleting a category leaves the content.
 
 ## Light and dark
 Kind: help

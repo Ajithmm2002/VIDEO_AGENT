@@ -21,6 +21,7 @@ import {
   ShoppingBag,
   Store,
   Shield,
+  User,
   X,
 } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
@@ -68,6 +69,7 @@ function navActive(pathname: string, href: string) {
 
 export function AppShell({
   email,
+  displayName,
   configured,
   isAdmin,
   coins = 0,
@@ -75,6 +77,7 @@ export function AppShell({
   children,
 }: {
   email: string | null;
+  displayName?: string | null;
   configured: boolean;
   isAdmin?: boolean;
   coins?: number;
@@ -156,6 +159,23 @@ export function AppShell({
         <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted">Account</p>
         <div className="grid gap-1">
         <Link
+          href="/profile"
+          prefetch
+          onClick={() => setOpen(false)}
+          className={cn(
+            "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-base sm:text-sm",
+            pathname.startsWith("/profile")
+              ? "nav-item-active"
+              : "font-medium text-muted hover:text-ink",
+          )}
+          aria-current={pathname.startsWith("/profile") ? "page" : undefined}
+        >
+          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/profile") ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
+            <User className="h-4 w-4" />
+          </span>
+          Profile
+        </Link>
+        <Link
           href="/purchases"
           prefetch
           onClick={() => setOpen(false)}
@@ -194,15 +214,18 @@ export function AppShell({
     </nav>
   );
 
+  const visibleName = displayName?.trim() || (email ? email.split("@")[0] : null) || (configured ? "Workspace" : "Local draft mode");
+
   const accountCard = (
-    <div className="rounded-md border border-line bg-surface-2 px-3 py-3">
-      <p className="truncate text-sm font-medium">{email ?? (configured ? "Workspace" : "Local draft mode")}</p>
+    <Link href={email ? "/profile" : "/login"} className="block rounded-md border border-line bg-surface-2 px-3 py-3">
+      <p className="truncate text-sm font-semibold">{visibleName}</p>
+      <p className="mt-0.5 truncate text-xs text-muted">{email ?? (configured ? "Open Profile" : "Local draft mode")}</p>
       <p className="mt-1 text-sm leading-5 text-muted">
         {email
           ? `${formatCoinBalance(earned)} earned · ${formatCoins(coins)} in-app only`
           : "Connect Supabase to save your work."}
       </p>
-    </div>
+    </Link>
   );
 
   const mobileTabs = [
@@ -293,6 +316,16 @@ export function AppShell({
             </>
           ) : null}
           <ThemeToggle />
+          {email ? (
+            <Link
+              href="/profile"
+              aria-label={`Open profile for ${visibleName}`}
+              className="inline-flex min-h-11 min-w-0 max-w-[7.5rem] items-center justify-end truncate text-sm font-semibold sm:max-w-[12rem]"
+              title={visibleName}
+            >
+              {visibleName}
+            </Link>
+          ) : null}
           {email ? (
             <form action={signOut} className="shrink-0">
               <SubmitButton variant="secondary" className="px-2.5 text-xs sm:px-3.5 sm:text-sm" pendingLabel="Signing out…">Sign out</SubmitButton>

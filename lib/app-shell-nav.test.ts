@@ -8,6 +8,7 @@ describe("app shell search", () => {
     expect(usesContentSearch("/purchases")).toBe(false);
     expect(usesContentSearch("/play")).toBe(false);
     expect(usesContentSearch("/admin/marketplace")).toBe(false);
+    expect(usesContentSearch("/profile")).toBe(false);
   });
 
   it("keeps plan and topic search on content pages", () => {
@@ -20,6 +21,7 @@ describe("app shell search", () => {
     expect(headerContext("/marketplace")).toBe("Marketplace");
     expect(headerContext("/purchases")).toBe("Purchases");
     expect(headerContext("/play")).toBe("Fun mode");
+    expect(headerContext("/profile")).toBe("Profile");
     expect(headerContext("/admin/marketplace")).toBe("Manage products");
     expect(headerContext("/admin/marketplace/new")).toBe("List a product");
     expect(headerContext("/admin/marketplace/abc/edit")).toBe("Manage products");

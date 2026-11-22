@@ -84,6 +84,9 @@ export async function updateDisplayName(name: string): Promise<ActionResult> {
   const { error } = await session.supabase.from("profiles").update({ display_name: trimmed }).eq("id", session.user.id);
   if (error) return { ok: false, error: "Could not update your name." };
   await session.supabase.auth.updateUser({ data: { display_name: trimmed } });
+  revalidatePath("/", "layout");
   revalidatePath("/settings");
+  revalidatePath("/profile");
+  revalidatePath("/dashboard");
   return { ok: true, message: "Name saved." };
 }

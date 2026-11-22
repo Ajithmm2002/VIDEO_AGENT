@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   ]);
   return (
     <div>
-      <PageHeader eyebrow="Account" title="Settings" description="Your name, categories, CSV export, and a JSON backup you can restore later." />
+      <PageHeader eyebrow="Account" title="Settings" description="Categories, CSV export, and a JSON backup. Your name and email are on Profile." />
       <SettingsManager profile={profile} categories={categories} configured={configured} wallet={wallet} />
     </div>
   );
