@@ -57,7 +57,7 @@ export function SupportChat() {
     {
       id: "hello",
       role: "assistant",
-      content: "Hi. Support is on 24 hours a day. I can help with sign-in, calendar, titles and tags, the shop, coins, or a bug. What do you need?",
+      content: "Hi. Support is on 24 hours a day. I can help with errors, sign-in, the shop, and how to reach us. Ask for the support email or phone if you want a person — those details are an example desk for now.",
     },
   ]);
   const drag = useRef<{ pointerId: number; dx: number; dy: number; moved: boolean } | null>(null);
@@ -190,7 +190,7 @@ export function SupportChat() {
               <p
                 key={item.id}
                 className={cn(
-                  "max-w-[90%] rounded-md px-3 py-2 text-base leading-6 sm:text-sm",
+                  "max-w-[90%] whitespace-pre-wrap rounded-md px-3 py-2 text-base leading-6 sm:text-sm",
                   item.role === "user" ? "ml-auto bg-accent text-white" : "bg-surface-2 text-ink",
                 )}
               >
@@ -231,7 +231,7 @@ export function SupportChat() {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               maxLength={500}
-              placeholder="Ask about this app"
+              placeholder="Ask about an error or this app"
               aria-label="Support message"
               className="h-11 min-w-0 flex-1 rounded-md border border-line bg-bg px-3 text-base"
             />
