@@ -56,32 +56,34 @@ export default async function CalendarPage({
         title="Calendar"
         description="Drag a card to another day, or use the date field on a phone."
       />
-      <Card className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <form className="flex flex-wrap items-end gap-2">
-          <input type="hidden" name="view" value={view} />
-          <input type="hidden" name="date" value={format(anchor, "yyyy-MM-dd")} />
-          <label className="grid gap-1 text-sm">
-            <span className="font-medium">Platform</span>
-            <SelectInput name="platform" defaultValue={platform} aria-label="Platform">
-              <option value="">All platforms</option>
-              {platforms.map((item) => <option key={item} value={item}>{platformLabels[item]}</option>)}
-            </SelectInput>
-          </label>
-          <label className="grid gap-1 text-sm">
-            <span className="font-medium">Status</span>
-            <SelectInput name="status" defaultValue={status} aria-label="Status">
-              <option value="">All statuses</option>
-              {statuses.map((item) => <option key={item} value={item}>{statusLabels[item]}</option>)}
-            </SelectInput>
-          </label>
-          <SubmitButton pendingLabel="Filtering…">Filter</SubmitButton>
-        </form>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={query(format(anchor, "yyyy-MM-dd"), "month")} className={cn("rounded-full px-3 py-1.5 text-sm", view === "month" ? "choice-selected" : "border border-line bg-surface font-medium text-ink shadow-[var(--shadow)]")}>Month</Link>
-          <Link href={query(format(anchor, "yyyy-MM-dd"), "week")} className={cn("rounded-full px-3 py-1.5 text-sm", view === "week" ? "choice-selected" : "border border-line bg-surface font-medium text-ink shadow-[var(--shadow)]")}>Week</Link>
-          <Link href={query(previous)} className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm">Previous</Link>
-          <Link href={query(today)} className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm">Today</Link>
-          <Link href={query(next)} className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm">Next</Link>
+      <Card className="mb-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <form className="flex flex-wrap items-end gap-2">
+            <input type="hidden" name="view" value={view} />
+            <input type="hidden" name="date" value={format(anchor, "yyyy-MM-dd")} />
+            <label className="grid min-w-[10rem] flex-1 gap-1 text-sm sm:max-w-52">
+              <span className="font-medium">Platform</span>
+              <SelectInput name="platform" defaultValue={platform} aria-label="Platform">
+                <option value="">All platforms</option>
+                {platforms.map((item) => <option key={item} value={item}>{platformLabels[item]}</option>)}
+              </SelectInput>
+            </label>
+            <label className="grid min-w-[10rem] flex-1 gap-1 text-sm sm:max-w-52">
+              <span className="font-medium">Status</span>
+              <SelectInput name="status" defaultValue={status} aria-label="Status">
+                <option value="">All statuses</option>
+                {statuses.map((item) => <option key={item} value={item}>{statusLabels[item]}</option>)}
+              </SelectInput>
+            </label>
+            <SubmitButton pendingLabel="Filtering…">Filter</SubmitButton>
+          </form>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={query(format(anchor, "yyyy-MM-dd"), "month")} className={cn("inline-flex h-11 items-center rounded-md px-3 text-sm", view === "month" ? "choice-selected" : "border border-line bg-surface font-medium text-ink")}>Month</Link>
+            <Link href={query(format(anchor, "yyyy-MM-dd"), "week")} className={cn("inline-flex h-11 items-center rounded-md px-3 text-sm", view === "week" ? "choice-selected" : "border border-line bg-surface font-medium text-ink")}>Week</Link>
+            <Link href={query(previous)} className="inline-flex h-11 items-center rounded-md border border-line bg-surface px-3 text-sm font-medium">Previous</Link>
+            <Link href={query(today)} className="inline-flex h-11 items-center rounded-md border border-line bg-surface px-3 text-sm font-medium">Today</Link>
+            <Link href={query(next)} className="inline-flex h-11 items-center rounded-md border border-line bg-surface px-3 text-sm font-medium">Next</Link>
+          </div>
         </div>
       </Card>
       <p className="mb-4 text-lg font-semibold tracking-tight">{format(anchor, view === "week" ? "'Week of' d MMM yyyy" : "MMMM yyyy")}</p>

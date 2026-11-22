@@ -297,6 +297,34 @@ dialog::backdrop {
   animation: veil-in 180ms ease both;
 }
 
+.calendar-date {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.calendar-date::-webkit-datetime-edit,
+.calendar-date::-webkit-datetime-edit-fields-wrapper {
+  min-width: 0;
+  padding: 0;
+}
+
+.calendar-date::-webkit-datetime-edit-text,
+.calendar-date::-webkit-datetime-edit-month-field,
+.calendar-date::-webkit-datetime-edit-day-field,
+.calendar-date::-webkit-datetime-edit-year-field {
+  padding: 0 0.05rem;
+}
+
+.calendar-date::-webkit-calendar-picker-indicator {
+  margin: 0;
+  padding: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+  cursor: pointer;
+}
+
 .media-row {
   display: flex;
   gap: 0.75rem;
