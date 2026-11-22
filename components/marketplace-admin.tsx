@@ -31,16 +31,33 @@ export function AdminShopNav({ current }: { current: "manage" | "list" }) {
 export function MarketplaceProductManager({
   listings,
   pending,
+  editId = null,
 }: {
   listings: MarketplaceListing[];
   pending: MarketplacePurchase[];
+  editId?: string | null;
 }) {
   const router = useRouter();
   const titles = new Map(listings.map((item) => [item.id, item.title]));
+  const editing = editId ? listings.find((item) => item.id === editId) ?? null : null;
+
+  if (editing) {
+    return (
+      <div className="grid gap-6">
+        <AdminShopNav current="manage" />
+        <MarketplaceListingForm listing={editing} layout="edit" />
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-6">
       <AdminShopNav current="manage" />
+      {editId ? (
+        <Card>
+          <p className="text-sm text-muted">That product is not in this list. It may have been deleted.</p>
+        </Card>
+      ) : null}
       {pending.length ? (
         <Card className="grid gap-3">
           <h2 className="font-semibold">Rupee payments to confirm</h2>
@@ -153,7 +170,7 @@ function AdminProductRow({ listing, onDeleted }: { listing: MarketplaceListing; 
           <span className="grid min-h-11 place-items-center border-r border-line text-sm text-muted">No file</span>
         )}
         <Link
-          href={`/admin/marketplace/${listing.id}/edit`}
+          href={`/admin/marketplace?edit=${listing.id}`}
           className="grid min-h-11 place-items-center border-r border-line text-sm font-semibold"
         >
           Edit
@@ -179,8 +196,15 @@ function AdminProductRow({ listing, onDeleted }: { listing: MarketplaceListing; 
   );
 }
 
-export function MarketplaceListingForm({ listing }: { listing?: MarketplaceListing | null }) {
+export function MarketplaceListingForm({
+  listing,
+  layout = listing ? "edit" : "create",
+}: {
+  listing?: MarketplaceListing | null;
+  layout?: "create" | "edit";
+}) {
   const router = useRouter();
+  const editing = layout === "edit";
   const [pending, setPending] = useState(false);
   const [kind, setKind] = useState(listing?.kind ?? "skill");
   const [priceText, setPriceText] = useState(listing ? String(listing.price_paise / 100) : "0");
@@ -189,13 +213,20 @@ export function MarketplaceListingForm({ listing }: { listing?: MarketplaceListi
 
   return (
     <div className="grid gap-6">
-      <AdminShopNav current="list" />
+      {editing ? null : <AdminShopNav current="list" />}
       <Card className="mx-auto w-full max-w-xl">
-        <h2 className="font-semibold">{listing ? "Edit listing" : "List a product"}</h2>
+        <h2 className="font-semibold">{editing ? `Edit “${listing?.title ?? "product"}”` : "List a product"}</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
-          Upload a .md skill or a .zip digital product and set the rupee price only. Coin cost is an in-app shop price (100
-          coins per ₹1 on the tag). Coins cannot be cashed out or transferred.
+          {editing
+            ? "You are updating this product. Saving does not create a new listing. Leave the file empty to keep the current upload."
+            : "Upload a .md skill or a .zip digital product and set the rupee price only. Coin cost is an in-app shop price (100 coins per ₹1 on the tag). Coins cannot be cashed out or transferred."}
         </p>
+        {editing && listing ? (
+          <p className="mt-3 text-sm text-muted">
+            {listing.listed ? "Listed" : "Draft"} · {listingKindLabel(listing.kind)} · {formatSkillPrice(listing.price_paise)}
+            {listing.file_name ? ` · Current file: ${listing.file_name}` : ""}
+          </p>
+        ) : null}
         <form
           className="mt-5 grid gap-4"
           onSubmit={async (event) => {
@@ -260,7 +291,11 @@ export function MarketplaceListingForm({ listing }: { listing?: MarketplaceListi
           </p>
           <Field
             label="Skill file"
-            hint={listing ? "Leave empty to keep the current file. Accepts .md or .zip." : "Required. .md for one skill, .zip for a bundle."}
+            hint={
+              editing
+                ? "Optional. Leave empty to keep the current file. Accepts .md or .zip."
+                : "Required. .md for one skill, .zip for a bundle."
+            }
           >
             <input
               name="file"
@@ -279,14 +314,15 @@ export function MarketplaceListingForm({ listing }: { listing?: MarketplaceListi
               href="/admin/marketplace"
               className="inline-flex min-h-11 items-center justify-center rounded-md border border-line bg-surface px-3 text-sm font-semibold"
             >
-              Back to manage
+              {editing ? "Cancel" : "Back to manage"}
             </Link>
             <Button type="submit" loading={pending} className="w-full">
-              {pending ? "Saving…" : listing ? "Update listing" : "Publish listing"}
+              {pending ? "Saving…" : editing ? "Save changes" : "Publish listing"}
             </Button>
           </div>
         </form>
       </Card>
+      {editing ? null : (
       <div className="mx-auto grid w-full max-w-xl gap-3">
         <ComingSoonNotice
           title="Image samples"
@@ -297,6 +333,7 @@ export function MarketplaceListingForm({ listing }: { listing?: MarketplaceListi
           body="Only this admin desk can list skills today. A later version will let other people submit their own .md files."
         />
       </div>
+      )}
     </div>
   );
 }
