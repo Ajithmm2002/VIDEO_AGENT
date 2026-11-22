@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { REVIEW_MAX_CHARS, REVIEW_MIN_CHARS, REVIEW_RATING_MAX, REVIEW_RATING_MIN } from "@/lib/shop-reviews";
 import { affiliateProductTypes, languages, marketplaceKinds, platforms, statuses, videoDurations, type ContentInput, type VideoDuration } from "@/lib/types";
 import { uniqueLimited } from "@/lib/utils";
 
@@ -297,6 +298,20 @@ export const marketplaceListingSchema = z.object({
   kind: z.enum(marketplaceKinds),
   price_paise: z.number().int().min(0, "Price cannot be negative").max(100_000_000, "That price is too high"),
   listed: z.boolean(),
+});
+
+export const marketplaceReviewSchema = z.object({
+  listing_id: z.uuid("That product could not be found."),
+  rating: z
+    .number()
+    .int()
+    .min(REVIEW_RATING_MIN, "Choose a star rating.")
+    .max(REVIEW_RATING_MAX, "Rating is 1 to 5 stars."),
+  body: z
+    .string()
+    .trim()
+    .min(REVIEW_MIN_CHARS, `Write at least ${REVIEW_MIN_CHARS} characters.`)
+    .max(REVIEW_MAX_CHARS, `Keep the review to ${REVIEW_MAX_CHARS} characters.`),
 });
 
 export function parseOfferings(value: string) {

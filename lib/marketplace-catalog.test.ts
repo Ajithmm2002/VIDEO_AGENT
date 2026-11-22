@@ -4,6 +4,7 @@ import {
   filterMarketplaceCatalog,
   listingKindLabel,
   pickMarketplaceListing,
+  sortMarketplaceCatalog,
 } from "@/lib/marketplace-catalog";
 import type { MarketplaceListing } from "@/lib/types";
 
@@ -57,6 +58,21 @@ describe("marketplace catalog", () => {
     expect(pickMarketplaceListing(catalog, "bundle-1")?.id).toBe("bundle-1");
     expect(pickMarketplaceListing(catalog, "missing")?.id).toBe("skill-1");
     expect(pickMarketplaceListing([], "skill-1")).toBeNull();
+  });
+
+  it("sorts by price and rating", () => {
+    const priced = [
+      listing({ id: "cheap", title: "Cheap", kind: "skill", price_paise: 100, created_at: "2026-11-20" }),
+      listing({ id: "costly", title: "Costly", kind: "skill", price_paise: 5000, created_at: "2026-11-21" }),
+    ];
+    expect(sortMarketplaceCatalog(priced, "price_asc").map((item) => item.id)).toEqual(["cheap", "costly"]);
+    expect(sortMarketplaceCatalog(priced, "price_desc").map((item) => item.id)).toEqual(["costly", "cheap"]);
+    expect(
+      sortMarketplaceCatalog(priced, "rating", [
+        { listing_id: "cheap", average: 3, count: 2 },
+        { listing_id: "costly", average: 5, count: 1 },
+      ]).map((item) => item.id),
+    ).toEqual(["costly", "cheap"]);
   });
 
   it("moves owned products onto a purchases list", () => {

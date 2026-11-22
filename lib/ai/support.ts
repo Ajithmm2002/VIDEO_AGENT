@@ -27,8 +27,8 @@ export const HELP_ARTICLES = [
   },
   {
     title: "Marketplace and Purchases",
-    keywords: ["market", "shop", "purchase", "download", "skill", "buy", "checkout"],
-    body: "Marketplace is for browsing and buying. After a purchase, open Purchases in the Account menu to download the file. Skills are .md or .zip listings. Pay with coins, or use Buy now when rupee checkout is available.",
+    keywords: ["market", "shop", "purchase", "download", "skill", "buy", "checkout", "review", "rating", "star"],
+    body: "Marketplace is a product grid. Open a card for price, what’s included, ratings, and short reviews. After you buy, you can rate 1–5 stars and write up to 280 characters. Downloads live in Purchases. Pay with coins, or use Buy now when rupee checkout is available.",
   },
   {
     title: "Studio coins",

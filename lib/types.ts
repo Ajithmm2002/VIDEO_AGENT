@@ -187,6 +187,17 @@ export type MarketplacePurchase = {
   created_at: string;
 };
 
+export type MarketplaceReview = {
+  id: string;
+  listing_id: string;
+  reviewer_id: string;
+  rating: number;
+  body: string;
+  author_label: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type ProductPreview = {
   url: string;
   title: string;

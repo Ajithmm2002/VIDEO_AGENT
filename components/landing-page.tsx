@@ -8,7 +8,7 @@ const features = [
   { icon: PenLine, title: "Writing drafts", body: "Titles, captions, hashtags, and a script outline in Malayalam or English." },
   { icon: CalendarDays, title: "Quiet calendar", body: "Drop ideas onto a day. Each account stays private." },
   { icon: BadgePercent, title: "Affiliate ads", body: "Load a product link, then generate a studio image or video prompt." },
-  { icon: Store, title: "Marketplace", body: "Buy and sell digital products. Downloads live in Purchases, not on the listing floor." },
+  { icon: Store, title: "Marketplace", body: "Shop the product grid, read ratings and short reviews, then download from Purchases." },
   { icon: Gamepad2, title: "Fun mode", body: "Earn studio coins by playing, or buy coin packs, then spend them in the marketplace. Coins are not cash." },
 ];
 

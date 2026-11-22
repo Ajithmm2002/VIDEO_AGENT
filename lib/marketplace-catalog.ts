@@ -1,7 +1,11 @@
+import type { ReviewRatingSummary } from "@/lib/shop-reviews";
 import type { MarketplaceKind, MarketplaceListing, MarketplacePurchase } from "@/lib/types";
 
 export const marketplaceCatalogFilters = ["all", "skill", "bundle", "owned"] as const;
 export type MarketplaceCatalogFilter = (typeof marketplaceCatalogFilters)[number];
+
+export const marketplaceCatalogSorts = ["newest", "price_asc", "price_desc", "rating"] as const;
+export type MarketplaceCatalogSort = (typeof marketplaceCatalogSorts)[number];
 
 export function listingKindLabel(kind: MarketplaceKind) {
   return kind === "bundle" ? "Digital product" : "Skill";
@@ -36,6 +40,29 @@ export function filterMarketplaceCatalog(
     if (!query) return true;
     const haystack = listingSearchText(listing);
     return query.split(" ").filter(Boolean).every((token) => haystack.includes(token));
+  });
+}
+
+export function sortMarketplaceCatalog(
+  listings: MarketplaceListing[],
+  sort: MarketplaceCatalogSort = "newest",
+  ratings: Iterable<ReviewRatingSummary> = [],
+) {
+  const byId = new Map(Array.from(ratings, (item) => [item.listing_id, item]));
+  return [...listings].sort((left, right) => {
+    if (sort === "price_asc") return left.price_paise - right.price_paise;
+    if (sort === "price_desc") return right.price_paise - left.price_paise;
+    if (sort === "rating") {
+      const leftRating = byId.get(left.id);
+      const rightRating = byId.get(right.id);
+      const leftAverage = leftRating?.average ?? 0;
+      const rightAverage = rightRating?.average ?? 0;
+      if (rightAverage !== leftAverage) return rightAverage - leftAverage;
+      const leftCount = leftRating?.count ?? 0;
+      const rightCount = rightRating?.count ?? 0;
+      if (rightCount !== leftCount) return rightCount - leftCount;
+    }
+    return right.created_at.localeCompare(left.created_at);
   });
 }
 

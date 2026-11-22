@@ -30,6 +30,11 @@ describe("support replies", () => {
     expect(reply.toLowerCase()).toMatch(/example/);
   });
 
+  it("explains marketplace reviews", () => {
+    const reply = localSupportReply("how do I leave a rating and review?");
+    expect(reply.toLowerCase()).toMatch(/280|star/);
+  });
+
   it("guides generate failures", () => {
     const reply = localSupportReply("Generate failed with a Gemini error");
     expect(reply.toLowerCase()).toMatch(/generate|busy|sign in/);

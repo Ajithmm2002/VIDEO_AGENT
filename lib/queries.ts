@@ -1,9 +1,10 @@
 import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { asCategory, asCollection, asContent, asListing, asPrompt, asPurchase } from "@/lib/records";
+import { asCategory, asCollection, asContent, asListing, asPrompt, asPurchase, asReview } from "@/lib/records";
 import { attachListingsToPurchases } from "@/lib/marketplace-catalog";
 import { clampWalletCoins, WELCOME_BONUS_EMAIL, type GameWallet } from "@/lib/game-coins";
-import type { Content, ContentOption, MarketplaceListing, MarketplacePurchase, Status } from "@/lib/types";
+import { summarizeReviews, type ReviewRatingSummary } from "@/lib/shop-reviews";
+import type { Content, ContentOption, MarketplaceListing, MarketplacePurchase, MarketplaceReview, Status } from "@/lib/types";
 import { statuses } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -388,6 +389,45 @@ export async function listPendingMoneyPurchases() {
 export const listMyPurchaseItems = cache(async () => {
   const [purchases, listings] = await Promise.all([listMyPurchases(), listMarketplaceListings()]);
   return attachListingsToPurchases(purchases, listings);
+});
+
+export const listMarketplaceReviewRatings = cache(async (): Promise<ReviewRatingSummary[]> => {
+  const supabase = await client();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("marketplace_reviews")
+    .select("listing_id, rating")
+    .limit(4000);
+  if (error) {
+    console.error("listMarketplaceReviewRatings", error);
+    return [];
+  }
+  return summarizeReviews(
+    (data ?? []).flatMap((row) => {
+      const listing_id = typeof row.listing_id === "string" ? row.listing_id : "";
+      const rating = typeof row.rating === "number" ? row.rating : 0;
+      return listing_id ? [{ listing_id, rating }] : [];
+    }),
+  );
+});
+
+export const listMarketplaceReviews = cache(async (listingId: string) => {
+  const supabase = await client();
+  if (!supabase) return [] as MarketplaceReview[];
+  const { data, error } = await supabase
+    .from("marketplace_reviews")
+    .select("id, listing_id, reviewer_id, rating, body, author_label, created_at, updated_at")
+    .eq("listing_id", listingId)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) {
+    console.error("listMarketplaceReviews", error);
+    return [];
+  }
+  return (data ?? []).flatMap((row) => {
+    const review = asReview(row);
+    return review ? [review] : [];
+  });
 });
 
 export const listPrompts = cache(async () => {

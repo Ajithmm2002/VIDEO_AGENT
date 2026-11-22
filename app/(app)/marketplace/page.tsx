@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { MarketplaceBrowser } from "@/components/marketplace-browser";
+import { redirect } from "next/navigation";
+import { ShopCatalog } from "@/components/shop-catalog";
 import { PageHeader } from "@/components/ui";
 import { isMarketplaceAdmin, isSupabaseConfigured } from "@/lib/env";
-import { getGameCoins, listMarketplaceListings, listMyPurchases } from "@/lib/queries";
+import { getGameCoins, listMarketplaceListings, listMarketplaceReviewRatings, listMyPurchases } from "@/lib/queries";
 import { requestUserEmail } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Marketplace" };
@@ -17,26 +18,30 @@ export default async function MarketplacePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const [listings, purchases, email, coins] = await Promise.all([
+  const selected = first(params.item)?.trim();
+  if (selected && /^[0-9a-f-]{36}$/i.test(selected)) redirect(`/marketplace/${selected}`);
+
+  const [listings, purchases, email, coins, ratings] = await Promise.all([
     listMarketplaceListings(),
     listMyPurchases(),
     isSupabaseConfigured() ? requestUserEmail() : Promise.resolve(null),
     getGameCoins(),
+    listMarketplaceReviewRatings(),
   ]);
 
   return (
     <div>
       <PageHeader
-        eyebrow="Marketplace"
+        eyebrow="Shop"
         title="Marketplace"
-        description="Buy and sell digital products here. Browse listings, pay with coins or rupees, then open Purchases to download. Coin packs live in Fun mode."
+        description="Browse products like a store: compare price, ratings, and short reviews, then buy. Downloads stay in Purchases."
       />
-      <MarketplaceBrowser
+      <ShopCatalog
         listings={listings}
         purchases={purchases}
         isAdmin={isMarketplaceAdmin(email)}
         coins={coins}
-        selectedId={first(params.item) ?? null}
+        ratings={ratings}
       />
     </div>
   );

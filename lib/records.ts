@@ -6,11 +6,13 @@ import type {
   Language,
   MarketplaceListing,
   MarketplacePurchase,
+  MarketplaceReview,
   Platform,
   ReferenceLink,
   Status,
   ThumbnailPromptRecord,
 } from "@/lib/types";
+import { REVIEW_MAX_CHARS, REVIEW_MIN_CHARS, REVIEW_RATING_MAX, REVIEW_RATING_MIN } from "@/lib/shop-reviews";
 import { languages, marketplaceKinds, platforms, statuses } from "@/lib/types";
 
 function record(value: unknown) {
@@ -148,6 +150,26 @@ export function asPurchase(value: unknown): MarketplacePurchase | null {
     status,
     amount_paise: typeof row.amount_paise === "number" && Number.isFinite(row.amount_paise) ? row.amount_paise : 0,
     created_at: text(row.created_at) ?? "",
+  };
+}
+
+export function asReview(value: unknown): MarketplaceReview | null {
+  const row = record(value);
+  if (!row || typeof row.id !== "string" || typeof row.listing_id !== "string" || typeof row.reviewer_id !== "string") {
+    return null;
+  }
+  const rating = typeof row.rating === "number" && Number.isInteger(row.rating) ? row.rating : 0;
+  const body = text(row.body)?.trim() ?? "";
+  if (rating < REVIEW_RATING_MIN || rating > REVIEW_RATING_MAX || body.length < REVIEW_MIN_CHARS) return null;
+  return {
+    id: row.id,
+    listing_id: row.listing_id,
+    reviewer_id: row.reviewer_id,
+    rating,
+    body: body.slice(0, REVIEW_MAX_CHARS),
+    author_label: (text(row.author_label)?.trim() || "Customer").slice(0, 40),
+    created_at: text(row.created_at) ?? "",
+    updated_at: text(row.updated_at) ?? "",
   };
 }
 
