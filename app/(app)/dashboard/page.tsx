@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BadgePercent, CalendarDays, Camera, Coins, ImageIcon, Lightbulb, PenLine, Play, Plus } from "lucide-react";
+import { ArrowRight, BadgePercent, Camera, Coins, ImageIcon, Lightbulb, PenLine, Play, Plus } from "lucide-react";
 import { StatusBadge } from "@/components/badges";
 import { Card, EmptyState, PageHeader, buttonClass } from "@/components/ui";
 import { accountLabel } from "@/lib/account-label";
@@ -90,6 +90,28 @@ export default async function DashboardPage() {
               </div>
             ))}
           </dl>
+          <div className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-2">
+            {[
+              { label: "YouTube", value: data.youtube, color: "var(--youtube)", icon: Play },
+              { label: "Instagram", value: data.instagram, color: "var(--instagram)", icon: Camera },
+            ].map((row) => {
+              const Icon = row.icon;
+              return (
+                <div key={row.label} className="min-w-0">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="flex items-center gap-2 text-muted">
+                      <Icon className="h-4 w-4 shrink-0" style={{ color: row.color }} aria-hidden />
+                      {row.label}
+                    </span>
+                    <span className="font-semibold tabular-nums">{row.value}</span>
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                    <div className="h-full rounded-full" style={{ width: `${(row.value / platformMax) * 100}%`, background: row.color }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </Card>
 
         <Card>
@@ -176,67 +198,48 @@ export default async function DashboardPage() {
           </div>
         </Card>
 
-        <div className="grid gap-4">
-          <Card>
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-semibold">Upcoming</h2>
-              <Link href="/calendar" className="text-sm font-semibold text-accent hover:underline">
-                Calendar
-              </Link>
-            </div>
-            {data.upcoming.length ? (
-              <ul className="mt-3 grid gap-1">
-                {data.upcoming.map((item) => (
+        <Card>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-semibold">Upcoming</h2>
+            <Link href="/calendar" className="text-sm font-semibold text-accent hover:underline">
+              Calendar
+            </Link>
+          </div>
+          {data.upcoming.length ? (
+            <ul className="mt-3 divide-y divide-line">
+              {data.upcoming.map((item) => {
+                const date = item.planned_date ? new Date(`${item.planned_date}T00:00:00`) : null;
+                return (
                   <li key={item.id}>
-                    <Link href={`/content/${item.id}`} className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-surface-2">
-                      <span className="grid w-11 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 py-1 text-center">
-                        <CalendarDays className="h-3.5 w-3.5 text-muted" aria-hidden />
+                    <Link href={`/content/${item.id}`} className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-3 hover:bg-surface-2">
+                      <span
+                        className="grid w-11 shrink-0 rounded-lg border border-line bg-surface-2 py-1 text-center leading-none"
+                        aria-hidden
+                      >
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-accent">
+                          {date ? date.toLocaleDateString("en-IN", { month: "short" }) : "—"}
+                        </span>
+                        <span className="mt-0.5 text-base font-semibold tabular-nums">{date ? date.getDate() : ""}</span>
                       </span>
-                      <span className="min-w-0">
+                      <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium">{item.title}</span>
                         <span className="text-xs text-muted">{formatDate(item.planned_date)}</span>
                       </span>
                     </Link>
                   </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm leading-6 text-muted">
-                Nothing scheduled. Set a planned date on a content item, or drag it onto the{" "}
-                <Link href="/calendar" className="font-medium text-accent hover:underline">
-                  calendar
-                </Link>
-                .
-              </p>
-            )}
-          </Card>
-
-          <Card>
-            <h2 className="font-semibold">By platform</h2>
-            <div className="mt-4 grid gap-3">
-              {[
-                { label: "YouTube", value: data.youtube, color: "var(--youtube)", icon: Play },
-                { label: "Instagram", value: data.instagram, color: "var(--instagram)", icon: Camera },
-              ].map((row) => {
-                const Icon = row.icon;
-                return (
-                  <div key={row.label}>
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <span className="flex items-center gap-2">
-                        <Icon className="h-4 w-4" style={{ color: row.color }} aria-hidden />
-                        {row.label}
-                      </span>
-                      <span className="font-semibold tabular-nums">{row.value}</span>
-                    </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
-                      <div className="h-full rounded-full" style={{ width: `${(row.value / platformMax) * 100}%`, background: row.color }} />
-                    </div>
-                  </div>
                 );
               })}
-            </div>
-          </Card>
-        </div>
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm leading-6 text-muted">
+              Nothing scheduled. Set a planned date on a content item, or drag it onto the{" "}
+              <Link href="/calendar" className="font-medium text-accent hover:underline">
+                calendar
+              </Link>
+              .
+            </p>
+          )}
+        </Card>
       </div>
     </div>
   );
