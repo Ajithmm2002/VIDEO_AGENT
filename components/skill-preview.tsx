@@ -15,7 +15,7 @@ export function SkillPreview({
   const FileIcon = listing.file_ext === "zip" ? FileArchive : FileText;
   const Title = heading;
   return (
-    <article className="overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--shadow)]">
+    <article className="overflow-hidden rounded-xl border border-line bg-surface shadow-[var(--shadow)]">
       <div className="grid h-24 place-items-center bg-surface-2/80">
         <FileIcon className="h-7 w-7 text-muted" />
       </div>

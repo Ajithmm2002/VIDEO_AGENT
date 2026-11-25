@@ -71,7 +71,7 @@ export function ConfirmButton({
             <div className="animate-veil-in fixed inset-0 z-[100] grid place-items-center p-4">
               <button
                 type="button"
-                className="absolute inset-0 bg-[#12040c]/62 backdrop-blur-md"
+                className="absolute inset-0 bg-scrim"
                 aria-label="Close dialog"
                 onClick={close}
               />
@@ -82,9 +82,9 @@ export function ConfirmButton({
                 aria-labelledby={titleId}
                 aria-describedby={messageId}
                 tabIndex={-1}
-                className="animate-pop-in relative z-10 w-[min(26rem,100%)] rounded-[1.75rem] border border-line bg-surface p-6 shadow-[var(--shadow)] outline-none"
+                className="animate-pop-in relative z-10 w-[min(26rem,100%)] rounded-2xl border border-line bg-surface p-6 shadow-[var(--shadow)] outline-none"
               >
-                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-danger/12 text-danger shadow-[var(--shadow-inset)]">
+                <span className="grid h-12 w-12 place-items-center rounded-xl bg-danger/12 text-danger shadow-[var(--shadow-inset)]">
                   <AlertTriangle className="h-5 w-5" />
                 </span>
                 <h2 id={titleId} className="mt-4 text-lg font-semibold tracking-tight">

@@ -17,10 +17,10 @@ const statMeta = [
   { label: "Planned", key: "total", icon: Clapperboard, tint: "var(--accent)" },
   { label: "Drafts", key: "drafts", icon: PenLine, tint: "var(--accent-2)" },
   { label: "Ready", key: "ready", icon: Sparkles, tint: "var(--ok)" },
-  { label: "Scheduled", key: "scheduled", icon: CalendarDays, tint: "var(--ig-purple)" },
+  { label: "Scheduled", key: "scheduled", icon: CalendarDays, tint: "var(--info)" },
   { label: "Published", key: "published", icon: CheckCircle2, tint: "var(--ok)" },
-  { label: "YouTube", key: "youtube", icon: Play, tint: "#ff3040" },
-  { label: "Instagram", key: "instagram", icon: Camera, tint: "var(--ig-pink)" },
+  { label: "YouTube", key: "youtube", icon: Play, tint: "var(--youtube)" },
+  { label: "Instagram", key: "instagram", icon: Camera, tint: "var(--instagram)" },
 ] as const;
 
 export default async function DashboardPage() {
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
         action={
           <Link
             href="/content/new"
-            className="ig-gradient relative z-10 inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold text-accent-ink"
+            className="bg-accent relative z-10 inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold text-accent-ink"
           >
             New content
           </Link>
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm text-muted">{item.label}</p>
                 <span
-                  className="grid h-9 w-9 place-items-center rounded-2xl"
+                  className="grid h-9 w-9 place-items-center rounded-xl"
                   style={{ background: `color-mix(in srgb, ${item.tint} 14%, transparent)`, color: item.tint }}
                 >
                   <Icon className="h-4 w-4" />
@@ -92,19 +92,19 @@ export default async function DashboardPage() {
               <div className="flex flex-wrap justify-center gap-2">
                 <Link
                   href="/planner"
-                  className="ig-gradient inline-flex items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
+                  className="bg-accent inline-flex items-center rounded-xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
                 >
                   Plan a week of ideas
                 </Link>
                 <Link
                   href="/affiliate"
-                  className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
+                  className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
                 >
                   Affiliate product ad
                 </Link>
                 <Link
                   href="/content/new"
-                  className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
+                  className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
                 >
                   Create one item
                 </Link>
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
                 <Link
                   key={item.id}
                   href={`/content/${item.id}`}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-line/80 bg-surface-2/40 px-3 py-3 hover:border-accent/40 hover:bg-surface-2"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-line/80 bg-surface-2/40 px-3 py-3 hover:border-accent/40 hover:bg-surface-2"
                 >
                   <span>
                     <span className="block font-medium">{item.title}</span>
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
                 <Link
                   key={item.id}
                   href={`/content/${item.id}`}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-line/80 bg-surface-2/40 px-3 py-3 hover:border-accent/40 hover:bg-surface-2"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-line/80 bg-surface-2/40 px-3 py-3 hover:border-accent/40 hover:bg-surface-2"
                 >
                   <span>
                     <span className="block font-medium">{item.title}</span>

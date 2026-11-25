@@ -42,7 +42,7 @@ export function SettingsManager({
         </p>
         <Link
           href="/profile"
-          className="ig-gradient inline-flex min-h-11 w-fit items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
+          className="bg-accent inline-flex min-h-11 w-fit items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
         >
           Open profile
         </Link>

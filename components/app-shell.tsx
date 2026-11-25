@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, ViewTransition } from "react";
 import {
   CalendarDays,
   Clapperboard,
@@ -33,6 +33,8 @@ import { useGenerationJobs } from "@/lib/background-generate";
 import { headerContext, usesContentSearch } from "@/lib/app-shell-nav";
 import { formatCoinBalance, formatCoins } from "@/lib/game-coins";
 import { cn } from "@/lib/utils";
+
+const PAGE_NAV = ["page-nav"];
 
 const groups = [
   {
@@ -115,7 +117,7 @@ export function AppShell({
                 <Link
                   key={link.href}
                   href={link.href}
-                  prefetch
+                  transitionTypes={PAGE_NAV}
                   onClick={() => setOpen(false)}
                   className={cn(
                     "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-base sm:text-sm",
@@ -123,7 +125,7 @@ export function AppShell({
                   )}
                   aria-current={active ? "page" : undefined}
                 >
-                  <span className={cn("grid h-8 w-8 place-items-center rounded-md", active ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
+                  <span className={cn("grid h-8 w-8 place-items-center rounded-md", active ? "bg-accent text-accent-ink" : "bg-surface-2")}>
                     <Icon className="h-4 w-4" />
                   </span>
                   {link.label}
@@ -138,7 +140,7 @@ export function AppShell({
           <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted">Admin</p>
           <Link
             href="/admin/marketplace"
-            prefetch
+            transitionTypes={PAGE_NAV}
             onClick={() => setOpen(false)}
             className={cn(
               "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-base sm:text-sm",
@@ -148,7 +150,7 @@ export function AppShell({
             )}
             aria-current={navActive(pathname, "/admin/marketplace") ? "page" : undefined}
           >
-            <span className={cn("grid h-8 w-8 place-items-center rounded-md", navActive(pathname, "/admin/marketplace") ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
+            <span className={cn("grid h-8 w-8 place-items-center rounded-md", navActive(pathname, "/admin/marketplace") ? "bg-accent text-accent-ink" : "bg-surface-2")}>
               <Shield className="h-4 w-4" />
             </span>
             Sell
@@ -160,7 +162,7 @@ export function AppShell({
         <div className="grid gap-1">
         <Link
           href="/profile"
-          prefetch
+          transitionTypes={PAGE_NAV}
           onClick={() => setOpen(false)}
           className={cn(
             "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-base sm:text-sm",
@@ -170,14 +172,14 @@ export function AppShell({
           )}
           aria-current={pathname.startsWith("/profile") ? "page" : undefined}
         >
-          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/profile") ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
+          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/profile") ? "bg-accent text-accent-ink" : "bg-surface-2")}>
             <User className="h-4 w-4" />
           </span>
           Profile
         </Link>
         <Link
           href="/purchases"
-          prefetch
+          transitionTypes={PAGE_NAV}
           onClick={() => setOpen(false)}
           className={cn(
             "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-base sm:text-sm",
@@ -187,14 +189,14 @@ export function AppShell({
           )}
           aria-current={pathname.startsWith("/purchases") ? "page" : undefined}
         >
-          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/purchases") ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
+          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/purchases") ? "bg-accent text-accent-ink" : "bg-surface-2")}>
             <ShoppingBag className="h-4 w-4" />
           </span>
           Purchases
         </Link>
         <Link
           href="/settings"
-          prefetch
+          transitionTypes={PAGE_NAV}
           onClick={() => setOpen(false)}
           className={cn(
             "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-base sm:text-sm",
@@ -204,7 +206,7 @@ export function AppShell({
           )}
           aria-current={pathname.startsWith("/settings") ? "page" : undefined}
         >
-          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/settings") ? "ig-gradient text-accent-ink" : "bg-surface-2")}>
+          <span className={cn("grid h-8 w-8 place-items-center rounded-md", pathname.startsWith("/settings") ? "bg-accent text-accent-ink" : "bg-surface-2")}>
             <Settings className="h-4 w-4" />
           </span>
           Settings
@@ -251,7 +253,7 @@ export function AppShell({
 
       {open ? (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Studio menu">
-          <button className="absolute inset-0 bg-black/70" aria-label="Close menu" onClick={() => setOpen(false)} />
+          <button className="absolute inset-0 bg-scrim" aria-label="Close menu" onClick={() => setOpen(false)} />
           <div className="relative flex h-full w-[min(20rem,88vw)] flex-col overflow-hidden bg-bg p-4">
             <div className="mb-4 flex shrink-0 items-center justify-between">
               <BrandMark />
@@ -296,7 +298,7 @@ export function AppShell({
             <>
               <Link
                 href={activeJobs[0].href}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/12 text-accent sm:hidden"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent/12 text-accent sm:hidden"
                 aria-label={activeJobs[0].label}
               >
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -331,7 +333,7 @@ export function AppShell({
               <SubmitButton variant="secondary" className="px-2.5 text-xs sm:px-3.5 sm:text-sm" pendingLabel="Signing out…">Sign out</SubmitButton>
             </form>
           ) : (
-            <Link href="/login" className="ig-gradient inline-flex h-11 items-center rounded-md px-3.5 text-sm font-semibold text-accent-ink">
+            <Link href="/login" className="bg-accent inline-flex h-11 items-center rounded-md px-3.5 text-sm font-semibold text-accent-ink">
               Sign in
             </Link>
           )}
@@ -345,7 +347,9 @@ export function AppShell({
               </p>
             </div>
           )}
-          {children}
+          <ViewTransition update={{ "page-nav": "page", default: "none" }} enter={{ "page-nav": "page", default: "none" }} exit="none" default="none">
+            <div>{children}</div>
+          </ViewTransition>
         </main>
       </div>
 
@@ -361,6 +365,7 @@ export function AppShell({
               key={tab.href}
               href={tab.href}
               prefetch
+              transitionTypes={PAGE_NAV}
               className={cn(
                 "grid min-h-12 place-items-center gap-0.5 px-1 py-2 text-xs font-semibold",
                 active ? "text-ink" : "text-muted",

@@ -90,7 +90,7 @@ export function AuthFrame({
           <BrandMark href="/" />
         </div>
         <div className="relative z-10 max-w-lg">
-          <p className="animate-fade-up ig-text text-xs font-semibold uppercase tracking-[0.18em]">Personal workspace</p>
+          <p className="animate-fade-up text-accent text-xs font-semibold uppercase tracking-[0.18em]">Personal workspace</p>
           <h1 className="animate-fade-up mt-4 text-5xl font-semibold tracking-tight text-balance" style={{ animationDelay: "90ms" }}>
             Plan the next video before you record it.
           </h1>
@@ -106,7 +106,7 @@ export function AuthFrame({
                   className="flex gap-3 rounded-md border border-line bg-surface p-4"
                   style={{ animationDelay: `${260 + index * 90}ms` }}
                 >
-                  <span className="ig-gradient grid h-10 w-10 shrink-0 place-items-center rounded-md text-accent-ink">
+                  <span className="bg-accent grid h-10 w-10 shrink-0 place-items-center rounded-md text-accent-ink">
                     <Icon className="h-4 w-4" />
                   </span>
                   <span>

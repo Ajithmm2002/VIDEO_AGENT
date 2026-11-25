@@ -10,7 +10,7 @@ export function AppToaster() {
       theme={resolvedTheme === "dark" ? "dark" : "light"}
       position="top-center"
       toastOptions={{
-        className: "rounded-[1.5rem] border border-line bg-surface text-ink shadow-[var(--shadow)]",
+        className: "rounded-2xl border border-line bg-surface text-ink shadow-[var(--shadow)]",
       }}
     />
   );

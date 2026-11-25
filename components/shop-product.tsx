@@ -36,7 +36,7 @@ export function ShopProduct({
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:items-start">
-        <div className="overflow-hidden rounded-2xl border border-line bg-surface dark:rounded-md">
+        <div className="overflow-hidden rounded-xl border border-line bg-surface">
           <ProductArt listing={listing} className="min-h-64 sm:min-h-80" />
         </div>
         <div className="grid gap-5">

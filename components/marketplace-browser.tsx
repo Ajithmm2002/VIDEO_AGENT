@@ -65,7 +65,7 @@ export function MarketplaceBuy({
         <p className="text-sm leading-6 text-muted">You already own this. Downloads are in Purchases.</p>
         <Link
           href="/purchases"
-          className="ig-gradient inline-flex h-11 items-center justify-center rounded-2xl px-3.5 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
+          className="bg-accent inline-flex h-11 items-center justify-center rounded-xl px-3.5 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
         >
           Open Purchases
         </Link>
@@ -88,7 +88,7 @@ export function MarketplaceBuy({
     <div className="grid gap-3 border-t border-line pt-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Buy this product</p>
       <div className="grid gap-2 sm:grid-cols-2">
-        <div className="grid gap-2 rounded-2xl border border-line bg-surface-2/70 p-3 shadow-[var(--shadow-inset)] dark:rounded-md">
+        <div className="grid gap-2 rounded-xl border border-line bg-surface-2/70 p-3 shadow-[var(--shadow-inset)]">
           <p className="text-sm font-semibold">Pay with coins</p>
           <p className="text-xs text-muted">🪙 {formatCoins(cost)}</p>
           <p className="text-xs text-muted">You have 🪙 {formatCoins(coins)}</p>
@@ -131,7 +131,7 @@ export function MarketplaceBuy({
             </>
           )}
         </div>
-        <div className="grid gap-2 rounded-2xl border border-line bg-surface-2/70 p-3 shadow-[var(--shadow-inset)] dark:rounded-md">
+        <div className="grid gap-2 rounded-xl border border-line bg-surface-2/70 p-3 shadow-[var(--shadow-inset)]">
           <p className="text-sm font-semibold">Pay with money</p>
           <p className="text-xs text-muted">{formatSkillPrice(listing.price_paise)}</p>
           <p className="text-xs text-muted">Card, UPI, or net banking</p>

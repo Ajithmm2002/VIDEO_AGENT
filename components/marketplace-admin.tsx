@@ -12,7 +12,7 @@ import { formatCoinBalance, formatCoins, priceInCoins } from "@/lib/game-coins";
 import { listingKindLabel } from "@/lib/marketplace-catalog";
 import { formatSkillPrice } from "@/lib/marketplace-file";
 import { cn } from "@/lib/utils";
-import { rupeesToPaise } from "@/lib/validation";
+import { rupeesToPaise } from "@/lib/money";
 import type { MarketplaceListing, MarketplacePurchase } from "@/lib/types";
 
 export function AdminShopNav({ current }: { current: "manage" | "list" }) {
@@ -92,7 +92,7 @@ export function MarketplaceProductManager({
         </Card>
       ) : null}
 
-      <section className="overflow-hidden rounded-xl border border-line bg-surface dark:rounded-md">
+      <section className="overflow-hidden rounded-xl border border-line bg-surface">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
           <div>
             <h2 className="font-semibold">Current products</h2>
@@ -102,7 +102,7 @@ export function MarketplaceProductManager({
           </div>
           <Link
             href="/admin/marketplace/new"
-            className="ig-gradient inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
+            className="bg-accent inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
           >
             List a product
           </Link>
@@ -125,7 +125,7 @@ export function MarketplaceProductManager({
             <p className="text-sm text-muted">No products yet. Listing a product is a separate page from this list.</p>
             <Link
               href="/admin/marketplace/new"
-              className="ig-gradient mx-auto inline-flex min-h-11 items-center rounded-md px-4 text-sm font-semibold text-accent-ink"
+              className="bg-accent mx-auto inline-flex min-h-11 items-center rounded-md px-4 text-sm font-semibold text-accent-ink"
             >
               List a product
             </Link>
@@ -139,7 +139,7 @@ export function MarketplaceProductManager({
 function AdminProductRow({ listing, onDeleted }: { listing: MarketplaceListing; onDeleted: () => void }) {
   const coins = listing.price_paise > 0 ? formatCoins(priceInCoins(listing.price_paise)) : "Free";
   const actionClass =
-    "min-h-11 w-full min-w-0 rounded-none border-0 shadow-none dark:rounded-none";
+    "min-h-11 w-full min-w-0 rounded-none border-0 shadow-none";
 
   return (
     <article className="grid">

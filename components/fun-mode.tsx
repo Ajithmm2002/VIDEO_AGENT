@@ -36,7 +36,7 @@ export function FunMode({ coins, earned }: { coins: number; earned: number }) {
     <div className="grid gap-4">
       <Card className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="ig-text text-[11px] font-semibold uppercase tracking-[0.18em]">Studio coins</p>
+          <p className="text-accent text-[11px] font-semibold uppercase tracking-[0.18em]">Studio coins</p>
           <p className="mt-1 text-2xl font-semibold">{formatCoinBalance(totalEarned)}</p>
           <p className="mt-1 text-sm font-semibold">earned in total · {formatCoins(balance)} for this shop</p>
           <p className="mt-1 text-sm text-muted">

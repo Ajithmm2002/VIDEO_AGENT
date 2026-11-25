@@ -1,58 +1,84 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens
+ * One neutral scale plus one indigo accent. Semantic colors (ok, warn, danger, info)
+ * are kept separate from the accent so an error never looks like a primary action.
+ * Body text and muted text meet WCAG AA (4.5:1) on every surface in both themes.
+ */
 :root {
   color-scheme: light;
-  --bg: #f5f5f1;
-  --bg-2: #ecece8;
+
+  --bg: #f7f8fa;
+  --bg-2: #eef1f5;
   --surface: #ffffff;
-  --surface-2: #f0f0ec;
-  --ink: #141414;
-  --muted: #4a4a4a;
-  --line: #e5e5e5;
-  --accent: #e50914;
-  --accent-2: #b81d24;
+  --surface-2: #f1f3f6;
+  --ink: #0f172a;
+  --muted: #475569;
+  --line: #e2e8f0;
+
+  --accent: #4f46e5;
+  --accent-2: #4338ca;
   --accent-ink: #ffffff;
-  --warn: #e87c03;
-  --danger: #e50914;
-  --ok: #22c55e;
-  --ig-orange: #e87c03;
-  --ig-pink: #e50914;
-  --ig-purple: #b81d24;
-  --ig-blue: #564d4d;
-  --glow: 229 9 20;
-  --glow-warm: 184 29 36;
-  --glow-cool: 20 20 20;
-  --accent-gradient: linear-gradient(90deg, #e50914 0%, #b81d24 100%);
-  --shadow: 0 8px 24px rgb(0 0 0 / 0.08);
-  --shadow-glow: 0 10px 24px rgb(229 9 20 / 0.28);
-  --shadow-inset: inset 0 0 0 1px rgb(20 20 20 / 0.06);
+  --accent-soft: #eef0ff;
+
+  --ok: #15803d;
+  --warn: #b45309;
+  --danger: #b91c1c;
+  --info: #0369a1;
+
+  --youtube: #ff0033;
+  --instagram: #d62976;
+  --scrim: rgb(15 23 42 / 0.55);
+
+  --glow: 79 70 229;
+  --glow-warm: 14 165 233;
+
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.05), 0 4px 12px rgb(15 23 42 / 0.06);
+  --shadow-lg: 0 10px 30px rgb(15 23 42 / 0.12), 0 2px 6px rgb(15 23 42 / 0.06);
+  --shadow-glow: 0 1px 2px rgb(15 23 42 / 0.08), 0 4px 12px rgb(79 70 229 / 0.22);
+  --shadow-inset: inset 0 1px 1px rgb(15 23 42 / 0.03);
+
+  /* Motion: Material 3 standard easing and three durations. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0, 1);
+  --ease-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
 }
 
 .dark {
   color-scheme: dark;
-  --bg: #000000;
-  --bg-2: #141414;
-  --surface: #181818;
-  --surface-2: #2f2f2f;
-  --ink: #ffffff;
-  --muted: #d4d4d4;
-  --line: #3d3d3d;
-  --accent: #e50914;
-  --accent-2: #b81d24;
-  --accent-ink: #ffffff;
-  --warn: #e87c03;
-  --danger: #e50914;
-  --ok: #46d369;
-  --ig-orange: #e87c03;
-  --ig-pink: #e50914;
-  --ig-purple: #b3b3b3;
-  --ig-blue: #808080;
-  --glow: 229 9 20;
-  --glow-warm: 184 29 36;
-  --glow-cool: 20 20 20;
-  --accent-gradient: linear-gradient(90deg, #e50914 0%, #b81d24 100%);
-  --shadow: 0 8px 24px rgb(0 0 0 / 0.55);
-  --shadow-glow: 0 10px 24px rgb(229 9 20 / 0.35);
+
+  --bg: #0b0d12;
+  --bg-2: #11141b;
+  --surface: #14171f;
+  --surface-2: #1c2029;
+  --ink: #f1f5f9;
+  --muted: #a1a9b8;
+  --line: #2a2f3a;
+
+  --accent: #818cf8;
+  --accent-2: #a5b4fc;
+  --accent-ink: #0b0d12;
+  --accent-soft: #1e1f3a;
+
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --info: #38bdf8;
+
+  --youtube: #ff4e45;
+  --instagram: #f472b6;
+  --scrim: rgb(0 0 0 / 0.7);
+
+  --glow: 129 140 248;
+  --glow-warm: 56 189 248;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-glow: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-inset: none;
 }
 
@@ -67,10 +93,23 @@
   --color-accent: var(--accent);
   --color-accent-2: var(--accent-2);
   --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-danger: var(--danger);
-  --color-ok: var(--ok);
-  --font-sans: var(--font-inter), var(--font-malayalam), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --color-info: var(--info);
+  --color-scrim: var(--scrim);
+  --font-sans: var(--font-inter), var(--font-malayalam), ui-sans-serif, system-ui, sans-serif;
+  --ease-standard: var(--ease-standard);
+  --ease-decelerate: var(--ease-decelerate);
+}
+
+/* One radius scale: md for small parts, xl for controls, 2xl for cards and dialogs. */
+@theme {
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
 }
 
 html {
@@ -84,83 +123,38 @@ html {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-inter), var(--font-malayalam), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-inter), var(--font-malayalam), ui-sans-serif, system-ui, sans-serif;
   font-size: 1rem;
   line-height: 1.5;
   max-width: 100%;
   overflow-x: clip;
+  font-feature-settings: "cv11", "ss01";
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--font-inter-tight), var(--font-inter), var(--font-malayalam), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 700;
-  letter-spacing: -0.03em;
-}
-
-.dark body {
-  background: #000;
-}
-
-.dark .ig-gradient,
-.ig-gradient {
-  background-image: none;
-  background-color: var(--accent);
-  color: var(--accent-ink);
-}
-
-.dark .ig-text,
-.ig-text {
-  background-image: none;
-  color: var(--accent);
-  -webkit-background-clip: unset;
-  background-clip: unset;
-}
-
-.dark .orb {
-  display: none;
-}
-
-.dark .animate-ig-drift,
-.dark .animate-ig-drift-slow,
-.dark .animate-float {
-  animation: none;
-}
-
-.dark .backdrop-blur-xl,
-.dark .backdrop-blur-md,
-.dark .backdrop-blur-sm {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  letter-spacing: -0.02em;
 }
 
 .choice-selected {
-  border: 1px solid transparent;
+  border: 1px solid var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
   font-weight: 600;
-  box-shadow: var(--shadow-glow);
-  text-shadow: none;
 }
 
 .nav-item-active {
-  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
-  box-shadow: var(--shadow), inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent);
-}
-
-.dark .nav-item-active {
-  background: transparent;
-  color: #ffffff;
-  box-shadow: inset 3px 0 0 #e50914;
-  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .selected-row {
-  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
-  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: var(--accent-soft);
 }
 
 input[type="checkbox"],
@@ -168,7 +162,6 @@ input[type="radio"] {
   accent-color: var(--accent);
   width: 1.25rem;
   height: 1.25rem;
-  color: var(--accent);
 }
 
 select option {
@@ -176,14 +169,8 @@ select option {
   color: var(--ink);
 }
 
-select option:checked {
-  background-color: var(--accent);
-  background-image: linear-gradient(0deg, var(--accent) 0%, var(--accent) 100%);
-  color: var(--accent-ink);
-}
-
 ::selection {
-  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
   color: var(--ink);
 }
 
@@ -195,8 +182,15 @@ button {
 }
 
 :focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-offset: 0;
+  border-color: var(--accent);
 }
 
 .skip-link {
@@ -204,7 +198,7 @@ button {
   left: 1rem;
   top: -5rem;
   z-index: 100;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-xl);
   background: var(--accent);
   color: var(--accent-ink);
   padding: 0.75rem 1rem;
@@ -223,90 +217,71 @@ dialog {
 }
 
 dialog::backdrop {
-  background: rgb(0 0 0 / 0.72);
-  backdrop-filter: none;
+  background: var(--scrim);
 }
 
-.dark ::selection {
-  background: color-mix(in srgb, #e50914 42%, transparent);
-  color: #ffffff;
+.billboard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--accent-soft) 0%, transparent 60%),
+    var(--surface);
 }
 
-.dark .skip-link {
-  background: #e50914;
-  color: #ffffff;
+/* Interactive elements share one transition: color and elevation only, never layout. */
+a,
+button,
+input,
+textarea,
+select,
+summary {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-standard);
 }
 
-.orb {
-  display: none;
+button:not(:disabled):active,
+a.inline-flex:active {
+  transform: scale(0.98);
 }
 
-.orb-pink {
-  background: rgb(var(--glow) / 0.32);
-}
-
-.orb-warm {
-  background: rgb(var(--glow-warm) / 0.24);
-}
-
-.orb-cool {
-  background: rgb(var(--glow-cool) / 0.22);
-}
-
+/* Entrance animations */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
-@keyframes float-y {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-@keyframes ig-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(28px, -18px) scale(1.08);
-  }
-}
-
-.animate-fade-up {
-  animation: fade-up 700ms ease both;
-}
-
-@keyframes hero-in {
+@keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(1.25rem);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-.animate-hero-in {
-  animation: hero-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes hero-mark {
   from {
     opacity: 0;
-    letter-spacing: 0.4em;
+    letter-spacing: 0.3em;
   }
   to {
     opacity: 1;
@@ -314,48 +289,39 @@ dialog::backdrop {
   }
 }
 
+.animate-fade-up {
+  animation: fade-up var(--duration-slow) var(--ease-decelerate) both;
+}
+
+.animate-hero-in {
+  animation: fade-up 480ms var(--ease-decelerate) both;
+}
+
 .animate-hero-mark {
-  animation: hero-mark 800ms ease both;
-}
-
-.animate-float {
-  animation: float-y 5.6s ease-in-out infinite;
-}
-
-.animate-ig-drift {
-  animation: ig-drift 12s ease-in-out infinite;
-}
-
-.animate-ig-drift-slow {
-  animation: ig-drift 16s ease-in-out infinite reverse;
-}
-
-@keyframes pop-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes veil-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  animation: hero-mark 480ms var(--ease-decelerate) both;
 }
 
 .animate-pop-in {
-  animation: pop-in 220ms ease both;
+  animation: pop-in var(--duration-base) var(--ease-decelerate) both;
 }
 
 .animate-veil-in {
-  animation: veil-in 180ms ease both;
+  animation: fade-in var(--duration-base) var(--ease-standard) both;
+}
+
+/* Page changes cross-fade through React's <ViewTransition>. */
+::view-transition-old(.page) {
+  animation: var(--duration-fast) var(--ease-accelerate) both fade-out;
+}
+
+::view-transition-new(.page) {
+  animation: var(--duration-base) var(--ease-decelerate) both fade-up;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
 }
 
 .calendar-date {
@@ -406,49 +372,24 @@ dialog::backdrop {
   scroll-snap-align: start;
 }
 
-.billboard {
-  position: relative;
-  overflow: hidden;
-}
-
-.dark .billboard {
-  background:
-    linear-gradient(90deg, #000 8%, rgb(0 0 0 / 0.78) 42%, rgb(20 20 20 / 0.4) 72%, #141414 100%),
-    #141414;
-}
-
-a,
-button,
-input,
-textarea,
-select {
-  transition:
-    background-color 180ms ease,
-    background-image 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease,
-    box-shadow 180ms ease,
-    opacity 180ms ease,
-    transform 180ms ease;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  a,
-  button,
-  input,
-  textarea,
-  select {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
   }
 
-  .animate-fade-up,
-  .animate-hero-in,
-  .animate-hero-mark,
-  .animate-float,
-  .animate-ig-drift,
-  .animate-ig-drift-slow,
-  .animate-pop-in,
-  .animate-veil-in {
-    animation: none;
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
+}
+
+/* Accent-filled links and buttons darken (light) or lighten (dark) on hover. */
+a.bg-accent:hover,
+button.bg-accent:not(:disabled):hover {
+  background-color: var(--accent-2);
 }

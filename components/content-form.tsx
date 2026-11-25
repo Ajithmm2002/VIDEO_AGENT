@@ -12,7 +12,6 @@ import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
 import type { Category, Content, ContentInput, HashtagCollection } from "@/lib/types";
 import { languages, platforms, statuses } from "@/lib/types";
 import { defaultChecklist, newId, safeFileName } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
 
 function splitTags(value: string) {
@@ -224,6 +223,7 @@ export function ContentForm({
         if (!allowed.includes(file.type) || file.size > 5 * 1024 * 1024) {
           throw new Error("Use a JPEG, PNG, WebP, or GIF under 5 MB.");
         }
+        const { createClient } = await import("@/lib/supabase/client");
         const supabase = createClient();
         const { data: userData } = await supabase.auth.getUser();
         if (!userData.user) throw new Error("Sign in to upload a thumbnail.");

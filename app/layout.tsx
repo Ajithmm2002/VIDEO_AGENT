@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Inter_Tight, Noto_Sans_Malayalam } from "next/font/google";
+import { Inter, Noto_Sans_Malayalam } from "next/font/google";
 import { AppThemeProvider } from "@/components/theme-provider";
-import { SupportChat } from "@/components/support-chat";
+import { SupportChatLazy } from "@/components/support-chat-lazy";
 import { AppToaster } from "@/components/toaster";
 import { isSupabaseConfigured, supabaseUrl } from "@/lib/env";
 import "./globals.css";
@@ -9,12 +9,6 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  display: "swap",
-});
-
-const display = Inter_Tight({
-  subsets: ["latin"],
-  variable: "--font-inter-tight",
   display: "swap",
 });
 
@@ -50,15 +44,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f5f1" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f8fa" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0d12" },
   ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const origin = supabaseOrigin();
   return (
-    <html lang="en" className={`${inter.variable} ${display.variable} ${malayalam.variable} h-full overflow-x-clip`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${malayalam.variable} h-full overflow-x-clip`} suppressHydrationWarning>
       <body className="min-h-full max-w-full overflow-x-clip antialiased">
         {origin ? (
           <>
@@ -69,7 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AppThemeProvider>
           <a href="#main" className="skip-link">Skip to content</a>
           {children}
-          <SupportChat />
+          <SupportChatLazy />
           <AppToaster />
         </AppThemeProvider>
       </body>

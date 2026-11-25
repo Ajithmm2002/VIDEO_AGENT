@@ -36,7 +36,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
           </Link>
           <Link
             href={startHref}
-            className="ig-gradient inline-flex min-h-11 items-center rounded-md px-4 text-base font-semibold text-accent-ink sm:text-sm"
+            className="bg-accent inline-flex min-h-11 items-center rounded-md px-4 text-base font-semibold text-accent-ink sm:text-sm"
           >
             {configured ? "Get started" : "Open studio"}
           </Link>
@@ -46,7 +46,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
       <main id="main" tabIndex={-1}>
         <section className="billboard px-4 py-24 sm:px-8 sm:py-32 lg:min-h-[80vh] lg:py-36">
           <div className="mx-auto max-w-6xl">
-            <p className="animate-hero-mark ig-text text-sm font-semibold uppercase tracking-[0.18em] sm:text-base">
+            <p className="animate-hero-mark text-accent text-sm font-semibold uppercase tracking-[0.18em] sm:text-base">
               Personal workspace
             </p>
             <h1 className="mt-6 max-w-5xl text-5xl font-bold tracking-tight leading-[1.05] sm:text-6xl lg:text-7xl xl:text-8xl">
@@ -70,7 +70,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
             <div className="animate-hero-in mt-12 flex flex-wrap gap-3" style={{ animationDelay: "520ms" }}>
               <Link
                 href={startHref}
-                className="ig-gradient inline-flex min-h-12 items-center gap-2 rounded-md px-6 text-base font-semibold text-accent-ink sm:min-h-14 sm:px-7 sm:text-lg"
+                className="bg-accent inline-flex min-h-12 items-center gap-2 rounded-md px-6 text-base font-semibold text-accent-ink sm:min-h-14 sm:px-7 sm:text-lg"
               >
                 <Sparkles className="h-4 w-4" aria-hidden />
                 {configured ? "Start a workspace" : "Open the studio"}
@@ -98,7 +98,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
                   key={item.title}
                   className="rounded-md border border-line bg-surface p-6"
                 >
-                  <span className="ig-gradient grid h-11 w-11 place-items-center rounded-md text-accent-ink">
+                  <span className="bg-accent grid h-11 w-11 place-items-center rounded-md text-accent-ink">
                     <Icon className="h-5 w-5" aria-hidden />
                   </span>
                   <h3 className="mt-5 text-lg font-semibold">{item.title}</h3>

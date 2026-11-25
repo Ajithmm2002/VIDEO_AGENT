@@ -16,7 +16,7 @@ export function CoinPacks() {
         {coinPacks.map((pack) => (
           <article
             key={pack.id}
-            className="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface/90 p-3 shadow-[var(--shadow)]"
+            className="flex flex-col overflow-hidden rounded-xl border border-line bg-surface p-3 shadow-[var(--shadow)]"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">{pack.label}</p>
             <p className="mt-1 text-lg font-semibold leading-6">🪙 {packCoinsLabel(pack)}</p>

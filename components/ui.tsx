@@ -18,7 +18,7 @@ export function PageHeader({
     <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
       <div className="max-w-2xl">
         {eyebrow ? (
-          <p className="ig-text mb-3 text-xs font-semibold uppercase tracking-[0.18em]">{eyebrow}</p>
+          <p className="text-accent mb-3 text-xs font-semibold uppercase tracking-[0.18em]">{eyebrow}</p>
         ) : null}
         <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{title}</h1>
         {description ? <p className="mt-3 max-w-2xl text-base leading-7 text-muted">{description}</p> : null}
@@ -39,9 +39,9 @@ export const Button = forwardRef<
   ref,
 ) {
   const styles = {
-    primary: "ig-gradient text-accent-ink shadow-[var(--shadow-glow)] hover:brightness-105",
-    secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:bg-surface-2 dark:shadow-none",
-    danger: "bg-danger text-accent-ink shadow-[var(--shadow-glow)] hover:opacity-90",
+    primary: "bg-accent text-accent-ink shadow-[var(--shadow-glow)] hover:bg-accent-2",
+    secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:bg-surface-2",
+    danger: "bg-danger text-accent-ink shadow-[var(--shadow)] hover:opacity-90",
     ghost: "text-ink hover:bg-surface-2",
   };
   return (
@@ -51,7 +51,7 @@ export const Button = forwardRef<
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-2xl px-3.5 py-2 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm dark:rounded-md",
+        "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm",
         styles[variant],
         className,
       )}
@@ -72,7 +72,7 @@ export function choiceClass(on: boolean, className?: string) {
 }
 
 const control =
-  "w-full min-w-0 rounded-2xl border border-line bg-surface px-3 text-base text-ink shadow-[var(--shadow-inset)] placeholder:text-muted dark:rounded-md dark:shadow-none";
+  "w-full min-w-0 rounded-xl border border-line bg-surface px-3 text-base text-ink shadow-[var(--shadow-inset)] placeholder:text-muted";
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cn(control, "h-11", props.className)} />;
@@ -150,7 +150,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return (
     <section
       className={cn(
-        "rounded-[1.75rem] border border-line bg-surface/90 p-6 shadow-[var(--shadow)] backdrop-blur-xl dark:rounded-md dark:bg-surface dark:shadow-none dark:backdrop-blur-none",
+        "rounded-2xl border border-line bg-surface p-6 shadow-[var(--shadow)]",
         className,
       )}
     >
@@ -169,8 +169,8 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="grid place-items-center rounded-[1.75rem] border border-dashed border-line bg-surface-2/70 px-6 py-10 text-center shadow-[var(--shadow-inset)] dark:rounded-md dark:bg-surface-2 dark:shadow-none">
-      <div className="ig-gradient mb-4 grid h-12 w-12 place-items-center rounded-2xl text-accent-ink shadow-[var(--shadow-glow)] dark:rounded-md dark:shadow-none">
+    <div className="grid place-items-center rounded-2xl border border-dashed border-line bg-surface-2/70 px-6 py-10 text-center shadow-[var(--shadow-inset)]">
+      <div className="mb-4 grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-accent">
         <Sparkles className="h-5 w-5" aria-hidden />
       </div>
       <p className="font-semibold">{title}</p>

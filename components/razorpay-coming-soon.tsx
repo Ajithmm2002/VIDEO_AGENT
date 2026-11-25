@@ -68,7 +68,7 @@ export function RazorpayComingSoon({
             <div className="animate-veil-in fixed inset-0 z-[100] grid place-items-center p-4">
               <button
                 type="button"
-                className="absolute inset-0 bg-[#12040c]/62 backdrop-blur-md"
+                className="absolute inset-0 bg-scrim"
                 aria-label="Close Razorpay dialog"
                 onClick={() => setOpen(false)}
               />
@@ -79,9 +79,9 @@ export function RazorpayComingSoon({
                 aria-labelledby={titleId}
                 aria-describedby={messageId}
                 tabIndex={-1}
-                className="animate-pop-in relative z-10 w-[min(26rem,100%)] rounded-[1.75rem] border border-line bg-surface p-6 shadow-[var(--shadow)] outline-none"
+                className="animate-pop-in relative z-10 w-[min(26rem,100%)] rounded-2xl border border-line bg-surface p-6 shadow-[var(--shadow)] outline-none"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0b72e7]">Razorpay</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-info">Razorpay</p>
                 <h2 id={titleId} className="mt-3 text-lg font-semibold tracking-tight">
                   Pay {formatSkillPrice(amountPaise)} for {title}
                 </h2>
@@ -89,7 +89,7 @@ export function RazorpayComingSoon({
                   {note ??
                     "Razorpay checkout is coming soon. Card, UPI, and net banking pay the listed rupee price. You can also redeem studio coins for this skill. Coins are not converted into cash or gift cards."}
                 </p>
-                <div className="mt-5 rounded-2xl border border-dashed border-line bg-surface-2/80 px-4 py-3 text-sm text-muted shadow-[var(--shadow-inset)]">
+                <div className="mt-5 rounded-xl border border-dashed border-line bg-surface-2/80 px-4 py-3 text-sm text-muted shadow-[var(--shadow-inset)]">
                   Secure payment by Razorpay · Coming soon
                 </div>
                 <div className="mt-6 flex flex-wrap justify-end gap-2">

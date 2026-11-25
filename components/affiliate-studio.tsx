@@ -312,7 +312,7 @@ export function AffiliateStudio({
         </Field>
         {previewError ? <p className="text-sm text-danger">{previewError}</p> : null}
         {preview ? (
-          <div className="grid gap-3 rounded-2xl border border-line bg-surface-2/50 p-3 sm:grid-cols-[8rem_1fr] sm:items-center">
+          <div className="grid gap-3 rounded-xl border border-line bg-surface-2/50 p-3 sm:grid-cols-[8rem_1fr] sm:items-center">
             {preview.image && !imageBroken ? (
               <img
                 src={preview.image}

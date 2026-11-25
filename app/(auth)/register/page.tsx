@@ -11,7 +11,7 @@ export default function RegisterPage() {
       {isSupabaseConfigured() ? (
         <RegisterForm />
       ) : (
-        <div className="rounded-2xl bg-surface-2/80 p-4 text-sm leading-6 text-muted">
+        <div className="rounded-xl bg-surface-2/80 p-4 text-sm leading-6 text-muted">
           Connect Supabase in <span className="font-medium text-ink">.env.local</span> before creating an account. Each person who registers gets a private workspace.
         </div>
       )}

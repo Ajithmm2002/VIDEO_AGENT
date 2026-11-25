@@ -237,7 +237,7 @@ export function SupportChat() {
             />
             <button
               type="submit"
-              className="ig-gradient grid h-11 w-11 place-items-center rounded-md text-accent-ink disabled:opacity-60"
+              className="bg-accent grid h-11 w-11 place-items-center rounded-md text-accent-ink disabled:opacity-60"
               disabled={pending || !input.trim()}
               aria-label="Send"
             >

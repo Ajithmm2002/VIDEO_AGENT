@@ -8,7 +8,7 @@ import type { Content, ContentOption, MarketplaceListing, MarketplacePurchase, M
 import { statuses } from "@/lib/types";
 import { sanitizeSearch } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
-import { getCurrentUser, requestUserEmail } from "@/lib/session";
+import { requestUserEmail } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 function parseContents(rows: unknown[]) {
@@ -296,15 +296,11 @@ export async function libraryContents() {
 export const getProfile = cache(async () => {
   const supabase = await client();
   if (!supabase) return null;
-  const user = await getCurrentUser();
-  if (!user) return null;
-  const { data } = await supabase
-    .from("profiles")
-    .select("id, display_name")
-    .eq("id", user.id)
-    .maybeSingle();
+  // Row Level Security only returns the signed-in person's own profile row,
+  // so this skips a separate auth round trip. proxy.ts has already checked the session.
+  const { data } = await supabase.from("profiles").select("id, display_name").maybeSingle();
   const row = data as { id?: string; display_name?: string | null } | null;
-  if (!row?.id) return { id: user.id, display_name: null };
+  if (!row?.id) return null;
   return { id: row.id, display_name: row.display_name ?? null };
 });
 
@@ -347,15 +343,23 @@ export const getMarketplaceListing = cache(async (id: string) => {
 export const getGameWallet = cache(async (): Promise<GameWallet> => {
   const supabase = await client();
   if (!supabase) return { coins: 0, earned: 0 };
-  const email = (await requestUserEmail())?.trim().toLowerCase();
-  if (email === WELCOME_BONUS_EMAIL) {
-    await supabase.rpc("grant_welcome_bonus");
-  }
-  const { data, error } = await supabase.from("game_wallets").select("coins, earned").maybeSingle();
+  const [{ data, error }, email] = await Promise.all([
+    supabase.from("game_wallets").select("coins, earned, welcome_bonus_at").maybeSingle(),
+    requestUserEmail(),
+  ]);
   if (error) {
     const { data: fallback } = await supabase.from("game_wallets").select("coins").maybeSingle();
     const coins = clampWalletCoins(fallback?.coins);
     return { coins, earned: coins };
+  }
+  // The welcome bonus is granted once; only ask for it while it has not been given yet.
+  if (email?.trim().toLowerCase() === WELCOME_BONUS_EMAIL && !data?.welcome_bonus_at) {
+    const { data: granted } = await supabase.rpc("grant_welcome_bonus");
+    const row = granted as { ok?: boolean; balance?: number; earned?: number } | null;
+    if (row?.ok) {
+      const coins = clampWalletCoins(row.balance);
+      return { coins, earned: Math.max(coins, clampWalletCoins(row.earned)) };
+    }
   }
   const coins = clampWalletCoins(data?.coins);
   const earned = Math.max(coins, clampWalletCoins(data?.earned));

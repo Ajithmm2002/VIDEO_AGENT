@@ -72,7 +72,7 @@ export function ShopCatalog({
           {isAdmin ? (
             <Link
               href="/admin/marketplace"
-              className="ig-gradient inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
+              className="bg-accent inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
             >
               Sell
             </Link>
@@ -90,7 +90,7 @@ export function ShopCatalog({
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search products"
                 aria-label="Search products"
-                className="h-11 w-full rounded-2xl border border-line bg-surface pl-10 pr-3 text-base shadow-[var(--shadow-inset)] dark:rounded-md dark:shadow-none"
+                className="h-11 w-full rounded-xl border border-line bg-surface pl-10 pr-3 text-base shadow-[var(--shadow-inset)]"
               />
             </label>
             <label className="grid gap-1 text-sm">
@@ -98,7 +98,7 @@ export function ShopCatalog({
               <select
                 value={sort}
                 aria-label="Sort products"
-                className="h-11 rounded-2xl border border-line bg-surface px-3 text-base dark:rounded-md"
+                className="h-11 rounded-xl border border-line bg-surface px-3 text-base"
                 onChange={(event) => setSort(event.target.value as MarketplaceCatalogSort)}
               >
                 {catalogSorts.map((item) => (
@@ -160,7 +160,7 @@ function ProductCard({
     <Link
       href={`/marketplace/${listing.id}`}
       className={cn(
-        "grid overflow-hidden rounded-xl border border-line bg-surface shadow-[var(--shadow)] transition hover:border-accent dark:rounded-md dark:shadow-none",
+        "grid overflow-hidden rounded-xl border border-line bg-surface shadow-[var(--shadow)] transition hover:border-accent",
       )}
     >
       <ProductArt listing={listing} compact />

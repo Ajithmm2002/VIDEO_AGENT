@@ -44,7 +44,7 @@ export function MyPurchases({ records }: { records: PurchaseRecord[] }) {
         <div className="mt-4">
           <Link
             href="/marketplace"
-            className="ig-gradient inline-flex rounded-2xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
+            className="bg-accent inline-flex rounded-xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
           >
             Open marketplace
           </Link>
@@ -61,7 +61,7 @@ export function MyPurchases({ records }: { records: PurchaseRecord[] }) {
         </p>
         <Link
           href="/marketplace"
-          className="inline-flex rounded-2xl border border-line bg-surface px-3 py-1.5 text-xs font-semibold shadow-[var(--shadow)]"
+          className="inline-flex rounded-xl border border-line bg-surface px-3 py-1.5 text-xs font-semibold shadow-[var(--shadow)]"
         >
           Buy more
         </Link>
@@ -73,7 +73,7 @@ export function MyPurchases({ records }: { records: PurchaseRecord[] }) {
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search purchases"
           aria-label="Search purchases"
-          className="h-11 w-full rounded-2xl border border-line bg-surface pl-10 pr-3 text-sm shadow-[var(--shadow-inset)]"
+          className="h-11 w-full rounded-xl border border-line bg-surface pl-10 pr-3 text-sm shadow-[var(--shadow-inset)]"
         />
       </label>
       {visible.length ? (
@@ -111,7 +111,7 @@ function PurchaseCard({
 
   return (
     <Card className="grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
-      <span className="grid h-11 w-11 place-items-center rounded-2xl border border-line bg-surface-2 text-muted shadow-[var(--shadow-inset)]">
+      <span className="grid h-11 w-11 place-items-center rounded-xl border border-line bg-surface-2 text-muted shadow-[var(--shadow-inset)]">
         <FileIcon className="h-4 w-4" />
       </span>
       <div className="min-w-0">
@@ -125,7 +125,7 @@ function PurchaseCard({
         {listing ? (
           <Link
             href={`/marketplace?item=${listing.id}`}
-            className="inline-flex items-center rounded-2xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
+            className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
           >
             View listing
           </Link>

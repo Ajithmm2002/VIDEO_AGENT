@@ -295,7 +295,7 @@ export function ThumbnailStudio({
             <h2 className="font-semibold">Landscape 16:9</h2>
             <CopyButton text={landscape} />
           </div>
-          <div className="aspect-video overflow-hidden rounded-2xl border border-line bg-[radial-gradient(circle_at_20%_20%,rgb(var(--glow)/0.22),transparent_45%),radial-gradient(circle_at_80%_80%,rgb(var(--glow-warm)/0.2),transparent_40%),var(--surface-2)]" />
+          <div className="aspect-video overflow-hidden rounded-xl border border-line bg-[radial-gradient(circle_at_20%_20%,rgb(var(--glow)/0.22),transparent_45%),radial-gradient(circle_at_80%_80%,rgb(var(--glow-warm)/0.2),transparent_40%),var(--surface-2)]" />
           <TextArea className="min-h-80" value={landscape} onChange={(event) => setLandscape(event.target.value)} />
         </Card>
         <Card className="grid gap-3">
@@ -303,7 +303,7 @@ export function ThumbnailStudio({
             <h2 className="font-semibold">Vertical 9:16</h2>
             <CopyButton text={vertical} />
           </div>
-          <div className="mx-auto h-40 w-24 overflow-hidden rounded-2xl border border-line bg-[radial-gradient(circle_at_30%_20%,rgb(var(--glow-warm)/0.28),transparent_42%),radial-gradient(circle_at_70%_80%,rgb(var(--glow)/0.22),transparent_40%),var(--surface-2)]" />
+          <div className="mx-auto h-40 w-24 overflow-hidden rounded-xl border border-line bg-[radial-gradient(circle_at_30%_20%,rgb(var(--glow-warm)/0.28),transparent_42%),radial-gradient(circle_at_70%_80%,rgb(var(--glow)/0.22),transparent_40%),var(--surface-2)]" />
           <TextArea className="min-h-80" value={vertical} onChange={(event) => setVertical(event.target.value)} />
         </Card>
       </div>

@@ -24,7 +24,7 @@ export function DashboardWelcome({
   return (
     <section className="mb-8">
       <div className="billboard rounded-md px-5 py-8 sm:px-8 sm:py-12">
-        <p className="ig-text text-xs font-semibold uppercase tracking-[0.18em]">{eyebrow}</p>
+        <p className="text-accent text-xs font-semibold uppercase tracking-[0.18em]">{eyebrow}</p>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{title}</h1>
@@ -42,7 +42,7 @@ export function DashboardWelcome({
               href={chip.href}
               className="inline-flex min-h-11 min-w-[9.5rem] items-center gap-2 rounded-md border border-line bg-surface px-3 py-2 text-sm font-semibold"
             >
-              <span className="ig-gradient grid h-7 w-7 place-items-center rounded-md text-accent-ink">
+              <span className="bg-accent grid h-7 w-7 place-items-center rounded-md text-accent-ink">
                 <Icon className="h-3.5 w-3.5" />
               </span>
               {chip.label}

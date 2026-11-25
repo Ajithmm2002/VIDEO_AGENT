@@ -39,7 +39,7 @@ export default async function LoginPage({
 
 function SetupNeeded() {
   return (
-    <div className="rounded-2xl bg-surface-2/80 p-4 text-sm leading-6 text-muted">
+    <div className="rounded-xl bg-surface-2/80 p-4 text-sm leading-6 text-muted">
       Add the Supabase URL and publishable key to <span className="font-medium text-ink">.env.local</span>, then restart the app. Until then, thumbnail prompts and writing drafts still work from the dashboard.
     </div>
   );

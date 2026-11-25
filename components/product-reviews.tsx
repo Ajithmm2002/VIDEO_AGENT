@@ -41,7 +41,7 @@ export function ProductReviews({
       {reviews.length ? (
         <ul className="grid gap-3">
           {reviews.map((review) => (
-            <li key={review.id} className="rounded-2xl border border-line bg-surface p-4 dark:rounded-md">
+            <li key={review.id} className="rounded-xl border border-line bg-surface p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm font-semibold">{review.author_label}</p>
                 <p className="text-xs text-muted">{review.created_at.slice(0, 10)}</p>
@@ -105,7 +105,7 @@ function ReviewForm({ listingId, existing }: { listingId: string; existing?: Mar
 
   return (
     <form
-      className="grid gap-3 rounded-2xl border border-line bg-surface p-4 dark:rounded-md"
+      className="grid gap-3 rounded-xl border border-line bg-surface p-4"
       onSubmit={(event) => {
         event.preventDefault();
         void submit();

@@ -225,13 +225,13 @@ export function CatchEndless({
   return (
     <Card>
       <p className="text-sm text-muted">Tap when the glow is in the band. Six lives, with a life back every 12 catches.</p>
-      <div className="relative mt-5 h-16 overflow-hidden rounded-[1.5rem] border border-line bg-surface-2 shadow-[var(--shadow-inset)]">
+      <div className="relative mt-5 h-16 overflow-hidden rounded-2xl border border-line bg-surface-2 shadow-[var(--shadow-inset)]">
         <div
           className="absolute inset-y-0 left-1/2 -translate-x-1/2 bg-accent/20"
           style={{ width: `${zone * 2}%` }}
         />
         <span
-          className="ig-gradient absolute top-2 h-12 w-12 rounded-full shadow-[var(--shadow-glow)]"
+          className="bg-accent absolute top-2 h-12 w-12 rounded-full shadow-[var(--shadow-glow)]"
           style={{ left: `calc(${position}% - 1.5rem)` }}
         />
       </div>
@@ -328,13 +328,13 @@ export function SparkRush({
         <p className="text-sm text-muted">Tap sparks before they fade. Two minutes. Combo pays extra.</p>
         <p className="text-sm font-semibold">{left}s · Score {score} · Combo {combo}</p>
       </div>
-      <div className="relative mt-4 h-72 overflow-hidden rounded-[1.75rem] border border-line bg-surface-2 shadow-[var(--shadow-inset)]">
+      <div className="relative mt-4 h-72 overflow-hidden rounded-2xl border border-line bg-surface-2 shadow-[var(--shadow-inset)]">
         {sparks.map((spark) => (
           <button
             key={spark.id}
             type="button"
             onClick={() => pop(spark.id)}
-            className="ig-gradient absolute h-11 w-11 rounded-full shadow-[var(--shadow-glow)]"
+            className="bg-accent absolute h-11 w-11 rounded-full shadow-[var(--shadow-glow)]"
             style={{ left: `${spark.x}%`, top: `${spark.y}%` }}
             aria-label="Spark"
           />

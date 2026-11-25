@@ -25,7 +25,7 @@ export function ProductArt({
       <span className={cn("grid place-items-center", compact ? "gap-1" : "gap-2")}>
         <span
           className={cn(
-            "ig-gradient grid place-items-center rounded-md text-accent-ink",
+            "bg-accent grid place-items-center rounded-md text-accent-ink",
             compact ? "h-9 w-9" : "h-14 w-14",
           )}
         >

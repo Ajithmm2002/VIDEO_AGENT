@@ -45,7 +45,7 @@ export default async function ThumbnailsPage({
             const landscape = visiblePrompt(prompt.landscape_prompt);
             const vertical = visiblePrompt(prompt.vertical_prompt);
             return (
-              <article key={prompt.id} className="rounded-2xl border border-line bg-surface p-4">
+              <article key={prompt.id} className="rounded-xl border border-line bg-surface p-4">
                 <p className="font-medium">{prompt.topic}</p>
                 <p className="text-xs text-muted">{formatDate(prompt.created_at)}</p>
                 {landscape ? (

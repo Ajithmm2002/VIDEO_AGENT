@@ -11,7 +11,7 @@ export default function NotFound() {
         </div>
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">This page is not here</h1>
         <p className="mt-2 text-sm leading-6 text-muted">The link may be old, or the item may have been deleted.</p>
-        <Link href="/dashboard" className="ig-gradient mt-5 inline-flex min-h-11 items-center rounded-2xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]">
+        <Link href="/dashboard" className="bg-accent mt-5 inline-flex min-h-11 items-center rounded-xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]">
           Back to the dashboard
         </Link>
       </Card>

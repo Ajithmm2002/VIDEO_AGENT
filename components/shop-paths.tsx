@@ -5,7 +5,7 @@ export function ShopPaths() {
   return (
     <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
       {shopPaths.map((item, index) => (
-        <div key={item.title} className="rounded-2xl border border-line bg-surface/90 p-3 shadow-[var(--shadow)]">
+        <div key={item.title} className="rounded-xl border border-line bg-surface p-3 shadow-[var(--shadow)]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
             {index + 1 < 10 ? `0${index + 1}` : index + 1}
           </p>

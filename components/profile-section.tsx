@@ -34,7 +34,7 @@ export function ProfileSection({
     <div className="grid gap-6">
       <Card className="grid gap-5">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="ig-gradient grid h-16 w-16 place-items-center rounded-md text-xl font-bold text-accent-ink">
+          <span className="bg-accent grid h-16 w-16 place-items-center rounded-md text-xl font-bold text-accent-ink">
             {accountInitials(name)}
           </span>
           <div className="min-w-0">
