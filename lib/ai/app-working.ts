@@ -1,11 +1,8 @@
 import { readFileSync } from "node:fs";
 
-export type KnowledgeArticle = {
-  title: string;
-  kind: "help" | "error";
-  keywords: string[];
-  body: string;
-};
+import type { GuideArticle } from "@/lib/ai/support-engine";
+
+export type KnowledgeArticle = GuideArticle;
 
 export function readAppWorkingMarkdown() {
   return readFileSync(new URL("./app-working.md", import.meta.url), "utf8");
@@ -21,6 +18,9 @@ export function parseAppWorking(markdown: string): KnowledgeArticle[] {
     let index = 1;
     let kind: "help" | "error" = "help";
     let keywords: string[] = [];
+    let pages: string[] = [];
+    let ask = "";
+    let weight = 1;
     while (index < lines.length) {
       const line = lines[index].trim();
       if (!line) {
@@ -41,11 +41,31 @@ export function parseAppWorking(markdown: string): KnowledgeArticle[] {
         index += 1;
         continue;
       }
+      if (/^pages:/i.test(line)) {
+        pages = line
+          .slice(line.indexOf(":") + 1)
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item.startsWith("/"));
+        index += 1;
+        continue;
+      }
+      if (/^weight:/i.test(line)) {
+        const value = Number(line.slice(line.indexOf(":") + 1).trim());
+        if (Number.isFinite(value) && value > 0) weight = value;
+        index += 1;
+        continue;
+      }
+      if (/^ask:/i.test(line)) {
+        ask = line.slice(line.indexOf(":") + 1).trim();
+        index += 1;
+        continue;
+      }
       break;
     }
     const body = lines.slice(index).join("\n").trim();
     if (!keywords.length || !body) continue;
-    articles.push({ title, kind, keywords, body });
+    articles.push({ title, kind, keywords, pages, ask, weight, body });
   }
   return articles;
 }

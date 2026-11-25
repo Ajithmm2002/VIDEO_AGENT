@@ -20,8 +20,8 @@ export function ThemeToggle() {
 
   return (
     <Button
-      variant="secondary"
-      className="h-11 w-11 rounded-md p-0"
+      variant="ghost"
+      className="h-10 min-h-10 w-10 min-w-10 rounded-full p-0"
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={() => setTheme(dark ? "light" : "dark")}
     >

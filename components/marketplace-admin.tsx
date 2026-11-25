@@ -102,7 +102,7 @@ export function MarketplaceProductManager({
           </div>
           <Link
             href="/admin/marketplace/new"
-            className="bg-accent inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
+            className="bg-accent inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-accent-ink"
           >
             List a product
           </Link>
@@ -125,7 +125,7 @@ export function MarketplaceProductManager({
             <p className="text-sm text-muted">No products yet. Listing a product is a separate page from this list.</p>
             <Link
               href="/admin/marketplace/new"
-              className="bg-accent mx-auto inline-flex min-h-11 items-center rounded-md px-4 text-sm font-semibold text-accent-ink"
+              className="bg-accent mx-auto inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold text-accent-ink"
             >
               List a product
             </Link>

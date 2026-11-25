@@ -7,8 +7,8 @@ export function contactSupportReply() {
 }
 
 export const SUPPORT_QUICK_PROMPTS = [
-  "Something went wrong",
-  "What is the support email?",
+  "How do I schedule a video?",
   "Generate failed",
   "Where are my downloads?",
+  "Contact support",
 ];

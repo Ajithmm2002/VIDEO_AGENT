@@ -2,25 +2,26 @@
 
 /*
  * Design tokens
- * One neutral scale plus one indigo accent. Semantic colors (ok, warn, danger, info)
- * are kept separate from the accent so an error never looks like a primary action.
- * Body text and muted text meet WCAG AA (4.5:1) on every surface in both themes.
+ * Zinc neutrals with one violet brand accent. Status colors (ok, warn, danger, info)
+ * stay separate from the accent so an error never looks like a primary action.
+ * Text and muted text meet WCAG AA (4.5:1) on every surface in both themes.
  */
 :root {
   color-scheme: light;
 
-  --bg: #f7f8fa;
-  --bg-2: #eef1f5;
+  --bg: #fafafa;
+  --bg-2: #f4f4f5;
   --surface: #ffffff;
-  --surface-2: #f1f3f6;
-  --ink: #0f172a;
-  --muted: #475569;
-  --line: #e2e8f0;
+  --surface-2: #f4f4f5;
+  --ink: #18181b;
+  --muted: #52525b;
+  --line: #e4e4e7;
+  --line-strong: #d4d4d8;
 
-  --accent: #4f46e5;
-  --accent-2: #4338ca;
+  --accent: #7c3aed;
+  --accent-2: #6d28d9;
   --accent-ink: #ffffff;
-  --accent-soft: #eef0ff;
+  --accent-soft: #f3efff;
 
   --ok: #15803d;
   --warn: #b45309;
@@ -29,15 +30,17 @@
 
   --youtube: #ff0033;
   --instagram: #d62976;
-  --scrim: rgb(15 23 42 / 0.55);
+  --scrim: rgb(9 9 11 / 0.5);
 
-  --glow: 79 70 229;
-  --glow-warm: 14 165 233;
+  --glow: 124 58 237;
+  --glow-warm: 236 72 153;
 
-  --shadow: 0 1px 2px rgb(15 23 42 / 0.05), 0 4px 12px rgb(15 23 42 / 0.06);
-  --shadow-lg: 0 10px 30px rgb(15 23 42 / 0.12), 0 2px 6px rgb(15 23 42 / 0.06);
-  --shadow-glow: 0 1px 2px rgb(15 23 42 / 0.08), 0 4px 12px rgb(79 70 229 / 0.22);
-  --shadow-inset: inset 0 1px 1px rgb(15 23 42 / 0.03);
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2352525b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+
+  --shadow: 0 1px 2px rgb(24 24 27 / 0.06);
+  --shadow-lg: 0 12px 32px -4px rgb(24 24 27 / 0.14), 0 2px 6px rgb(24 24 27 / 0.06);
+  --shadow-glow: 0 1px 2px rgb(24 24 27 / 0.1), 0 4px 14px -2px rgb(124 58 237 / 0.35);
+  --shadow-inset: inset 0 1px 1px rgb(24 24 27 / 0.03);
 
   /* Motion: Material 3 standard easing and three durations. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -51,18 +54,19 @@
 .dark {
   color-scheme: dark;
 
-  --bg: #0b0d12;
-  --bg-2: #11141b;
-  --surface: #14171f;
-  --surface-2: #1c2029;
-  --ink: #f1f5f9;
-  --muted: #a1a9b8;
-  --line: #2a2f3a;
+  --bg: #0a0a0b;
+  --bg-2: #111113;
+  --surface: #141416;
+  --surface-2: #1d1d20;
+  --ink: #fafafa;
+  --muted: #a1a1aa;
+  --line: #27272a;
+  --line-strong: #3f3f46;
 
-  --accent: #818cf8;
-  --accent-2: #a5b4fc;
-  --accent-ink: #0b0d12;
-  --accent-soft: #1e1f3a;
+  --accent: #a78bfa;
+  --accent-2: #c4b5fd;
+  --accent-ink: #0a0a0b;
+  --accent-soft: #221a38;
 
   --ok: #4ade80;
   --warn: #fbbf24;
@@ -71,14 +75,16 @@
 
   --youtube: #ff4e45;
   --instagram: #f472b6;
-  --scrim: rgb(0 0 0 / 0.7);
+  --scrim: rgb(0 0 0 / 0.65);
 
-  --glow: 129 140 248;
-  --glow-warm: 56 189 248;
+  --glow: 167 139 250;
+  --glow-warm: 244 114 182;
 
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.04);
-  --shadow-glow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23a1a1aa' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 16px 40px -6px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.05);
+  --shadow-glow: 0 1px 2px rgb(0 0 0 / 0.5);
   --shadow-inset: none;
 }
 
@@ -90,6 +96,7 @@
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
   --color-accent-2: var(--accent-2);
   --color-accent-ink: var(--accent-ink);
@@ -149,7 +156,6 @@ h3 {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .selected-row {
@@ -162,6 +168,22 @@ input[type="radio"] {
   accent-color: var(--accent);
   width: 1.25rem;
   height: 1.25rem;
+}
+
+/* Native selects get one consistent chevron with room on the right, in every browser. */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.125rem 1.125rem;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+select::-ms-expand {
+  display: none;
 }
 
 select option {
@@ -189,8 +211,15 @@ button {
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline-offset: 0;
+  outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+input:hover:not(:focus):not(:disabled),
+textarea:hover:not(:focus):not(:disabled),
+select:hover:not(:focus):not(:disabled) {
+  border-color: var(--line-strong);
 }
 
 .skip-link {
@@ -305,6 +334,19 @@ a.inline-flex:active {
   animation: pop-in var(--duration-base) var(--ease-decelerate) both;
 }
 
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.drawer-in {
+  animation: drawer-in var(--duration-slow) var(--ease-decelerate) both;
+}
+
 .animate-veil-in {
   animation: fade-in var(--duration-base) var(--ease-standard) both;
 }
@@ -392,4 +434,40 @@ a.inline-flex:active {
 a.bg-accent:hover,
 button.bg-accent:not(:disabled):hover {
   background-color: var(--accent-2);
+}
+
+/* Chat typing indicator */
+.typing-dots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--muted);
+  animation: typing-dot 1s var(--ease-standard) infinite;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: none;
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }

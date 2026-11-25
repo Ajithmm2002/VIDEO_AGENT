@@ -15,35 +15,43 @@ export function PageHeader({
   eyebrow?: string;
 }) {
   return (
-    <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-      <div className="max-w-2xl">
-        {eyebrow ? (
-          <p className="text-accent mb-3 text-xs font-semibold uppercase tracking-[0.18em]">{eyebrow}</p>
-        ) : null}
-        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{title}</h1>
-        {description ? <p className="mt-3 max-w-2xl text-base leading-7 text-muted">{description}</p> : null}
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="min-w-0 max-w-2xl">
+        {eyebrow ? <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-accent">{eyebrow}</p> : null}
+        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-[1.75rem] sm:leading-9">{title}</h1>
+        {description ? <p className="mt-2 max-w-2xl text-[15px] leading-6 text-muted">{description}</p> : null}
       </div>
-      {action}
+      {action ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
     </div>
+  );
+}
+
+const buttonStyles = {
+  primary: "bg-accent text-accent-ink shadow-[var(--shadow-glow)] hover:bg-accent-2",
+  secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:border-line-strong hover:bg-surface-2",
+  danger: "bg-danger text-accent-ink shadow-[var(--shadow)] hover:opacity-90",
+  ghost: "text-ink hover:bg-surface-2",
+};
+
+/** Shared classes for links that should look like buttons. */
+export function buttonClass(variant: keyof typeof buttonStyles = "primary", className?: string) {
+  return cn(
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold sm:min-h-10",
+    buttonStyles[variant],
+    className,
   );
 }
 
 export const Button = forwardRef<
   HTMLButtonElement,
   ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: "primary" | "secondary" | "danger" | "ghost";
+    variant?: keyof typeof buttonStyles;
     loading?: boolean;
   }
 >(function Button(
   { variant = "primary", className, type = "button", loading = false, disabled, children, ...props },
   ref,
 ) {
-  const styles = {
-    primary: "bg-accent text-accent-ink shadow-[var(--shadow-glow)] hover:bg-accent-2",
-    secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:bg-surface-2",
-    danger: "bg-danger text-accent-ink shadow-[var(--shadow)] hover:opacity-90",
-    ghost: "text-ink hover:bg-surface-2",
-  };
   return (
     <button
       ref={ref}
@@ -51,13 +59,13 @@ export const Button = forwardRef<
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-base font-semibold disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm",
-        styles[variant],
+        "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-55 sm:min-h-10",
+        buttonStyles[variant],
         className,
       )}
       {...props}
     >
-      {loading ? <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden /> : null}
+      {loading ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden /> : null}
       {children}
     </button>
   );
@@ -65,25 +73,25 @@ export const Button = forwardRef<
 
 export function choiceClass(on: boolean, className?: string) {
   return cn(
-    "inline-flex min-h-11 items-center rounded-full px-3.5 py-2 text-sm",
-    on ? "choice-selected" : "border border-line bg-surface font-medium text-ink shadow-[var(--shadow)]",
+    "inline-flex min-h-10 items-center rounded-full px-3.5 py-1.5 text-sm",
+    on ? "choice-selected" : "border border-line bg-surface font-medium text-ink hover:border-line-strong hover:bg-surface-2",
     className,
   );
 }
 
 const control =
-  "w-full min-w-0 rounded-xl border border-line bg-surface px-3 text-base text-ink shadow-[var(--shadow-inset)] placeholder:text-muted";
+  "w-full min-w-0 rounded-xl border border-line bg-surface px-3 text-base text-ink shadow-[var(--shadow-inset)] placeholder:text-muted/80 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm";
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={cn(control, "h-11", props.className)} />;
+  return <input {...props} className={cn(control, "h-11 sm:h-10", props.className)} />;
 }
 
 export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={cn(control, "min-h-28 py-2.5", props.className)} />;
+  return <textarea {...props} className={cn(control, "min-h-28 py-2.5 leading-6", props.className)} />;
 }
 
 export function SelectInput(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={cn(control, "h-11", props.className)} />;
+  return <select {...props} className={cn(control, "h-11 sm:h-10", props.className)} />;
 }
 
 export function Field({
@@ -97,17 +105,14 @@ export function Field({
   children: ReactNode;
   action?: ReactNode;
 }) {
-  const heading = (
-    <span className="flex items-center justify-between gap-2">
-      <span className="font-medium">{label}</span>
-      {action}
-    </span>
-  );
-  const hintNode = hint ? <span className="text-sm leading-6 text-muted">{hint}</span> : null;
+  const hintNode = hint ? <span className="text-[13px] leading-5 text-muted">{hint}</span> : null;
   if (action) {
     return (
       <div className="grid min-w-0 gap-1.5 text-sm">
-        {heading}
+        <span className="flex min-h-6 items-center justify-between gap-2">
+          <span className="font-medium">{label}</span>
+          {action}
+        </span>
         {children}
         {hintNode}
       </div>
@@ -148,12 +153,7 @@ export function CountSelect({
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <section
-      className={cn(
-        "rounded-2xl border border-line bg-surface p-6 shadow-[var(--shadow)]",
-        className,
-      )}
-    >
+    <section className={cn("rounded-2xl border border-line bg-surface p-5 shadow-[var(--shadow)] sm:p-6", className)}>
       {children}
     </section>
   );
@@ -169,13 +169,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="grid place-items-center rounded-2xl border border-dashed border-line bg-surface-2/70 px-6 py-10 text-center shadow-[var(--shadow-inset)]">
-      <div className="mb-4 grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-accent">
+    <div className="grid place-items-center rounded-2xl border border-dashed border-line-strong bg-surface px-6 py-12 text-center">
+      <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-accent-soft text-accent">
         <Sparkles className="h-5 w-5" aria-hidden />
       </div>
       <p className="font-semibold">{title}</p>
-      <p className="mt-2 max-w-md text-base leading-7 text-muted">{body}</p>
-      {action ? <div className="mt-4">{action}</div> : null}
+      <p className="mt-1.5 max-w-sm text-sm leading-6 text-muted">{body}</p>
+      {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteContent, duplicateContent, saveAsTemplate, saveContent, setThumbnailPath } from "@/lib/actions/content";
@@ -114,6 +114,20 @@ export function ContentForm({
   const [generator, setGenerator] = useState<"local" | "remote" | null>(null);
   const [draftReady, setDraftReady] = useState(false);
   const draftKey = content?.id ? `content-draft:${content.id}` : "content-draft:new";
+  const formRef = useRef<HTMLFormElement>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify([initial, initial.tags.join(", "), initial.hashtags.join(" ")]));
+  const dirty = JSON.stringify([form, tagsText, hashText]) !== savedSnapshot || file !== null;
+
+  // Cmd+S / Ctrl+S saves, like other editors.
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key.toLowerCase() !== "s" || !(event.metaKey || event.ctrlKey) || event.altKey) return;
+      event.preventDefault();
+      formRef.current?.requestSubmit();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- restore unsaved work after switching pages */
@@ -243,6 +257,8 @@ export function ContentForm({
       }
     }
     setPending(false);
+    setSavedSnapshot(JSON.stringify([form, tagsText, hashText]));
+    setFile(null);
     clearDraft(draftKey);
     if (!content?.id) clearDraft("content-draft:new");
     toast.success(result.message ?? "Saved");
@@ -251,7 +267,7 @@ export function ContentForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-4">
+    <form ref={formRef} onSubmit={onSubmit} className="grid gap-4">
       <Card className="grid gap-4 md:grid-cols-2">
         <CopyField label="Title" text={form.title}>
           <TextInput value={form.title} onChange={(event) => patch({ title: event.target.value })} required maxLength={200} />
@@ -540,10 +556,23 @@ export function ContentForm({
         </div>
       </Card>
 
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" loading={pending} disabled={!configured || generating || busy !== null}>
-          {pending ? "Saving…" : "Save content"}
+      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-10 flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-surface/95 p-3 shadow-[var(--shadow-lg)] lg:bottom-4">
+        <Button type="submit" loading={pending} disabled={!configured || generating || busy !== null} title="Save (Ctrl+S or ⌘S)">
+          {pending ? "Saving…" : content ? "Save changes" : "Save content"}
         </Button>
+        <p className="order-last w-full text-xs text-muted sm:order-none sm:ml-1 sm:w-auto" role="status" aria-live="polite">
+          {dirty ? (
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-warn" aria-hidden />
+              Unsaved changes · kept on this device
+            </span>
+          ) : content ? (
+            "All changes saved"
+          ) : (
+            "Start with a title"
+          )}
+        </p>
+        <span className="hidden flex-1 sm:block" aria-hidden />
         {content ? (
           <>
             <Button

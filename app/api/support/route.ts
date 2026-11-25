@@ -31,7 +31,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });
   }
 
-  const payload = body as { message?: unknown; history?: unknown };
+  const payload = body as { message?: unknown; history?: unknown; page?: unknown };
+  const page = typeof payload.page === "string" && /^\/[a-z0-9/_-]{0,80}$/i.test(payload.page) ? payload.page : null;
   const message = typeof payload.message === "string" ? payload.message.trim() : "";
   if (!message || message.length > 500) {
     return NextResponse.json({ ok: false, error: "Write a short question (500 characters or less)." }, { status: 400 });
@@ -48,6 +49,6 @@ export async function POST(request: Request) {
         .map((item) => ({ role: item.role, content: item.content.slice(0, 500) }))
     : [];
 
-  const reply = await answerSupport(message, history);
-  return NextResponse.json({ ok: true, reply });
+  const answer = await answerSupport(message, history, page);
+  return NextResponse.json({ ok: true, ...answer });
 }

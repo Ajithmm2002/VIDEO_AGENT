@@ -36,7 +36,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
           </Link>
           <Link
             href={startHref}
-            className="bg-accent inline-flex min-h-11 items-center rounded-md px-4 text-base font-semibold text-accent-ink sm:text-sm"
+            className="bg-accent inline-flex min-h-11 items-center rounded-xl px-4 text-base font-semibold text-accent-ink sm:text-sm"
           >
             {configured ? "Get started" : "Open studio"}
           </Link>
@@ -70,7 +70,7 @@ export function LandingPage({ configured }: { configured: boolean }) {
             <div className="animate-hero-in mt-12 flex flex-wrap gap-3" style={{ animationDelay: "520ms" }}>
               <Link
                 href={startHref}
-                className="bg-accent inline-flex min-h-12 items-center gap-2 rounded-md px-6 text-base font-semibold text-accent-ink sm:min-h-14 sm:px-7 sm:text-lg"
+                className="bg-accent inline-flex min-h-12 items-center gap-2 rounded-xl px-6 text-base font-semibold text-accent-ink sm:min-h-14 sm:px-7 sm:text-lg"
               >
                 <Sparkles className="h-4 w-4" aria-hidden />
                 {configured ? "Start a workspace" : "Open the studio"}

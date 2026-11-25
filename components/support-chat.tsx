@@ -1,91 +1,109 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Headset, Loader2, Minus, Send, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { BookOpen, Headset, RotateCcw, Send, X } from "lucide-react";
 import { SUPPORT_QUICK_PROMPTS } from "@/lib/ai/support-public";
 import { cn } from "@/lib/utils";
 
-type ChatMessage = { id: string; role: "user" | "assistant"; content: string };
-type Point = { x: number; y: number };
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  sources?: string[];
+  suggestions?: string[];
+};
 
-const STORAGE_KEY = "cs-support-pos";
-const BUTTON = 48;
-const PANEL_WIDTH = 320;
-const PANEL_HEIGHT = 440;
+/** The launcher sits on the left or right edge; y is a share of the screen height so it survives resizes. */
+type Dock = { side: "left" | "right"; y: number };
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
+const DOCK_KEY = "cs-support-dock";
+const HISTORY_KEY = "cs-support-chat";
+const BUTTON = 52;
+const EDGE = 16;
+
+const WELCOME: ChatMessage = {
+  id: "welcome",
+  role: "assistant",
+  content: "Hi! I answer from the Content Studio guide. Ask how a page works, or paste the exact error you see.",
+  suggestions: [...SUPPORT_QUICK_PROMPTS],
+};
+
+function bottomReserve() {
+  return window.innerWidth < 1024 ? 88 : EDGE;
 }
 
-function defaultPoint() {
-  if (typeof window === "undefined") return { x: 16, y: 16 };
-  const pad = 16;
-  const bottomNav = window.innerWidth < 1024 ? 88 : pad;
-  return {
-    x: window.innerWidth - BUTTON - pad,
-    y: window.innerHeight - BUTTON - bottomNav,
-  };
+function defaultDock(): Dock {
+  const y = window.innerHeight - BUTTON - bottomReserve();
+  return { side: "right", y: y / window.innerHeight };
 }
 
-function readPoint(): Point {
+function readDock(): Dock {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultPoint();
-    const parsed = JSON.parse(raw) as Point;
-    if (typeof parsed.x !== "number" || typeof parsed.y !== "number") return defaultPoint();
-    return parsed;
+    const parsed = JSON.parse(localStorage.getItem(DOCK_KEY) ?? "null") as Dock | null;
+    if (parsed && (parsed.side === "left" || parsed.side === "right") && typeof parsed.y === "number") return parsed;
   } catch {
-    return defaultPoint();
+    // Use the default position.
   }
+  return defaultDock();
 }
 
-function fitPoint(point: Point): Point {
-  if (typeof window === "undefined") return point;
-  return {
-    x: clamp(point.x, 8, Math.max(8, window.innerWidth - BUTTON - 8)),
-    y: clamp(point.y, 8, Math.max(8, window.innerHeight - BUTTON - 8)),
-  };
+function readHistory(): ChatMessage[] {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(HISTORY_KEY) ?? "null") as ChatMessage[] | null;
+    if (Array.isArray(parsed) && parsed.length) return parsed.slice(-30);
+  } catch {
+    // Start a fresh chat.
+  }
+  return [WELCOME];
+}
+
+function dockTop(dock: Dock) {
+  const max = window.innerHeight - BUTTON - bottomReserve();
+  return Math.min(Math.max(dock.y * window.innerHeight, EDGE + 56), Math.max(max, EDGE));
 }
 
 export function SupportChat() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [point, setPoint] = useState<Point>({ x: 16, y: 16 });
-  const [ready, setReady] = useState(false);
+  const [dock, setDock] = useState<Dock>(readDock);
+  const [dragTop, setDragTop] = useState<{ x: number; y: number } | null>(null);
+  const [, forceLayout] = useState(0);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "hello",
-      role: "assistant",
-      content: "Hi. Support is on 24 hours a day. I can help with how each page works, errors, sign-in, the shop, and how to reach us. Ask for the support email or phone if you want a person — those details are an example desk for now.",
-    },
-  ]);
-  const drag = useRef<{ pointerId: number; dx: number; dy: number; moved: boolean } | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>(readHistory);
+  const drag = useRef<{ pointerId: number; dx: number; dy: number; startX: number; startY: number; moved: boolean } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    setPoint(fitPoint(readPoint()));
-    setReady(true);
-  }, []);
+    try {
+      localStorage.setItem(DOCK_KEY, JSON.stringify(dock));
+    } catch {
+      // Position just won't persist.
+    }
+  }, [dock]);
 
   useEffect(() => {
-    if (!ready) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(point));
-  }, [point, ready]);
+    try {
+      sessionStorage.setItem(HISTORY_KEY, JSON.stringify(messages.slice(-30)));
+    } catch {
+      // History just won't persist.
+    }
+  }, [messages]);
 
   useEffect(() => {
     function onResize() {
-      setPoint((current) => fitPoint(current));
+      forceLayout((value) => value + 1);
     }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
-  }, [messages, open]);
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, pending, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -100,12 +118,17 @@ export function SupportChat() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const top = dockTop(dock);
+  const left = dock.side === "right" ? window.innerWidth - BUTTON - EDGE : EDGE;
+
   function onPointerDown(event: React.PointerEvent<HTMLButtonElement>) {
     event.currentTarget.setPointerCapture(event.pointerId);
     drag.current = {
       pointerId: event.pointerId,
-      dx: event.clientX - point.x,
-      dy: event.clientY - point.y,
+      dx: event.clientX - left,
+      dy: event.clientY - top,
+      startX: event.clientX,
+      startY: event.clientY,
       moved: false,
     };
   }
@@ -113,38 +136,58 @@ export function SupportChat() {
   function onPointerMove(event: React.PointerEvent<HTMLButtonElement>) {
     const current = drag.current;
     if (!current || current.pointerId !== event.pointerId) return;
-    const next = fitPoint({ x: event.clientX - current.dx, y: event.clientY - current.dy });
-    if (Math.abs(next.x - point.x) > 6 || Math.abs(next.y - point.y) > 6) current.moved = true;
-    setPoint(next);
+    if (!current.moved && Math.hypot(event.clientX - current.startX, event.clientY - current.startY) < 6) return;
+    current.moved = true;
+    setDragTop({ x: event.clientX - current.dx, y: event.clientY - current.dy });
   }
 
   function onPointerUp(event: React.PointerEvent<HTMLButtonElement>) {
     const current = drag.current;
     if (!current || current.pointerId !== event.pointerId) return;
     drag.current = null;
-    if (!current.moved) setOpen((value) => !value);
+    if (!current.moved) {
+      setOpen((value) => !value);
+      return;
+    }
+    // Snap to the nearest side so the launcher never covers the middle of a page.
+    const x = event.clientX - current.dx + BUTTON / 2;
+    const y = event.clientY - current.dy;
+    setDock({ side: x < window.innerWidth / 2 ? "left" : "right", y: y / window.innerHeight });
+    setDragTop(null);
   }
 
-  async function send(text = input.trim()) {
+  async function send(raw = input) {
+    const text = raw.trim();
     if (!text || pending) return;
-    const history = messages.map(({ role, content }) => ({ role, content }));
-    const userMessage: ChatMessage = { id: crypto.randomUUID(), role: "user", content: text };
-    setMessages((current) => [...current, userMessage]);
+    const history = messages
+      .filter((item) => item.id !== "welcome")
+      .map(({ role, content }) => ({ role, content }));
+    setMessages((current) => [...current, { id: crypto.randomUUID(), role: "user", content: text }]);
     setInput("");
     setPending(true);
     try {
       const response = await fetch("/api/support", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history }),
+        body: JSON.stringify({ message: text, history, page: pathname }),
       });
-      const data = (await response.json()) as { ok?: boolean; reply?: string; error?: string };
-      const reply = data.ok && data.reply ? data.reply : data.error || "I could not reach support just now. Try again in a moment.";
-      setMessages((current) => [...current, { id: crypto.randomUUID(), role: "assistant", content: reply }]);
+      const data = (await response.json()) as {
+        ok?: boolean;
+        reply?: string;
+        sources?: string[];
+        suggestions?: string[];
+        error?: string;
+      };
+      setMessages((current) => [
+        ...current,
+        data.ok && data.reply
+          ? { id: crypto.randomUUID(), role: "assistant", content: data.reply, sources: data.sources, suggestions: data.suggestions }
+          : { id: crypto.randomUUID(), role: "assistant", content: data.error || "I could not reach support just now. Try again in a moment." },
+      ]);
     } catch {
       setMessages((current) => [
         ...current,
-        { id: crypto.randomUUID(), role: "assistant", content: "The support chat could not send that. Check your connection and try again." },
+        { id: crypto.randomUUID(), role: "assistant", content: "That message did not send. Check your connection and try again." },
       ]);
     } finally {
       setPending(false);
@@ -152,92 +195,133 @@ export function SupportChat() {
     }
   }
 
-  const panelLeft = point.x + BUTTON + 12 + PANEL_WIDTH > (typeof window === "undefined" ? 0 : window.innerWidth)
-    ? Math.max(8, point.x - PANEL_WIDTH - 12)
-    : point.x;
-  const panelTop = point.y + BUTTON + 12 + PANEL_HEIGHT > (typeof window === "undefined" ? 0 : window.innerHeight)
-    ? Math.max(8, point.y - PANEL_HEIGHT - 12)
-    : point.y + BUTTON + 12;
-
-  if (!ready) return null;
+  const lastAssistant = [...messages].reverse().find((item) => item.role === "assistant");
+  const position = dragTop ?? { x: left, y: top };
 
   return (
     <div className="pointer-events-none fixed inset-0 z-50">
       {open ? (
         <section
-          className="pointer-events-auto absolute flex max-h-[min(28rem,72vh)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-md border border-line bg-surface shadow-[var(--shadow)]"
-          style={{ left: panelLeft, top: panelTop }}
+          className={cn(
+            "animate-pop-in pointer-events-auto absolute flex flex-col overflow-hidden border border-line bg-surface shadow-[var(--shadow-lg)]",
+            "inset-x-0 bottom-0 max-h-[85dvh] rounded-t-2xl pb-[env(safe-area-inset-bottom)]",
+            "sm:inset-x-auto sm:bottom-auto sm:h-[min(34rem,calc(100dvh-6rem))] sm:w-[24rem] sm:rounded-2xl sm:pb-0",
+          )}
+          style={
+            typeof window !== "undefined" && window.innerWidth >= 640
+              ? {
+                  top: Math.max(EDGE, Math.min(top + BUTTON - 34 * 16, window.innerHeight - 34 * 16 - EDGE)),
+                  ...(dock.side === "right" ? { right: BUTTON + EDGE * 2 } : { left: BUTTON + EDGE * 2 }),
+                }
+              : undefined
+          }
           role="dialog"
-          aria-modal="true"
-          aria-label="Support chat"
+          aria-label="Help chat"
         >
-          <header className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
-            <div>
-              <p className="text-base font-semibold">Support</p>
-              <p className="text-sm text-muted">Always on · replies instantly</p>
+          <header className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent" aria-hidden>
+                <Headset className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">Help</p>
+                <p className="truncate text-xs text-muted">Answers from the studio guide · 24/7</p>
+              </div>
             </div>
             <div className="flex items-center gap-1">
-              <button type="button" className="grid h-11 w-11 place-items-center rounded-md text-muted hover:bg-surface-2" aria-label="Minimise support chat" onClick={() => setOpen(false)}>
-                <Minus className="h-4 w-4" />
+              <button
+                type="button"
+                className="grid h-9 w-9 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-ink"
+                aria-label="Start a new chat"
+                title="New chat"
+                onClick={() => setMessages([WELCOME])}
+              >
+                <RotateCcw className="h-4 w-4" />
               </button>
-              <button type="button" className="grid h-11 w-11 place-items-center rounded-md text-muted hover:bg-surface-2" aria-label="Close support chat" onClick={() => setOpen(false)}>
+              <button
+                type="button"
+                className="grid h-9 w-9 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-ink"
+                aria-label="Close help chat"
+                onClick={() => {
+                  setOpen(false);
+                  launcherRef.current?.focus();
+                }}
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
           </header>
-          <div ref={listRef} className="grid min-h-0 flex-1 gap-2 overflow-y-auto px-3 py-3">
+
+          <div ref={listRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4" aria-live="polite">
             {messages.map((item) => (
-              <p
-                key={item.id}
-                className={cn(
-                  "max-w-[90%] whitespace-pre-wrap rounded-md px-3 py-2 text-base leading-6 sm:text-sm",
-                  item.role === "user" ? "ml-auto bg-accent text-accent-ink" : "bg-surface-2 text-ink",
-                )}
-              >
-                {item.content}
-              </p>
+              <div key={item.id} className={cn("flex max-w-[88%] flex-col gap-1.5", item.role === "user" ? "self-end items-end" : "self-start")}>
+                <p
+                  className={cn(
+                    "whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-6",
+                    item.role === "user" ? "rounded-br-md bg-accent text-accent-ink" : "rounded-bl-md bg-surface-2 text-ink",
+                  )}
+                >
+                  {item.content}
+                </p>
+                {item.role === "assistant" && item.sources?.length ? (
+                  <p className="flex items-center gap-1.5 px-1 text-[11px] text-muted">
+                    <BookOpen className="h-3 w-3" aria-hidden />
+                    From: {item.sources.join(" · ")}
+                  </p>
+                ) : null}
+                {item === lastAssistant && item.suggestions?.length && !pending ? (
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    {item.suggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        className="rounded-full border border-line bg-surface px-3 py-1.5 text-left text-xs font-medium hover:border-accent/50 hover:bg-accent-soft hover:text-accent"
+                        onClick={() => void send(suggestion)}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             ))}
             {pending ? (
-              <p className="flex items-center gap-2 text-sm text-muted">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-                Thinking…
-              </p>
-            ) : null}
-            {messages.length < 3 ? (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {SUPPORT_QUICK_PROMPTS.map((prompt) => (
-                  <button
-                    key={prompt}
-                    type="button"
-                    className="inline-flex min-h-11 items-center rounded-md border border-line bg-bg px-3 text-sm font-medium"
-                    onClick={() => void send(prompt)}
-                    disabled={pending}
-                  >
-                    {prompt}
-                  </button>
-                ))}
+              <div className="self-start rounded-2xl rounded-bl-md bg-surface-2 px-4 py-3" role="status" aria-label="Writing a reply">
+                <span className="typing-dots" aria-hidden>
+                  <span />
+                  <span />
+                  <span />
+                </span>
               </div>
             ) : null}
           </div>
+
           <form
-            className="flex items-center gap-2 border-t border-line p-2"
+            className="flex items-end gap-2 border-t border-line p-3"
             onSubmit={(event) => {
               event.preventDefault();
               void send();
             }}
           >
-            <input
+            <textarea
               ref={inputRef}
+              rows={1}
               value={input}
               onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  void send();
+                }
+              }}
               maxLength={500}
-              placeholder="Ask about an error or this app"
-              aria-label="Support message"
-              className="h-11 min-w-0 flex-1 rounded-md border border-line bg-bg px-3 text-base"
+              placeholder="Ask a question…"
+              aria-label="Your question"
+              className="max-h-28 min-h-10 min-w-0 flex-1 resize-none rounded-xl border border-line bg-bg px-3 py-2 text-base leading-6 sm:text-sm"
             />
             <button
               type="submit"
-              className="bg-accent grid h-11 w-11 place-items-center rounded-md text-accent-ink disabled:opacity-60"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-ink hover:bg-accent-2 disabled:opacity-50"
               disabled={pending || !input.trim()}
               aria-label="Send"
             >
@@ -246,12 +330,14 @@ export function SupportChat() {
           </form>
         </section>
       ) : null}
+
       <button
         ref={launcherRef}
         type="button"
-        aria-label={open ? "Move or close support chat" : "Open support chat"}
+        aria-label={open ? "Close help chat" : "Open help chat"}
         aria-expanded={open}
         aria-haspopup="dialog"
+        title="Help · drag to move"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -262,10 +348,14 @@ export function SupportChat() {
             setOpen((value) => !value);
           }
         }}
-        className="pointer-events-auto absolute grid h-12 w-12 touch-none place-items-center rounded-full bg-accent text-accent-ink shadow-[var(--shadow-glow)]"
-        style={{ left: point.x, top: point.y }}
+        className={cn(
+          "pointer-events-auto absolute grid touch-none place-items-center rounded-full bg-accent text-accent-ink shadow-[var(--shadow-lg)] hover:bg-accent-2",
+          open ? "max-sm:hidden" : "",
+          dragTop ? "cursor-grabbing" : "transition-[left,top] duration-200",
+        )}
+        style={{ left: position.x, top: position.y, width: BUTTON, height: BUTTON }}
       >
-        <Headset className="h-5 w-5" aria-hidden />
+        {open ? <X className="h-5 w-5" aria-hidden /> : <Headset className="h-5 w-5" aria-hidden />}
       </button>
     </div>
   );

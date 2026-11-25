@@ -72,7 +72,7 @@ export function ShopCatalog({
           {isAdmin ? (
             <Link
               href="/admin/marketplace"
-              className="bg-accent inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-accent-ink"
+              className="bg-accent inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-accent-ink"
             >
               Sell
             </Link>

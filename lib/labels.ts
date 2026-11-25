@@ -30,12 +30,12 @@ export const categoryColors = [
 ];
 
 export const statusColors: Record<Status, string> = {
-  idea: "#f77737",
-  planning: "#f58529",
-  in_progress: "#515bd4",
-  ready: "#dd2a7b",
-  scheduled: "#8134af",
-  published: "#22c55e",
+  idea: "var(--muted)",
+  planning: "var(--muted)",
+  in_progress: "var(--warn)",
+  ready: "var(--info)",
+  scheduled: "var(--accent)",
+  published: "var(--ok)",
 };
 
 export const googleFlowUrl = "https://labs.google/fx/tools/flow";

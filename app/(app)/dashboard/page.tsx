@@ -1,27 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, Camera, CheckCircle2, Clapperboard, PenLine, Play, Sparkles } from "lucide-react";
+import { ArrowRight, BadgePercent, CalendarDays, Camera, Coins, ImageIcon, Lightbulb, PenLine, Play, Plus } from "lucide-react";
 import { StatusBadge } from "@/components/badges";
-import { CoinBalanceCard } from "@/components/coin-balance";
-import { DashboardWelcome } from "@/components/dashboard-welcome";
-import { Card, EmptyState } from "@/components/ui";
+import { Card, EmptyState, PageHeader, buttonClass } from "@/components/ui";
 import { accountLabel } from "@/lib/account-label";
 import { isSupabaseConfigured } from "@/lib/env";
+import { formatCoins } from "@/lib/game-coins";
 import { dashboardData, getGameWallet, getProfile } from "@/lib/queries";
 import { requestUserEmail } from "@/lib/session";
 import { checklistProgress, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-const statMeta = [
-  { label: "Planned", key: "total", icon: Clapperboard, tint: "var(--accent)" },
-  { label: "Drafts", key: "drafts", icon: PenLine, tint: "var(--accent-2)" },
-  { label: "Ready", key: "ready", icon: Sparkles, tint: "var(--ok)" },
-  { label: "Scheduled", key: "scheduled", icon: CalendarDays, tint: "var(--info)" },
-  { label: "Published", key: "published", icon: CheckCircle2, tint: "var(--ok)" },
-  { label: "YouTube", key: "youtube", icon: Play, tint: "var(--youtube)" },
-  { label: "Instagram", key: "instagram", icon: Camera, tint: "var(--instagram)" },
+const pipeline = [
+  { label: "Drafts", key: "drafts", hint: "Idea to in progress", color: "var(--muted)" },
+  { label: "Ready", key: "ready", hint: "Waiting for a date", color: "var(--info)" },
+  { label: "Scheduled", key: "scheduled", hint: "Date is set", color: "var(--accent)" },
+  { label: "Published", key: "published", hint: "Live", color: "var(--ok)" },
 ] as const;
+
+const quickActions = [
+  { href: "/assistant", label: "Write captions", body: "Titles, tags, hashtags, and a hook.", icon: PenLine },
+  { href: "/thumbnails", label: "Thumbnail prompt", body: "16:9 and 9:16 prompts for Google Flow.", icon: ImageIcon },
+  { href: "/planner", label: "Plan a week", body: "1 to 7 days of video ideas.", icon: Lightbulb },
+  { href: "/affiliate", label: "Affiliate ad", body: "Caption and prompts from a product link.", icon: BadgePercent },
+];
+
+function greeting(name: string) {
+  return name === "Workspace" || name === "Local draft mode" ? "Your studio at a glance" : `Welcome back, ${name}`;
+}
 
 export default async function DashboardPage() {
   const configured = isSupabaseConfigured();
@@ -32,130 +39,205 @@ export default async function DashboardPage() {
     configured ? requestUserEmail() : Promise.resolve(null),
   ]);
   const name = accountLabel(profile?.display_name, email);
-  const values = {
-    total: data.total,
-    drafts: data.drafts,
-    ready: data.ready,
-    scheduled: data.scheduled,
-    published: data.published,
-    youtube: data.youtube,
-    instagram: data.instagram,
-  };
+  const pipelineTotal = pipeline.reduce((sum, stage) => sum + data[stage.key], 0);
+  const platformMax = Math.max(data.youtube, data.instagram, 1);
 
   return (
     <div>
-      <DashboardWelcome
-        eyebrow="Workspace"
-        title={name === "Workspace" ? "Your studio at a glance" : `Hi, ${name}`}
-        description="A private view of what you are planning, drafting, and publishing."
+      <PageHeader
+        title={greeting(name)}
+        description="What you are planning, drafting, and publishing, in one place."
         action={
-          <Link
-            href="/content/new"
-            className="bg-accent relative z-10 inline-flex min-h-11 items-center rounded-md px-3.5 text-sm font-semibold text-accent-ink"
-          >
-            New content
-          </Link>
+          <>
+            <Link href="/planner" className={buttonClass("secondary")}>
+              <Lightbulb className="h-4 w-4" aria-hidden />
+              Plan ideas
+            </Link>
+            <Link href="/content/new" className={buttonClass("primary")}>
+              <Plus className="h-4 w-4" aria-hidden />
+              New content
+            </Link>
+          </>
         }
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="sm:col-span-2">
-          <CoinBalanceCard wallet={wallet} />
-        </div>
-        {statMeta.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Card key={item.label} className="relative overflow-hidden">
-              <span
-                className="absolute inset-x-0 top-0 h-1"
-                style={{ background: `linear-gradient(90deg, ${item.tint}, transparent)` }}
-              />
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-sm text-muted">{item.label}</p>
-                <span
-                  className="grid h-9 w-9 place-items-center rounded-xl"
-                  style={{ background: `color-mix(in srgb, ${item.tint} 14%, transparent)`, color: item.tint }}
-                >
-                  <Icon className="h-4 w-4" />
-                </span>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-semibold">Pipeline</h2>
+            <p className="text-sm text-muted">
+              <span className="font-semibold text-ink">{data.total}</span> item{data.total === 1 ? "" : "s"} in total
+            </p>
+          </div>
+          <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-surface-2" role="img" aria-label="Share of items in each stage">
+            {pipelineTotal
+              ? pipeline.map((stage) =>
+                  data[stage.key] ? (
+                    <span key={stage.key} style={{ width: `${(data[stage.key] / pipelineTotal) * 100}%`, background: stage.color }} />
+                  ) : null,
+                )
+              : null}
+          </div>
+          <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {pipeline.map((stage) => (
+              <div key={stage.key} className="min-w-0">
+                <dt className="flex items-center gap-2 text-sm text-muted">
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: stage.color }} aria-hidden />
+                  {stage.label}
+                </dt>
+                <dd className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">{data[stage.key]}</dd>
+                <dd className="text-xs text-muted">{stage.hint}</dd>
               </div>
-              <p className="mt-3 text-4xl font-semibold tracking-tight">{configured ? values[item.key] : "—"}</p>
-            </Card>
+            ))}
+          </dl>
+        </Card>
+
+        <Card>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-semibold">Studio coins</h2>
+            <Coins className="h-4 w-4 text-warn" aria-hidden />
+          </div>
+          <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight">{wallet.coins.toLocaleString("en-IN")}</p>
+          <p className="text-sm text-muted">to spend · {formatCoins(wallet.earned)} earned in total</p>
+          <p className="mt-3 text-xs leading-5 text-muted">In-app reward only. Coins have no cash value.</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/play" className={buttonClass("secondary", "flex-1")}>
+              Earn coins
+            </Link>
+            <Link href="/marketplace" className={buttonClass("secondary", "flex-1")}>
+              Shop
+            </Link>
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {quickActions.map((action) => {
+          const Icon = action.icon;
+          return (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="group flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 shadow-[var(--shadow)] hover:border-accent/40 hover:bg-surface-2"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
+                <Icon className="h-[18px] w-[18px]" aria-hidden />
+              </span>
+              <span className="min-w-0">
+                <span className="flex items-center gap-1 text-sm font-semibold">
+                  {action.label}
+                  <ArrowRight className="h-3.5 w-3.5 -translate-x-1 text-muted opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" aria-hidden />
+                </span>
+                <span className="mt-0.5 block text-[13px] leading-5 text-muted">{action.body}</span>
+              </span>
+            </Link>
           );
         })}
       </div>
-      {configured && data.total === 0 ? (
-        <Card className="mt-4">
-          <EmptyState
-            title="Start with one idea"
-            body="Write a topic, generate a thumbnail prompt, and keep the draft in this workspace. Everything you save stays on your account."
-            action={
-              <div className="flex flex-wrap justify-center gap-2">
-                <Link
-                  href="/planner"
-                  className="bg-accent inline-flex items-center rounded-xl px-3.5 py-2 text-sm font-semibold text-accent-ink shadow-[var(--shadow-glow)]"
-                >
-                  Plan a week of ideas
-                </Link>
-                <Link
-                  href="/affiliate"
-                  className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
-                >
-                  Affiliate product ad
-                </Link>
-                <Link
-                  href="/content/new"
-                  className="inline-flex items-center rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-semibold shadow-[var(--shadow)]"
-                >
-                  Create one item
-                </Link>
-              </div>
-            }
-          />
-        </Card>
-      ) : (
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <Card>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <div className="flex items-center justify-between gap-2">
             <h2 className="font-semibold">Recently updated</h2>
-            <div className="mt-4 grid gap-2">
-              {data.recent.length ? data.recent.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/content/${item.id}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-line/80 bg-surface-2/40 px-3 py-3 hover:border-accent/40 hover:bg-surface-2"
-                >
-                  <span>
-                    <span className="block font-medium">{item.title}</span>
-                    <span className="text-xs text-muted">{formatDate(item.updated_at)}{checklistProgress(item.checklist) ? ` · ${checklistProgress(item.checklist)} done` : ""}</span>
-                  </span>
-                  <StatusBadge status={item.status} />
-                </Link>
-              )) : (
-                <EmptyState title="Nothing here yet" body="Create the first idea and it will show up here." />
-              )}
-            </div>
-          </Card>
+            <Link href="/content" className="text-sm font-semibold text-accent hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="mt-3">
+            {data.recent.length ? (
+              <ul className="divide-y divide-line">
+                {data.recent.map((item) => (
+                  <li key={item.id}>
+                    <Link href={`/content/${item.id}`} className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-3 hover:bg-surface-2">
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">{item.title}</span>
+                        <span className="text-xs text-muted">
+                          Updated {formatDate(item.updated_at)}
+                          {checklistProgress(item.checklist) ? ` · ${checklistProgress(item.checklist)} done` : ""}
+                        </span>
+                      </span>
+                      <StatusBadge status={item.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyState
+                title="No content yet"
+                body="Create your first idea, or plan a whole week in one go."
+                action={
+                  <Link href="/content/new" className={buttonClass("primary")}>
+                    <Plus className="h-4 w-4" aria-hidden />
+                    New content
+                  </Link>
+                }
+              />
+            )}
+          </div>
+        </Card>
+
+        <div className="grid gap-4">
           <Card>
-            <h2 className="font-semibold">Upcoming</h2>
-            <div className="mt-4 grid gap-2">
-              {data.upcoming.length ? data.upcoming.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/content/${item.id}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-line/80 bg-surface-2/40 px-3 py-3 hover:border-accent/40 hover:bg-surface-2"
-                >
-                  <span>
-                    <span className="block font-medium">{item.title}</span>
-                    <span className="text-xs text-muted">{formatDate(item.planned_date)}</span>
-                  </span>
-                  <StatusBadge status={item.status} />
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-semibold">Upcoming</h2>
+              <Link href="/calendar" className="text-sm font-semibold text-accent hover:underline">
+                Calendar
+              </Link>
+            </div>
+            {data.upcoming.length ? (
+              <ul className="mt-3 grid gap-1">
+                {data.upcoming.map((item) => (
+                  <li key={item.id}>
+                    <Link href={`/content/${item.id}`} className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-surface-2">
+                      <span className="grid w-11 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 py-1 text-center">
+                        <CalendarDays className="h-3.5 w-3.5 text-muted" aria-hidden />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">{item.title}</span>
+                        <span className="text-xs text-muted">{formatDate(item.planned_date)}</span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm leading-6 text-muted">
+                Nothing scheduled. Set a planned date on a content item, or drag it onto the{" "}
+                <Link href="/calendar" className="font-medium text-accent hover:underline">
+                  calendar
                 </Link>
-              )) : (
-                <EmptyState title="No dates ahead" body="Set a planned date on a content item, or use the calendar." />
-              )}
+                .
+              </p>
+            )}
+          </Card>
+
+          <Card>
+            <h2 className="font-semibold">By platform</h2>
+            <div className="mt-4 grid gap-3">
+              {[
+                { label: "YouTube", value: data.youtube, color: "var(--youtube)", icon: Play },
+                { label: "Instagram", value: data.instagram, color: "var(--instagram)", icon: Camera },
+              ].map((row) => {
+                const Icon = row.icon;
+                return (
+                  <div key={row.label}>
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <span className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" style={{ color: row.color }} aria-hidden />
+                        {row.label}
+                      </span>
+                      <span className="font-semibold tabular-nums">{row.value}</span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                      <div className="h-full rounded-full" style={{ width: `${(row.value / platformMax) * 100}%`, background: row.color }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </Card>
         </div>
-      )}
+      </div>
     </div>
   );
 }
