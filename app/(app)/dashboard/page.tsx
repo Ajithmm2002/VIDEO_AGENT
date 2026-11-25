@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BadgePercent, Camera, Coins, ImageIcon, Lightbulb, PenLine, Play, Plus } from "lucide-react";
+import { ArrowRight, BadgePercent, Camera, ImageIcon, Lightbulb, PartyPopper, PenLine, Play, Plus } from "lucide-react";
 import { StatusBadge } from "@/components/badges";
+import { OnboardingChecklist, type OnboardingStep } from "@/components/onboarding-checklist";
 import { Card, EmptyState, PageHeader, buttonClass } from "@/components/ui";
+import { WeeklyGoalCard } from "@/components/weekly-goal";
 import { accountLabel } from "@/lib/account-label";
 import { isSupabaseConfigured } from "@/lib/env";
-import { formatCoins } from "@/lib/game-coins";
-import { dashboardData, getGameWallet, getProfile } from "@/lib/queries";
+import { DEFAULT_WEEKLY_GOAL, weeklyProgress } from "@/lib/goals";
+import { dashboardData, getCreatorSettings, getProfile, publishedHistory } from "@/lib/queries";
 import { requestUserEmail } from "@/lib/session";
 import { checklistProgress, formatDate } from "@/lib/utils";
 
@@ -22,7 +24,7 @@ const pipeline = [
 const quickActions = [
   { href: "/assistant", label: "Write captions", body: "Titles, tags, hashtags, and a hook.", icon: PenLine },
   { href: "/thumbnails", label: "Thumbnail prompt", body: "16:9 and 9:16 prompts for Google Flow.", icon: ImageIcon },
-  { href: "/planner", label: "Plan a week", body: "1 to 7 days of video ideas.", icon: Lightbulb },
+  { href: "/festivals", label: "Festival ideas", body: "Ready-made ideas for upcoming festivals.", icon: PartyPopper },
   { href: "/affiliate", label: "Affiliate ad", body: "Caption and prompts from a product link.", icon: BadgePercent },
 ];
 
@@ -32,13 +34,31 @@ function greeting(name: string) {
 
 export default async function DashboardPage() {
   const configured = isSupabaseConfigured();
-  const [data, wallet, profile, email] = await Promise.all([
+  const [data, profile, email, creator, published] = await Promise.all([
     dashboardData(),
-    configured ? getGameWallet() : Promise.resolve({ coins: 0, earned: 0 }),
     configured ? getProfile() : Promise.resolve(null),
     configured ? requestUserEmail() : Promise.resolve(null),
+    getCreatorSettings(),
+    publishedHistory(),
   ]);
   const name = accountLabel(profile?.display_name, email);
+  const settings = creator.settings;
+  const progress = weeklyProgress(published, settings?.weekly_goal ?? DEFAULT_WEEKLY_GOAL);
+  const steps: OnboardingStep[] = [
+    { id: "idea", label: "Create your first idea", hint: "Start with just a title.", href: "/content/new", done: data.total > 0 },
+    {
+      id: "date",
+      label: "Give it a publishing date",
+      hint: "Pick a date on the item or drag it on the calendar.",
+      href: "/calendar",
+      done: data.upcoming.length > 0 || data.scheduled > 0 || data.published > 0,
+    },
+    { id: "ready", label: "Get one item ready", hint: "Fill the caption and tags, then mark it Ready.", href: "/content", done: data.ready + data.scheduled + data.published > 0 },
+    { id: "publish", label: "Publish your first video", hint: "Mark it Published to start your streak.", href: "/content", done: data.published > 0 },
+    { id: "calendar", label: "Sync your calendar", hint: "See dates in Google or Apple Calendar.", href: "/settings", done: Boolean(settings?.calendar_token) },
+    { id: "page", label: "Set up your creator page", hint: "One link for your bio and brand deals.", href: "/creator-page", done: Boolean(settings?.public_handle) },
+  ];
+  const showOnboarding = Boolean(settings) && !settings?.onboarding_dismissed_at && steps.some((step) => !step.done);
   const pipelineTotal = pipeline.reduce((sum, stage) => sum + data[stage.key], 0);
   const platformMax = Math.max(data.youtube, data.instagram, 1);
 
@@ -114,24 +134,10 @@ export default async function DashboardPage() {
           </div>
         </Card>
 
-        <Card>
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="font-semibold">Studio coins</h2>
-            <Coins className="h-4 w-4 text-warn" aria-hidden />
-          </div>
-          <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight">{wallet.coins.toLocaleString("en-IN")}</p>
-          <p className="text-sm text-muted">to spend · {formatCoins(wallet.earned)} earned in total</p>
-          <p className="mt-3 text-xs leading-5 text-muted">In-app reward only. Coins have no cash value.</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/play" className={buttonClass("secondary", "flex-1")}>
-              Earn coins
-            </Link>
-            <Link href="/marketplace" className={buttonClass("secondary", "flex-1")}>
-              Shop
-            </Link>
-          </div>
-        </Card>
+        <WeeklyGoalCard progress={progress} editable={Boolean(settings)} />
       </div>
+
+      {showOnboarding ? <OnboardingChecklist steps={steps} /> : null}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {quickActions.map((action) => {

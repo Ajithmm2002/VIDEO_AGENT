@@ -7,6 +7,8 @@ import { deleteContent, duplicateContent, saveAsTemplate, saveContent, setThumbn
 import { onGenerationResult, startTopicGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { ConfirmButton } from "@/components/confirm-button";
 import { CopyField } from "@/components/copy-button";
+import { ContentScoreCard } from "@/components/content-score-card";
+import { RepurposeButton, ReviewLinkCard } from "@/components/content-share";
 import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
 import type { Category, Content, ContentInput, HashtagCollection } from "@/lib/types";
@@ -90,6 +92,7 @@ export function ContentForm({
   thumbnailUrl,
   configured,
   aiConnected,
+  origin = "",
 }: {
   content?: Content;
   categories: Category[];
@@ -97,6 +100,7 @@ export function ContentForm({
   thumbnailUrl: string | null;
   configured: boolean;
   aiConnected: boolean;
+  origin?: string;
 }) {
   const router = useRouter();
   const jobs = useGenerationJobs();
@@ -316,6 +320,23 @@ export function ContentForm({
           Save this item as a template
         </label>
       </Card>
+
+      <ContentScoreCard
+        input={{
+          title: form.title,
+          topic: form.topic,
+          platform: form.platform,
+          description: form.description,
+          youtube_description: form.youtube_description,
+          instagram_caption: form.instagram_caption,
+          tags: splitTags(tagsText),
+          hashtags: splitHashtags(hashText),
+          script_notes: form.script_notes,
+          thumbnail_prompt: form.thumbnail_prompt,
+          has_thumbnail: Boolean(thumbnailUrl || file),
+          planned_date: form.planned_date,
+        }}
+      />
 
       <Card className="grid gap-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -556,6 +577,8 @@ export function ContentForm({
         </div>
       </Card>
 
+      {content && configured ? <ReviewLinkCard contentId={content.id} token={content.share_token ?? null} origin={origin} /> : null}
+
       <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-10 flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-surface/95 p-3 shadow-[var(--shadow-lg)] lg:bottom-4">
         <Button type="submit" loading={pending} disabled={!configured || generating || busy !== null} title="Save (Ctrl+S or ⌘S)">
           {pending ? "Saving…" : content ? "Save changes" : "Save content"}
@@ -575,6 +598,7 @@ export function ContentForm({
         <span className="hidden flex-1 sm:block" aria-hidden />
         {content ? (
           <>
+            <RepurposeButton contentId={content.id} disabled={pending || generating || busy !== null} />
             <Button
               variant="secondary"
               loading={busy === "duplicate"}

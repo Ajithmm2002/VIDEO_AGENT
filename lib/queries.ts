@@ -10,6 +10,16 @@ import { sanitizeSearch } from "@/lib/utils";
 import { isSupabaseConfigured } from "@/lib/env";
 import { requestUserEmail } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { asBrandDeal, type BrandDeal } from "@/lib/brand-deals";
+import {
+  asCreatorSettings,
+  asPublicPage,
+  isValidHandle,
+  normalizeHandle,
+  type CreatorLink,
+  type CreatorSettings,
+  type PublicCreatorPage,
+} from "@/lib/creator-page";
 
 function parseContents(rows: unknown[]) {
   return (rows ?? []).flatMap((row) => {
@@ -445,3 +455,140 @@ export const listPrompts = cache(async () => {
   if (error) throw new Error("Could not load saved prompts.");
   return (data ?? []).map(asPrompt);
 });
+
+// ---------------------------------------------------------------------------
+// Creator tools. Each returns `missing: true` when the creator-tools SQL has not been run yet,
+// so pages can say what to do instead of failing.
+// ---------------------------------------------------------------------------
+
+function missingTable(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const message = (error.message ?? "").toLowerCase();
+  return error.code === "42P01" || error.code === "42703" || error.code === "PGRST204" || error.code === "PGRST205" || message.includes("does not exist") || message.includes("could not find");
+}
+
+export const getCreatorSettings = cache(async (): Promise<{ settings: CreatorSettings | null; missing: boolean }> => {
+  const supabase = await client();
+  if (!supabase) return { settings: null, missing: false };
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("weekly_goal, onboarding_dismissed_at, calendar_token, public_handle, page_public, page")
+    .maybeSingle();
+  if (error) {
+    if (!missingTable(error)) console.error("getCreatorSettings", error);
+    return { settings: null, missing: missingTable(error) };
+  }
+  return { settings: data ? asCreatorSettings(data) : null, missing: false };
+});
+
+export const publishedHistory = cache(async (): Promise<string[]> => {
+  const supabase = await client();
+  if (!supabase) return [];
+  const since = new Date(Date.now() - 200 * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("contents")
+    .select("published_at")
+    .eq("status", "published")
+    .eq("is_template", false)
+    .gte("published_at", since)
+    .limit(2000);
+  if (error) {
+    if (!missingTable(error)) console.error("publishedHistory", error);
+    return [];
+  }
+  return (data ?? []).flatMap((row) => (typeof row.published_at === "string" ? [row.published_at] : []));
+});
+
+export async function listBrandDeals(): Promise<{ deals: BrandDeal[]; missing: boolean }> {
+  const supabase = await client();
+  if (!supabase) return { deals: [], missing: false };
+  const { data, error } = await supabase
+    .from("brand_deals")
+    .select("id, brand, status, amount_paise, due_date, deliverables, contact, notes, updated_at")
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .limit(500);
+  if (error) {
+    if (!missingTable(error)) console.error("listBrandDeals", error);
+    return { deals: [], missing: missingTable(error) };
+  }
+  return { deals: (data ?? []).flatMap((row) => asBrandDeal(row) ?? []), missing: false };
+}
+
+export async function listCreatorLinks(): Promise<{ links: CreatorLink[]; missing: boolean }> {
+  const supabase = await client();
+  if (!supabase) return { links: [], missing: false };
+  const { data, error } = await supabase
+    .from("creator_links")
+    .select("id, title, url, position, clicks")
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true })
+    .limit(50);
+  if (error) {
+    if (!missingTable(error)) console.error("listCreatorLinks", error);
+    return { links: [], missing: missingTable(error) };
+  }
+  return {
+    links: (data ?? []).flatMap((row) =>
+      typeof row.id === "string" && typeof row.title === "string" && typeof row.url === "string"
+        ? [{ id: row.id, title: row.title, url: row.url, position: Number(row.position) || 0, clicks: Number(row.clicks) || 0 }]
+        : [],
+    ),
+    missing: false,
+  };
+}
+
+/** Anyone may view a creator page that its owner made public. */
+export async function getPublicCreatorPage(handle: string): Promise<PublicCreatorPage | null> {
+  if (!isSupabaseConfigured() || !isValidHandle(normalizeHandle(handle))) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("creator_page", { p_handle: normalizeHandle(handle) });
+  if (error) {
+    if (!missingTable(error)) console.error("getPublicCreatorPage", error);
+    return null;
+  }
+  return asPublicPage(data);
+}
+
+export type SharedContent = {
+  title: string;
+  topic: string | null;
+  platform: string;
+  language: string;
+  status: Status;
+  planned_date: string | null;
+  description: string | null;
+  youtube_description: string | null;
+  instagram_caption: string | null;
+  tags: string[];
+  hashtags: string[];
+  script_notes: string | null;
+  updated_at: string;
+  author: string | null;
+};
+
+export async function getSharedContent(token: string): Promise<SharedContent | null> {
+  if (!isSupabaseConfigured() || !/^[A-Za-z0-9_-]{32,64}$/.test(token)) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("shared_content", { p_token: token });
+  if (error || !data || typeof data !== "object") return null;
+  const row = data as Record<string, unknown>;
+  const textOrNull = (value: unknown) => (typeof value === "string" && value.trim() ? value : null);
+  const list = (value: unknown) => (Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : []);
+  if (typeof row.title !== "string") return null;
+  return {
+    title: row.title,
+    topic: textOrNull(row.topic),
+    platform: String(row.platform ?? "both"),
+    language: String(row.language ?? "en"),
+    status: (statuses as readonly string[]).includes(String(row.status)) ? (row.status as Status) : "idea",
+    planned_date: textOrNull(row.planned_date),
+    description: textOrNull(row.description),
+    youtube_description: textOrNull(row.youtube_description),
+    instagram_caption: textOrNull(row.instagram_caption),
+    tags: list(row.tags),
+    hashtags: list(row.hashtags),
+    script_notes: textOrNull(row.script_notes),
+    updated_at: String(row.updated_at ?? ""),
+    author: textOrNull(row.author),
+  };
+}

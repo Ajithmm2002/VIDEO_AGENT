@@ -196,6 +196,8 @@ export function SupportChat() {
   }
 
   const lastAssistant = [...messages].reverse().find((item) => item.role === "assistant");
+  // Public creator pages and review links are for visitors, not studio users.
+  if (/^\/(c|share|go|offline)(\/|$)/.test(pathname)) return null;
   const position = dragTop ?? { x: left, y: top };
 
   return (

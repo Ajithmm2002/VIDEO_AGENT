@@ -55,6 +55,18 @@ const CASES: Array<[string, string | string[]]> = [
   ["could not claim coins", "Shop, coins, and download errors"],
   ["download is not working", "Shop, coins, and download errors"],
   ["could not load that product link", "Copy and link errors"],
+  // New creator tools.
+  ["add onam video ideas", "Festival ideas"],
+  ["give me a hook template", "Templates"],
+  ["what does the quality score mean", "Quality score"],
+  ["turn my video into a reel and a short", "Repurpose"],
+  ["send a draft to my client for approval", "Review links"],
+  ["how does the streak work", "Weekly goal and streak"],
+  ["add my schedule to google calendar", "Calendar sync"],
+  ["install the app on my phone", "Install the app"],
+  ["import ideas from excel", "CSV import"],
+  ["track a sponsorship payment", "Brand deals"],
+  ["make a link in bio page", "Creator page and link in bio"],
   // Added after a held-out check (21 of 25 were exact before these fixes).
   ["how many coins per game", "Studio coins and Fun mode"],
   ["the copy button does nothing", ["Copy and link errors", "Copy titles, tags, and descriptions"]],

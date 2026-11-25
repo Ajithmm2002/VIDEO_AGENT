@@ -19,6 +19,10 @@ const protectedPrefixes = [
   "/hashtags",
   "/affiliate",
   "/settings",
+  "/festivals",
+  "/templates",
+  "/deals",
+  "/creator-page",
   "/profile",
   "/marketplace",
   "/purchases",
@@ -29,6 +33,8 @@ const protectedPrefixes = [
 
 function isProtected(pathname: string) {
   if (pathname === "/api/support") return false;
+  // Private calendar feeds are read by calendar apps, which cannot sign in; the token is the key.
+  if (pathname.startsWith("/api/calendar/")) return false;
   return protectedPrefixes.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );

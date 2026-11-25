@@ -208,3 +208,169 @@ export async function setThumbnailPath(id: string, path: string | null): Promise
   refresh();
   return { ok: true, id };
 }
+
+// ---------------------------------------------------------------------------
+// Review links, repurposing, quick ideas, and CSV import
+// ---------------------------------------------------------------------------
+
+function blankInput(partial: Partial<ContentInput> & { title: string }): ContentInput {
+  return {
+    topic: null,
+    platform: "both",
+    language: "en",
+    status: "idea",
+    category_id: null,
+    description: null,
+    youtube_description: null,
+    instagram_caption: null,
+    tags: [],
+    hashtags: [],
+    script_notes: null,
+    thumbnail_prompt: null,
+    video_url: null,
+    published_url: null,
+    planned_date: null,
+    views: null,
+    likes: null,
+    comments: null,
+    notes: null,
+    reference_links: [],
+    checklist: [],
+    is_template: false,
+    ...partial,
+  };
+}
+
+async function insertMany(inputs: ContentInput[]): Promise<ActionResult & { created?: number }> {
+  const session = await requireSession();
+  if (!session.ok) return session;
+  const rows = [];
+  for (const [index, input] of inputs.entries()) {
+    const parsed = contentSchema.safeParse(input);
+    if (!parsed.success) return { ok: false, error: `Row ${index + 1}: ${firstIssue(parsed.error)}` };
+    rows.push(contentRow(session.user.id, parsed.data));
+  }
+  if (!rows.length) return { ok: false, error: "Nothing to add." };
+  for (let start = 0; start < rows.length; start += 100) {
+    const { error } = await session.supabase.from("contents").insert(rows.slice(start, start + 100));
+    if (error) {
+      console.error("insertMany", error);
+      return { ok: false, error: saveError(error, start ? `Added ${start} items, then saving stopped.` : "Could not add these items.") };
+    }
+  }
+  refresh();
+  return { ok: true, created: rows.length, message: `Added ${rows.length} item${rows.length === 1 ? "" : "s"} to Content.` };
+}
+
+export async function createIdeas(
+  ideas: Array<{ title: string; topic?: string | null; notes?: string | null; planned_date?: string | null; platform?: ContentInput["platform"] }>,
+): Promise<ActionResult & { created?: number }> {
+  if (!Array.isArray(ideas) || ideas.length === 0 || ideas.length > 10) return { ok: false, error: "Pick between 1 and 10 ideas." };
+  return insertMany(
+    ideas.map((idea) =>
+      blankInput({
+        title: String(idea.title ?? "").slice(0, 200),
+        topic: idea.topic ? String(idea.topic).slice(0, 500) : null,
+        notes: idea.notes ? String(idea.notes).slice(0, 8000) : null,
+        planned_date: idea.planned_date ?? null,
+        platform: idea.platform ?? "both",
+        status: idea.planned_date ? "planning" : "idea",
+      }),
+    ),
+  );
+}
+
+export async function importContentCsv(text: string): Promise<ActionResult & { created?: number; skipped?: number }> {
+  if (typeof text !== "string" || !text.trim()) return { ok: false, error: "Choose a CSV file first." };
+  if (text.length > 2_000_000) return { ok: false, error: "The file is too large. Keep it under 2 MB." };
+  const { csvToContent } = await import("@/lib/csv-import");
+  const preview = csvToContent(text);
+  if (preview.error) return { ok: false, error: preview.error };
+  if (!preview.rows.length) return { ok: false, error: "No rows with a title were found." };
+  const result = await insertMany(preview.rows);
+  if (!result.ok) return result;
+  return {
+    ...result,
+    skipped: preview.skipped,
+    message: `Imported ${result.created} item${result.created === 1 ? "" : "s"}${preview.skipped ? `, skipped ${preview.skipped} without a title or over the limit` : ""}.`,
+  };
+}
+
+const REPURPOSE_FORMATS = [
+  {
+    suffix: "Short",
+    platform: "youtube" as const,
+    notes:
+      "YouTube Short (9:16, under 60 seconds). Take the strongest moment from the main video. Hook in the first 2 seconds, one idea only, captions on screen, and end with a pointer to the full video.",
+    checklist: ["Pick the best 30–60 seconds", "Reframe to 9:16", "Add on-screen captions", "Link the full video"],
+  },
+  {
+    suffix: "Reel",
+    platform: "instagram" as const,
+    notes:
+      "Instagram Reel (9:16, 15–60 seconds). Open with the result or the most surprising line, use trending audio if it fits, keep text inside the safe area, and write a caption with a question.",
+    checklist: ["Choose the opening shot", "Add audio", "Write the caption", "Pick a cover frame"],
+  },
+  {
+    suffix: "Carousel post",
+    platform: "instagram" as const,
+    notes:
+      "Instagram carousel (up to 10 slides). Slide 1 is the hook, slides 2–8 are one point each, the last slide is the call to action. Good for tips and step-by-step topics.",
+    checklist: ["Write the hook slide", "One point per slide", "Design the slides", "End with a call to action"],
+  },
+];
+
+export async function repurposeContent(id: string): Promise<ActionResult & { created?: number }> {
+  const session = await requireSession();
+  if (!session.ok) return session;
+  const { data, error } = await session.supabase
+    .from("contents")
+    .select("title, topic, language, tags, hashtags, category_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return { ok: false, error: "Could not find that content." };
+  const source = data as { title: string; topic: string | null; language: ContentInput["language"]; tags: string[]; hashtags: string[]; category_id: string | null };
+  const base = source.title.replace(/\s+[—-]\s+(Short|Reel|Carousel post)$/i, "").slice(0, 180);
+  return insertMany(
+    REPURPOSE_FORMATS.map((format) =>
+      blankInput({
+        title: `${base} — ${format.suffix}`,
+        topic: source.topic ?? base,
+        platform: format.platform,
+        language: source.language,
+        category_id: source.category_id,
+        tags: source.tags ?? [],
+        hashtags: source.hashtags ?? [],
+        notes: `${format.notes}\n\nRepurposed from: ${source.title}`,
+        checklist: format.checklist.map((label) => ({ id: crypto.randomUUID(), label, done: false })),
+      }),
+    ),
+  );
+}
+
+export async function createShareLink(id: string): Promise<ActionResult & { token?: string }> {
+  const session = await requireSession();
+  if (!session.ok) return session;
+  const { newSecretToken } = await import("@/lib/tokens");
+  const token = newSecretToken();
+  const { data, error } = await session.supabase.from("contents").update({ share_token: token }).eq("id", id).select("id").maybeSingle();
+  if (error || !data) {
+    return {
+      ok: false,
+      error: error && (error.code === "42703" || error.code === "PGRST204")
+        ? "Run the creator tools SQL (20261126120000_creator_tools.sql) in Supabase, then try again."
+        : "Could not create a review link.",
+    };
+  }
+  revalidatePath(`/content/${id}`);
+  return { ok: true, token, message: "Review link ready. Anyone with the link can read this item." };
+}
+
+export async function revokeShareLink(id: string): Promise<ActionResult> {
+  const session = await requireSession();
+  if (!session.ok) return session;
+  const { error } = await session.supabase.from("contents").update({ share_token: null }).eq("id", id);
+  if (error) return { ok: false, error: "Could not turn off the review link." };
+  revalidatePath(`/content/${id}`);
+  return { ok: true, message: "Review link turned off." };
+}

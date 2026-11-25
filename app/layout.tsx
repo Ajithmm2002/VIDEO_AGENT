@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Malayalam } from "next/font/google";
 import { AppThemeProvider } from "@/components/theme-provider";
 import { SupportChatLazy } from "@/components/support-chat-lazy";
+import { ServiceWorkerRegister } from "@/components/pwa";
 import { AppToaster } from "@/components/toaster";
 import { isSupabaseConfigured, supabaseUrl } from "@/lib/env";
 import "./globals.css";
@@ -30,6 +31,8 @@ function supabaseOrigin() {
 }
 
 export const metadata: Metadata = {
+  applicationName: "Content Studio",
+  appleWebApp: { capable: true, title: "Studio", statusBarStyle: "default" },
   title: {
     default: "Content Studio",
     template: "%s · Content Studio",
@@ -64,6 +67,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <a href="#main" className="skip-link">Skip to content</a>
           {children}
           <SupportChatLazy />
+          <ServiceWorkerRegister />
           <AppToaster />
         </AppThemeProvider>
       </body>

@@ -73,13 +73,14 @@ npm test
    - Row Level Security so `user_id` must match the signed-in user
    - a trigger that creates a profile when someone registers
 6. For the skill shop, also run `supabase/migrations/20261121123000_marketplace.sql`, then `supabase/migrations/20261121140000_game_coins.sql`, then later coin SQL files through `supabase/migrations/20261121180000_hundred_coins.sql`. Insert your sign-in email into `app_admins` and set `MARKETPLACE_ADMIN_EMAIL` to the same address in `.env.local` and Vercel. Only that account can upload `.md` or `.zip` skills. 100 Fun mode coins = ₹1. Buy now will use Razorpay (coming soon). Seller uploads and image samples are marked coming soon.
-7. Open **Authentication → Providers** and keep Email enabled.
-8. For a personal workspace, you can turn off **Confirm email** under **Authentication → Sign In / Providers → Email**. Registration will sign you in immediately. Leave it on if you want people to confirm their address before they can sign in.
-9. Open **Authentication → URL Configuration**.
+7. For the creator tools (weekly goal and streak, getting started checklist, calendar sync, brand deals, public creator page with link-in-bio, and review links), run `supabase/migrations/20261126120000_creator_tools.sql`. It is safe to run again. Until it runs, those pages show a reminder instead of failing.
+8. Open **Authentication → Providers** and keep Email enabled.
+9. For a personal workspace, you can turn off **Confirm email** under **Authentication → Sign In / Providers → Email**. Registration will sign you in immediately. Leave it on if you want people to confirm their address before they can sign in.
+10. Open **Authentication → URL Configuration**.
    - Site URL: `http://localhost:3000`
    - Redirect URLs: `http://localhost:3000/auth/callback`
-10. Restart `npm run dev` after saving `.env.local`.
-11. Register from the app. That creates your private workspace. Nothing in the database is tied to a specific person until they register.
+11. Restart `npm run dev` after saving `.env.local`.
+12. Register from the app. That creates your private workspace. Nothing in the database is tied to a specific person until they register.
 
 Password hashing and session cookies are handled by Supabase Auth. The app never stores a raw password. New passwords need at least 8 characters, including a letter and a number. Sign-in, sign-up, and password reset are limited to a few attempts per email and address.
 
@@ -133,6 +134,13 @@ To connect a model later, set `AI_PROVIDER` to `openai` or `gemini`, set `AI_API
 - Use a month or week calendar and move a planned date by dragging or with the date field.
 - Browse the library, export CSV, and download or restore a JSON backup of your rows.
 - Open the skill shop to preview listed Claude or LLM skills. Free listings can be taken now. Paid skills can be bought with Fun mode coins (100 coins = ₹1). Buy now shows a Razorpay coming-soon popup. Community seller uploads and image samples are coming soon.
+- Install the studio as an app on a phone or computer, and sync planned dates to Google, Apple, or Outlook calendar.
+- Set a weekly publishing goal and keep a streak; follow the getting started checklist on the dashboard.
+- Add festival video ideas (Onam, Vishu, Christmas, and more) to Content with a suggested posting date.
+- Copy hooks, titles, captions, and calls to action from Templates, with your topic filled in.
+- See a quality score with quick fixes on each content item, repurpose one idea into a Short, a Reel, and a carousel, and send a read-only review link to a client.
+- Track brand deals from pitch to payment, and publish a creator page (media kit plus link-in-bio with click counts).
+- Import content ideas from a CSV file.
 - Play Fun mode: longer memory, catch, and spark runs. Bank a round of at least 20 seconds, claim coins, and spend them in the skill shop. Daily cap is 400 coins. Your total earned coins show on the dashboard and in Settings.
 
 Deleting content asks for confirmation. Thumbnail files live in a private bucket at `{your user id}/{content id}/...`.

@@ -333,3 +333,66 @@ export function parseContent(input: ContentInput) {
 export function firstIssue(error: z.ZodError) {
   return error.issues[0]?.message ?? "Check the form and try again.";
 }
+
+// ---------------------------------------------------------------------------
+// Creator tools
+// ---------------------------------------------------------------------------
+
+export const weeklyGoalSchema = z.number().int("Use a whole number").min(1, "Set at least 1 per week").max(21, "21 per week is the maximum");
+
+const shortText = (max: number) => z.string().trim().max(max).default("");
+
+export const creatorPageSchema = z.object({
+  headline: shortText(280),
+  niche: shortText(80),
+  location: shortText(80),
+  languages: shortText(80),
+  contact_email: z
+    .string()
+    .trim()
+    .max(120)
+    .refine((value) => value === "" || z.email().safeParse(value).success, { message: "Enter a valid contact email" })
+    .default(""),
+  youtube_url: z
+    .string()
+    .trim()
+    .max(300)
+    .refine((value) => value === "" || isHttpsUrl(value), { message: "YouTube link must start with https://" })
+    .default(""),
+  instagram_url: z
+    .string()
+    .trim()
+    .max(300)
+    .refine((value) => value === "" || isHttpsUrl(value), { message: "Instagram link must start with https://" })
+    .default(""),
+  youtube_subscribers: shortText(20),
+  instagram_followers: shortText(20),
+  average_views: shortText(20),
+  rates: z
+    .array(z.object({ label: z.string().trim().min(1, "Name each rate").max(60), price: z.string().trim().max(40) }))
+    .max(6, "Up to 6 rates")
+    .default([]),
+});
+
+export const creatorLinkSchema = z.object({
+  title: z.string().trim().min(1, "Give the link a title").max(60),
+  url: z
+    .string()
+    .trim()
+    .max(2000)
+    .refine((value) => isHttpsUrl(value), { message: "Links must start with https://" }),
+});
+
+export const brandDealSchema = z.object({
+  brand: z.string().trim().min(1, "Enter the brand name").max(80),
+  status: z.enum(["pitch", "negotiating", "agreed", "delivered", "paid", "lost"]),
+  amount_paise: z.number().int().min(0).max(100_000_000_000).nullable(),
+  due_date: z
+    .string()
+    .nullable()
+    .transform((value) => (value ? value : null))
+    .refine((value) => value === null || /^\d{4}-\d{2}-\d{2}$/.test(value), { message: "Use a valid date" }),
+  deliverables: nullableText(1000),
+  contact: nullableText(200),
+  notes: nullableText(2000),
+});

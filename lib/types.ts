@@ -68,6 +68,8 @@ export type Content = {
   reference_links: ReferenceLink[];
   checklist: ChecklistItem[];
   is_template: boolean;
+  share_token?: string | null;
+  published_at?: string | null;
   created_at: string;
   updated_at: string;
 };

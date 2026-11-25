@@ -30,7 +30,7 @@ Kind: help
 Keywords: zoom, mobile, phone, responsive, small screen, hamburger, menu, navigation, sidebar, bottom bar, where is, open calendar
 Ask: Where do I find pages on my phone?
 
-On a computer, the left sidebar lists Plan, Create, Discover, and Account (Profile, Purchases, Settings). Your account menu is the round button with your initials at the top right; it also has Sign out. On a phone, Home, Content, Shop, and Play sit on the bottom bar. Open Menu (☰) for Calendar, Writing, Planner, Library, Thumbnails, Hashtags, Affiliate ads, Profile, Purchases, and Settings. Buttons are large enough to tap. The calendar week grid scrolls sideways on purpose.
+On a computer, the left sidebar lists Plan, Create, Grow, Discover, and Account (Profile, Purchases, Settings). Your account menu is the round button with your initials at the top right; it also has Sign out. On a phone, Home, Content, Shop, and Play sit on the bottom bar. Open Menu (☰) for Calendar, Festival ideas, Writing, Planner, Library, Thumbnails, Templates, Hashtags, Affiliate ads, Brand deals, Creator page, Profile, Purchases, and Settings. Buttons are large enough to tap. The calendar week grid scrolls sideways on purpose.
 
 ## Dashboard
 Kind: help
@@ -38,7 +38,7 @@ Keywords: dashboard, home, at a glance, counts, recent, overview, workspace home
 Pages: /dashboard
 Ask: What does the dashboard show?
 
-Dashboard is the home page after sign-in. It shows how many items are planned, draft, ready, scheduled, or published, plus YouTube and Instagram counts. Recent work, upcoming dates, and your coin balance are there. Use New content, or the chips for Planner, Thumbnails, Calendar, Marketplace, and Fun mode.
+Dashboard is the home page after sign-in. It shows your pipeline (drafts, ready, scheduled, published), YouTube and Instagram counts, your weekly goal and streak, recent work, and upcoming dates. New accounts also see a Getting started checklist. Use New content, Plan ideas, or the quick links to Writing, Thumbnails, Festival ideas, and Affiliate ads. Your coin balance is in the header.
 
 ## Content
 Kind: help
@@ -66,7 +66,7 @@ Planner builds 1 to 7 days of video ideas. Each idea is a title plus how to shoo
 
 ## Calendar
 Kind: help
-Keywords: calendar, schedule, reschedule, week, month, undated, drag, publishing date, another day, change the date, move a video, day
+Keywords: calendar, schedule, schedule my post, schedule a post, posting date, reschedule, week, month, undated, drag, publishing date, another day, change the date, move a video, day
 Pages: /calendar
 Ask: How do I schedule a video on the calendar?
 
@@ -180,7 +180,7 @@ Keywords: settings, display name, profile, category, csv, backup, restore, expor
 Pages: /settings
 Ask: How do I export or back up my data?
 
-Settings holds content categories, coin balance, CSV export, and a JSON backup. Your name and email are on Profile. CSV and JSON include only your account. Thumbnail image files are not inside the JSON backup. Restore adds rows; it does not delete what is already there. Categories organise content; deleting a category leaves the content.
+Settings holds calendar sync, CSV import and export, a JSON backup, installing the app, content categories, and your coin balance. Your name and email are on Profile. CSV and JSON include only your account. Thumbnail image files are not inside the JSON backup. Restore adds rows; it does not delete what is already there. Categories organise content; deleting a category leaves the content.
 
 ## Light and dark
 Kind: help
@@ -209,6 +209,94 @@ Keywords: chatbot, this chat, support chat, headset, help icon, 24 hours, 24/7
 Ask: What can this chat help with?
 
 The headset button opens this chat. You can drag it, and it snaps to the nearest side of the screen. It answers around the clock from this working guide and shows which guide topic an answer came from. If a question is unclear, it suggests the closest topics instead of guessing. Keep a message under 500 characters. Ask for the support email or phone if you want a person — those details are an example desk until a live inbox is set.
+
+## Festival ideas
+Kind: help
+Keywords: festival, festivals, onam, vishu, christmas, diwali, eid, easter, kerala piravi, special day, occasion, festival ideas
+Pages: /festivals
+Ask: How do festival ideas work?
+
+Festival ideas (in the Plan menu) lists upcoming festivals and special days with ready-made video ideas. Tick the ideas you like and tap Add to Content. Each one is planned 3 days before the festival so it is live in time. Onam, Diwali, Eid, and Navaratri follow the lunar or Malayalam calendar, so pick this year's date on the card first. Filter by Kerala, India, or Global.
+
+## Templates
+Kind: help
+Keywords: template, templates, hook, hooks, caption template, cta, call to action, title ideas, caption ideas
+Pages: /templates
+Ask: Where can I find caption and hook templates?
+
+Templates (in the Create menu) has proven hooks, titles, captions, and calls to action. Type your topic once and every {topic} fills in. The highlighted parts are for you to edit after copying. Use the copy button on each card.
+
+## Quality score
+Kind: help
+Keywords: quality score, score, content score, checklist, improve reach, seo, grade
+Pages: /content
+Ask: What is the quality score?
+
+Each content item shows a quality score out of 100 while you edit it. It checks the title length, the topic word in the title, the description, caption, tags, hashtags, script notes, thumbnail, and publishing date. Tap the score to see which checks failed and a quick fix for each. It is a set of best-practice checks, not a prediction of views.
+
+## Repurpose
+Kind: help
+Keywords: repurpose, reuse, short, reel, carousel, one idea many posts
+Pages: /content
+Ask: How do I repurpose a video?
+
+On a saved content item, tap Repurpose. It creates three new items from the same idea: a YouTube Short, an Instagram Reel, and an Instagram carousel post, each with format notes and a checklist. They appear in Content as new ideas you can edit.
+
+## Review links
+Kind: help
+Keywords: review link, share for review, client, editor, approval, share draft, feedback, read only
+Pages: /content
+Ask: How do I share a draft for review?
+
+On a saved content item, use Share for review, then Create review link and copy it. Anyone with the link sees a read-only page with the title, captions, tags, and script, without an account. Notes and reference links stay private. Tap Stop sharing to turn the link off.
+
+## Weekly goal and streak
+Kind: help
+Keywords: weekly goal, goal, streak, consistency, publish per week, target
+Pages: /dashboard
+Ask: How does the weekly goal work?
+
+The dashboard shows your weekly goal: how many items you marked Published this week (Monday to Sunday, India time) against your target. Tap the pencil to change the goal (1 to 21). The streak counts weeks in a row that met the goal. Getting started steps also show on the dashboard until you finish or hide them.
+
+## Calendar sync
+Kind: help
+Keywords: calendar sync, google calendar, apple calendar, outlook, ical, ics, subscribe, calendar link
+Pages: /settings
+Ask: How do I sync with Google Calendar?
+
+In Settings, open Calendar sync and tap Create calendar link, then copy it. In Google Calendar choose Other calendars, then From URL, and paste the link. On iPhone or Mac tap Subscribe. Your planned dates appear as all-day events; Google can take a few hours to refresh. Keep the link private, and make a new link if you shared it by mistake.
+
+## Install the app
+Kind: help
+Keywords: install, app, home screen, pwa, download app, android app, iphone app, desktop app
+Pages: /settings
+Ask: Can I install Content Studio as an app?
+
+Content Studio can be installed like an app. In Settings, tap Install app (Chrome or Edge), or on iPhone open the site in Safari, tap Share, then Add to Home Screen. It opens full screen and updates by itself. It still needs an internet connection to load your work.
+
+## CSV import
+Kind: help
+Keywords: import, csv, spreadsheet, excel, google sheets, bulk add, upload ideas
+Pages: /settings
+Ask: How do I import ideas from a spreadsheet?
+
+In Settings, use Import from CSV and choose a .csv file. Only a title column is required; topic, platform, language, status, planned_date, description, tags, and hashtags are read when present. Dates can be YYYY-MM-DD or DD/MM/YYYY. The CSV export imports as is. Up to 300 rows at a time.
+
+## Brand deals
+Kind: help
+Keywords: brand deal, brand deals, sponsorship, sponsor, collaboration, collab, paid partnership, deal tracker, invoice
+Pages: /deals
+Ask: How do I track brand deals?
+
+Brand deals (in the Grow menu) tracks sponsorships through Pitched, Negotiating, Agreed, Delivered, Paid, or Lost. Add the brand, amount in rupees, due date, deliverables, and contact. Change the stage from the list. The top shows open deals, the open pipeline value, and what was marked paid this month. Overdue deals are flagged.
+
+## Creator page and link in bio
+Kind: help
+Keywords: creator page, link in bio, bio link, media kit, linktree, public page, rate card, my links, clicks
+Pages: /creator-page
+Ask: How do I set up my creator page?
+
+Creator page (in the Grow menu) gives you one public link for your Instagram or YouTube bio. Choose a page name, fill your media kit (bio, niche, audience numbers, rates, and a contact email for brands), add your links, then tick Make the page public and save. Each link counts clicks. Your page lives at /c/ followed by your page name. Untick public to hide it at any time.
 
 ## General errors
 Kind: error

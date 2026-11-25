@@ -5,6 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, ViewTransition } from "react";
 import {
   BadgePercent,
+  Briefcase,
+  IdCard,
+  LayoutTemplate,
+  PartyPopper,
   CalendarDays,
   ChevronDown,
   Clapperboard,
@@ -49,6 +53,7 @@ const groups: Array<{ label: string; links: NavLink[] }> = [
       { href: "/content", label: "Content", icon: Clapperboard },
       { href: "/planner", label: "Planner", icon: Lightbulb },
       { href: "/calendar", label: "Calendar", icon: CalendarDays },
+      { href: "/festivals", label: "Festival ideas", icon: PartyPopper },
       { href: "/library", label: "Library", icon: Library },
     ],
   },
@@ -57,8 +62,16 @@ const groups: Array<{ label: string; links: NavLink[] }> = [
     links: [
       { href: "/assistant", label: "Writing", icon: PenLine },
       { href: "/thumbnails", label: "Thumbnails", icon: ImageIcon },
+      { href: "/templates", label: "Templates", icon: LayoutTemplate },
       { href: "/hashtags", label: "Hashtags", icon: Hash },
       { href: "/affiliate", label: "Affiliate ads", icon: BadgePercent },
+    ],
+  },
+  {
+    label: "Grow",
+    links: [
+      { href: "/deals", label: "Brand deals", icon: Briefcase },
+      { href: "/creator-page", label: "Creator page", icon: IdCard },
     ],
   },
   {

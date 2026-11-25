@@ -99,6 +99,8 @@ export function asContent(value: unknown): Content {
     reference_links: asLinks(row.reference_links),
     checklist: asChecklist(row.checklist),
     is_template: Boolean(row.is_template),
+    share_token: text(row.share_token),
+    published_at: text(row.published_at),
     created_at: text(row.created_at) ?? "",
     updated_at: text(row.updated_at) ?? "",
   };
