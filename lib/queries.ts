@@ -11,6 +11,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { requestUserEmail } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { asBrandDeal, type BrandDeal } from "@/lib/brand-deals";
+import { asChannel, type ChannelProfile } from "@/lib/channel-profile";
 import {
   asCreatorSettings,
   asPublicPage,
@@ -592,3 +593,14 @@ export async function getSharedContent(token: string): Promise<SharedContent | n
     author: textOrNull(row.author),
   };
 }
+
+export const getChannelProfile = cache(async (): Promise<{ channel: ChannelProfile | null; missing: boolean }> => {
+  const supabase = await client();
+  if (!supabase) return { channel: null, missing: false };
+  const { data, error } = await supabase.from("profiles").select("channel").maybeSingle();
+  if (error) {
+    if (!missingTable(error)) console.error("getChannelProfile", error);
+    return { channel: null, missing: missingTable(error) };
+  }
+  return { channel: asChannel(data?.channel), missing: false };
+});

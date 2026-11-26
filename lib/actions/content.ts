@@ -263,7 +263,18 @@ async function insertMany(inputs: ContentInput[]): Promise<ActionResult & { crea
 }
 
 export async function createIdeas(
-  ideas: Array<{ title: string; topic?: string | null; notes?: string | null; planned_date?: string | null; platform?: ContentInput["platform"] }>,
+  ideas: Array<{
+    title: string;
+    topic?: string | null;
+    notes?: string | null;
+    planned_date?: string | null;
+    platform?: ContentInput["platform"];
+    language?: ContentInput["language"];
+    script_notes?: string | null;
+    instagram_caption?: string | null;
+    description?: string | null;
+    hashtags?: string[];
+  }>,
 ): Promise<ActionResult & { created?: number }> {
   if (!Array.isArray(ideas) || ideas.length === 0 || ideas.length > 10) return { ok: false, error: "Pick between 1 and 10 ideas." };
   return insertMany(
@@ -274,6 +285,11 @@ export async function createIdeas(
         notes: idea.notes ? String(idea.notes).slice(0, 8000) : null,
         planned_date: idea.planned_date ?? null,
         platform: idea.platform ?? "both",
+        language: idea.language === "ml" ? "ml" : "en",
+        script_notes: idea.script_notes ? String(idea.script_notes).slice(0, 20000) : null,
+        instagram_caption: idea.instagram_caption ? String(idea.instagram_caption).slice(0, 5000) : null,
+        description: idea.description ? String(idea.description).slice(0, 8000) : null,
+        hashtags: Array.isArray(idea.hashtags) ? idea.hashtags.filter((value) => typeof value === "string").slice(0, 40) : [],
         status: idea.planned_date ? "planning" : "idea",
       }),
     ),

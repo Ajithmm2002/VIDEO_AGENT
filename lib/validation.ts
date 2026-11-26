@@ -396,3 +396,13 @@ export const brandDealSchema = z.object({
   contact: nullableText(200),
   notes: nullableText(2000),
 });
+
+export const channelProfileSchema = z.object({
+  channel_name: z.string().trim().max(80).default(""),
+  niche: z.string().trim().max(80).default(""),
+  audience: z.string().trim().max(160).default(""),
+  language: z.enum(["en", "ml", "both"]),
+  platform: z.enum(platforms),
+  styles: z.array(z.enum(["Funny", "Informative", "Emotional", "Cinematic", "Casual", "Inspiring"])).max(3, "Pick up to 3 styles").default([]),
+  about: z.string().trim().max(600, "Keep the description under 600 characters").default(""),
+});

@@ -30,7 +30,7 @@ Kind: help
 Keywords: zoom, mobile, phone, responsive, small screen, hamburger, menu, navigation, sidebar, bottom bar, where is, open calendar
 Ask: Where do I find pages on my phone?
 
-On a computer, the left sidebar lists Plan, Create, Grow, Discover, and Account (Profile, Purchases, Settings). Your account menu is the round button with your initials at the top right; it also has Sign out. On a phone, Home, Content, Shop, and Play sit on the bottom bar. Open Menu (☰) for Calendar, Festival ideas, Writing, Planner, Library, Thumbnails, Templates, Hashtags, Affiliate ads, Brand deals, Creator page, Profile, Purchases, and Settings. Buttons are large enough to tap. The calendar week grid scrolls sideways on purpose.
+On a computer, the left sidebar has three groups: Plan (Dashboard, Content, Calendar, Planner, Festival ideas), Create (Writing, Thumbnails, Templates, Affiliate ads), and Grow (Brand deals, Creator page, Marketplace). Tap More at the bottom for Library, Hashtags, Fun mode, Purchases, and Settings. Your account menu is the round button with your initials at the top right: Profile, Purchases, Settings, and Sign out. On a phone, Home, Content, Shop, and Play sit on the bottom bar. Open Menu (☰) for Calendar, Festival ideas, Writing, Planner, Library, Thumbnails, Templates, Hashtags, Affiliate ads, Brand deals, Creator page, Profile, Purchases, and Settings. Buttons are large enough to tap. The calendar week grid scrolls sideways on purpose.
 
 ## Dashboard
 Kind: help
@@ -166,6 +166,14 @@ Ask: How does Generate work?
 
 Generate writes thumbnail prompts, writing drafts, topic copy, plans, audio scripts, and affiliate ads. On the live site you must be signed in. Enter a topic or title first. You can edit every result before you save. Studio coins do not pay for Generate. If the model is busy, wait a minute and tap Generate again. You can always type the fields by hand.
 
+## About my channel
+Kind: help
+Keywords: about my channel, my channel, channel details, niche, my niche, audience, channel style, personalise ai, personalize ai
+Pages: /profile
+Ask: How do I tell the AI about my channel?
+
+Open Profile and fill About my channel: channel name, niche, who watches, language, platform, up to 3 styles, and a short description. Tap Save channel details. Festival ideas use these details so AI suggestions fit your channel. Only you can see them; they are not shown on your public creator page.
+
 ## Profile
 Kind: help
 Keywords: profile, my email, my name, username, display name, who am i, account details
@@ -212,11 +220,11 @@ The headset button opens this chat. You can drag it, and it snaps to the nearest
 
 ## Festival ideas
 Kind: help
-Keywords: festival, festivals, onam, vishu, christmas, diwali, eid, easter, kerala piravi, special day, occasion, festival ideas
+Keywords: festival, festivals, onam, vishu, christmas, diwali, eid, easter, kerala piravi, special day, occasion, festival ideas, generate festival content, event ideas, festival content, onam content, vishu content, christmas content, diwali content, eid content, onam video, christmas video
 Pages: /festivals
 Ask: How do festival ideas work?
 
-Festival ideas (in the Plan menu) lists upcoming festivals and special days with ready-made video ideas. Tick the ideas you like and tap Add to Content. Each one is planned 3 days before the festival so it is live in time. Onam, Diwali, Eid, and Navaratri follow the lunar or Malayalam calendar, so pick this year's date on the card first. Filter by Kerala, India, or Global.
+Festival ideas (in the Plan menu) shows upcoming festivals and special days as small cards with the date and a countdown. Tap a card, then Generate ideas with AI to get 4 ideas written for your channel, each with a title, opening hook, what to film, a caption, and hashtags. Tap Generate new ideas for a fresh set. Tick the ones you like and tap Add to Content; each is planned 3 days before the festival. Onam, Diwali, Eid, and Navaratri follow the lunar or Malayalam calendar, so pick this year's date first. Fill About my channel in Profile so the ideas fit your niche. Review AI ideas before posting.
 
 ## Templates
 Kind: help

@@ -1,4 +1,7 @@
 import type { AffiliateAd, ContentPlan, Language, Platform, VideoDuration } from "@/lib/types";
+import type { ChannelProfile } from "@/lib/channel-profile";
+import type { Festival } from "@/lib/festivals";
+import { cleanFestivalIdeas, FESTIVAL_IDEA_COUNT, type FestivalIdeasResult } from "@/lib/ai/festival-ideas";
 import { affiliateCreditName, affiliateCreditPrice, applyAffiliateCredits, localAffiliateAd, type AffiliateAdInput } from "@/lib/ai/affiliate";
 import { spokenWordTarget } from "@/lib/utils";
 import {
@@ -444,4 +447,42 @@ export async function completeSupportJson(system: string, user: string) {
     temperature: 0,
     models: geminiLiteModelOrder(),
   });
+}
+
+export async function remoteFestivalIdeas(input: {
+  festival: Festival;
+  date: string | null;
+  channel: ChannelProfile | null;
+}): Promise<FestivalIdeasResult> {
+  const { festival, channel } = input;
+  const language = channel?.language === "ml" ? "Malayalam" : channel?.language === "both" ? "Malayalam (titles may mix in English words people really use)" : "English";
+  const platform = channel?.platform === "youtube" ? "YouTube (long videos and Shorts)" : channel?.platform === "instagram" ? "Instagram Reels" : "YouTube and Instagram Reels";
+  const data = await complete(
+    `You are a content strategist for Indian YouTube and Instagram creators. Suggest festival video ideas that fit THIS creator's channel, not generic festival content.
+Reply with JSON only: {"ideas":[{"title":string,"hook":string,"outline":string,"caption":string,"hashtags":string[]}]}.
+
+Rules:
+- Exactly ${FESTIVAL_IDEA_COUNT} ideas, each clearly different in format (for example a tutorial, a story, a challenge, a list).
+- Every idea must connect the festival to the creator's niche. If no niche is given, make practical ideas a small creator can film at home.
+- title: ready to paste, under 70 characters, in ${language}.
+- hook: the first spoken line (first 2 seconds), in ${language}.
+- outline: 3–5 short lines on what to film, in order, in ${language}.
+- caption: 1–3 short lines plus a question or call to action, in ${language}. No hashtags inside the caption.
+- hashtags: 6–10, ENGLISH letters only, without spaces, mixing the festival and the niche.
+- Be respectful of religious and cultural practices. No made-up facts, prices, brands, or statistics.`,
+    `Festival: ${festival.name} (${festival.region})
+Date: ${input.date ?? "this year (date not set)"}
+Starter ideas for reference (do not copy): ${festival.ideas.map((idea) => idea.title).join("; ")}
+Channel name: ${channel?.channel_name || "(not given)"}
+Niche: ${channel?.niche || "(not given)"}
+Audience: ${channel?.audience || "(not given)"}
+Style: ${channel?.styles.join(", ") || "(not given)"}
+About: ${channel?.about || "(not given)"}
+Platform: ${platform}
+Language: ${language}`,
+    { maxOutputTokens: 2200, timeoutMs: 30000, temperature: 0.9, models: geminiLiteModelOrder() },
+  );
+  const ideas = cleanFestivalIdeas(data);
+  if (ideas.length < 2) throw new Error("The connected AI provider returned too few festival ideas.");
+  return { provider: "remote", ideas };
 }

@@ -471,3 +471,32 @@ button.bg-accent:not(:disabled):hover {
     transform: translateY(-3px);
   }
 }
+
+/* Side sheet: slides up on phones, in from the right on larger screens. */
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes sheet-left {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.sheet-in {
+  animation: sheet-up var(--duration-slow) var(--ease-decelerate) both;
+}
+
+@media (min-width: 640px) {
+  .sheet-in {
+    animation-name: sheet-left;
+  }
+}

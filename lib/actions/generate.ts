@@ -1,7 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { generateAffiliateAd, generateAudioScript, generateContentPlan, generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
+import { generateAffiliateAd, generateAudioScript, generateContentPlan, generateFestivalIdeas, generateThumbnailPrompts, generateTopicCopy, generateWritingDraft } from "@/lib/ai";
+import { FESTIVALS } from "@/lib/festivals";
+import { getChannelProfile } from "@/lib/queries";
+import { tooManyAttempts } from "@/lib/security/attempts";
 import { affiliateCreditName } from "@/lib/ai/affiliate";
 import { isSupabaseConfigured } from "@/lib/env";
 import { normalizeListingPrice } from "@/lib/listing-price";
@@ -337,4 +340,27 @@ export async function saveContentPlan(input: {
   if (error) return { ok: false, error: "Could not save that plan. Try fewer ideas, then save again." };
   revalidatePath("/", "layout");
   return { ok: true, message: `Saved ${rows.length} ideas to your calendar.` };
+}
+
+/** AI festival ideas written for the signed-in creator's channel (falls back to built-in ideas). */
+export async function generateFestivalContent(input: { festivalId: string; date: string | null }) {
+  const festival = FESTIVALS.find((item) => item.id === input?.festivalId);
+  if (!festival) return { ok: false as const, error: "Choose a festival first." };
+  const date = typeof input.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(input.date) ? input.date : null;
+
+  let limiterKey = "festival-ai:local";
+  if (isSupabaseConfigured()) {
+    const session = await requireSession();
+    if (!session.ok) return { ok: false as const, error: "Sign in to continue." };
+    limiterKey = `festival-ai:${session.user.id}`;
+  } else if (process.env.NODE_ENV === "production") {
+    return { ok: false as const, error: "Connect the database before generating content." };
+  }
+  if (tooManyAttempts(limiterKey, 20, 60 * 60 * 1000)) {
+    return { ok: false as const, error: "You have generated a lot of ideas this hour. Try again in a little while." };
+  }
+
+  const { channel } = await getChannelProfile();
+  const result = await generateFestivalIdeas({ festival, date, channel });
+  return { ok: true as const, result };
 }

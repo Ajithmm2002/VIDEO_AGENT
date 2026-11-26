@@ -6,9 +6,10 @@ import { newSecretToken } from "@/lib/tokens";
 import { MAX_CREATOR_LINKS, isValidHandle, normalizeHandle, type CreatorPageFields } from "@/lib/creator-page";
 import type { BrandDealInput } from "@/lib/brand-deals";
 import type { ActionResult } from "@/lib/types";
-import { brandDealSchema, creatorLinkSchema, creatorPageSchema, firstIssue, weeklyGoalSchema } from "@/lib/validation";
+import { brandDealSchema, channelProfileSchema, creatorLinkSchema, creatorPageSchema, firstIssue, weeklyGoalSchema } from "@/lib/validation";
+import type { ChannelProfile } from "@/lib/channel-profile";
 
-const SETUP_HINT = "Run the creator tools SQL (20261126120000_creator_tools.sql) in Supabase, then try again.";
+const SETUP_HINT = "Run the latest SQL files in supabase/migrations in Supabase, then try again.";
 
 function friendly(error: { code?: string; message?: string } | null, fallback: string) {
   const message = (error?.message ?? "").toLowerCase();
@@ -182,4 +183,20 @@ export async function deleteBrandDeal(id: string): Promise<ActionResult> {
   if (error) return { ok: false, error: friendly(error, "Could not delete the deal.") };
   revalidatePath("/deals");
   return { ok: true, message: "Deal deleted." };
+}
+
+// ---------------------------------------------------------------------------
+// About my channel
+// ---------------------------------------------------------------------------
+
+export async function saveChannelProfile(input: ChannelProfile): Promise<ActionResult> {
+  const parsed = channelProfileSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  const session = await requireSession();
+  if (!session.ok) return session;
+  const { error } = await session.supabase.from("profiles").update({ channel: parsed.data }).eq("id", session.user.id);
+  if (error) return { ok: false, error: friendly(error, "Could not save your channel details.") };
+  revalidatePath("/profile");
+  revalidatePath("/festivals");
+  return { ok: true, message: "Channel details saved. AI ideas will use them." };
 }

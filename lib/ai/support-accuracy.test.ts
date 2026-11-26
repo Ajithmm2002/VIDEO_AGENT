@@ -67,6 +67,8 @@ const CASES: Array<[string, string | string[]]> = [
   ["import ideas from excel", "CSV import"],
   ["track a sponsorship payment", "Brand deals"],
   ["make a link in bio page", "Creator page and link in bio"],
+  ["generate onam content for my channel", "Festival ideas"],
+  ["where do I set my channel niche", "About my channel"],
   // Added after a held-out check (21 of 25 were exact before these fixes).
   ["how many coins per game", "Studio coins and Fun mode"],
   ["the copy button does nothing", ["Copy and link errors", "Copy titles, tags, and descriptions"]],

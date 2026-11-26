@@ -51,10 +51,9 @@ const groups: Array<{ label: string; links: NavLink[] }> = [
     links: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/content", label: "Content", icon: Clapperboard },
-      { href: "/planner", label: "Planner", icon: Lightbulb },
       { href: "/calendar", label: "Calendar", icon: CalendarDays },
+      { href: "/planner", label: "Planner", icon: Lightbulb },
       { href: "/festivals", label: "Festival ideas", icon: PartyPopper },
-      { href: "/library", label: "Library", icon: Library },
     ],
   },
   {
@@ -63,7 +62,6 @@ const groups: Array<{ label: string; links: NavLink[] }> = [
       { href: "/assistant", label: "Writing", icon: PenLine },
       { href: "/thumbnails", label: "Thumbnails", icon: ImageIcon },
       { href: "/templates", label: "Templates", icon: LayoutTemplate },
-      { href: "/hashtags", label: "Hashtags", icon: Hash },
       { href: "/affiliate", label: "Affiliate ads", icon: BadgePercent },
     ],
   },
@@ -72,15 +70,18 @@ const groups: Array<{ label: string; links: NavLink[] }> = [
     links: [
       { href: "/deals", label: "Brand deals", icon: Briefcase },
       { href: "/creator-page", label: "Creator page", icon: IdCard },
-    ],
-  },
-  {
-    label: "Discover",
-    links: [
       { href: "/marketplace", label: "Marketplace", icon: Store },
-      { href: "/play", label: "Fun mode", icon: Gamepad2 },
     ],
   },
+];
+
+/** Less-used pages sit behind "More" so the sidebar stays short. */
+const moreLinks: NavLink[] = [
+  { href: "/library", label: "Library", icon: Library },
+  { href: "/hashtags", label: "Hashtags", icon: Hash },
+  { href: "/play", label: "Fun mode", icon: Gamepad2 },
+  { href: "/purchases", label: "Purchases", icon: ShoppingBag },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 const accountLinks: NavLink[] = [
@@ -149,6 +150,7 @@ export function AppShell({
   const jobs = useGenerationJobs();
   const [open, setOpen] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [query, setQuery] = useState("");
   const closeMenuRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -197,6 +199,8 @@ export function AppShell({
   }, []);
 
   const closeDrawer = () => setOpen(false);
+  const moreActive = [...moreLinks, adminLink].some((link) => navActive(pathname, link.href));
+  const showMore = moreOpen || moreActive;
   const visibleName = displayName?.trim() || (email ? email.split("@")[0] : null) || (configured ? "Workspace" : "Local draft mode");
 
   const nav = (
@@ -212,12 +216,22 @@ export function AppShell({
         </div>
       ))}
       <div>
-        <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Account</p>
-        <div className="grid gap-0.5">
-          {(isAdmin ? [...accountLinks, adminLink] : accountLinks).map((link) => (
-            <NavItem key={link.href} link={link} active={navActive(pathname, link.href)} onNavigate={closeDrawer} />
-          ))}
-        </div>
+        <button
+          type="button"
+          className="flex min-h-9 w-full items-center justify-between rounded-lg px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted hover:text-ink"
+          aria-expanded={showMore}
+          onClick={() => setMoreOpen((value) => !value)}
+        >
+          More
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showMore && "rotate-180")} aria-hidden />
+        </button>
+        {showMore ? (
+          <div className="mt-1 grid gap-0.5">
+            {(isAdmin ? [...moreLinks, adminLink] : moreLinks).map((link) => (
+              <NavItem key={link.href} link={link} active={navActive(pathname, link.href)} onNavigate={closeDrawer} />
+            ))}
+          </div>
+        ) : null}
       </div>
     </nav>
   );
@@ -348,7 +362,7 @@ export function AppShell({
                       <p className="truncate text-xs text-muted">{email}</p>
                     </div>
                     <div className="grid p-1.5">
-                      {accountLinks.map((link) => {
+                      {(isAdmin ? [...accountLinks, adminLink] : accountLinks).map((link) => {
                         const Icon = link.icon;
                         return (
                           <Link

@@ -249,3 +249,53 @@ describe("brand deal totals", () => {
     expect(totals).toEqual({ openCount: 2, pipelinePaise: 1_500_000, paidThisMonthPaise: 300_000, overdue: 1 });
   });
 });
+
+describe("festival AI ideas", () => {
+  it("puts the creator's niche first when AI is not connected", async () => {
+    const { localFestivalIdeas } = await import("@/lib/ai/festival-ideas");
+    const { asChannel } = await import("@/lib/channel-profile");
+    const onam = FESTIVALS.find((festival) => festival.id === "onam")!;
+    const result = localFestivalIdeas(onam, asChannel({ niche: "Home cooking" }));
+    expect(result.provider).toBe("local");
+    expect(result.ideas).toHaveLength(4);
+    expect(result.ideas[0].title).toContain("Home cooking");
+    expect(result.ideas.every((idea) => idea.hashtags.every((tag) => /^#[\p{L}\p{N}]+$/u.test(tag)))).toBe(true);
+  });
+
+  it("falls back to starter ideas without a niche", async () => {
+    const { localFestivalIdeas } = await import("@/lib/ai/festival-ideas");
+    const christmas = FESTIVALS.find((festival) => festival.id === "christmas")!;
+    expect(localFestivalIdeas(christmas, null).ideas[0].title).toBe(christmas.ideas[0].title);
+  });
+
+  it("keeps only complete AI ideas and cleans hashtags", async () => {
+    const { cleanFestivalIdeas } = await import("@/lib/ai/festival-ideas");
+    const ideas = cleanFestivalIdeas({
+      ideas: [
+        { title: "Onam sadya in 60 seconds", hook: "Every dish, one leaf.", outline: "Top-down shot.", caption: "Which dish is yours?", hashtags: ["onam", "#Kerala Food", "ഓണം", 5] },
+        { title: "", outline: "missing title" },
+        "not an object",
+      ],
+    });
+    expect(ideas).toHaveLength(1);
+    expect(ideas[0].hashtags).toEqual(["#onam", "#KeralaFood"]);
+    expect(cleanFestivalIdeas(null)).toEqual([]);
+    const bare = cleanFestivalIdeas([{ title: "Star lantern", outline: ["Cut the frame", "Add paper", "Light it"], hashtags: [] }]);
+    expect(bare[0].outline).toBe("Cut the frame\nAdd paper\nLight it");
+    expect(cleanFestivalIdeas({ items: [{ title: "Carols", outline: "Film the choir." }] })).toHaveLength(1);
+  });
+});
+
+describe("about my channel", () => {
+  it("sanitises stored channel details", async () => {
+    const { asChannel, channelIsSetUp, channelSummary } = await import("@/lib/channel-profile");
+    const channel = asChannel({ niche: " Food ", language: "ml", platform: "tiktok", styles: ["Funny", "Loud", "Casual", "Informative", "Emotional"], about: "x".repeat(900) });
+    expect(channel.niche).toBe("Food");
+    expect(channel.platform).toBe("both");
+    expect(channel.styles).toEqual(["Funny", "Casual", "Informative"]);
+    expect(channel.about).toHaveLength(600);
+    expect(channelIsSetUp(channel)).toBe(true);
+    expect(channelIsSetUp(asChannel({}))).toBe(false);
+    expect(channelSummary(channel)).toBe("Food · Malayalam · Funny, Casual, Informative");
+  });
+});

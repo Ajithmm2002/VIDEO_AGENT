@@ -14,7 +14,10 @@ import {
   type TopicCopy,
   type WritingDraft,
 } from "@/lib/ai/local";
-import { remoteAffiliateAd, remoteAudioScript, remoteContentPlan, remoteThumbnail, remoteTopicCopy, remoteWriting } from "@/lib/ai/remote";
+import { remoteAffiliateAd, remoteAudioScript, remoteContentPlan, remoteFestivalIdeas, remoteThumbnail, remoteTopicCopy, remoteWriting } from "@/lib/ai/remote";
+import { localFestivalIdeas, type FestivalIdeasResult } from "@/lib/ai/festival-ideas";
+import type { ChannelProfile } from "@/lib/channel-profile";
+import type { Festival } from "@/lib/festivals";
 import { spreadPlanDates } from "@/lib/utils";
 
 export type ThumbnailResult = Omit<ThumbnailDraft, "provider"> & { provider: "local" | "remote" };
@@ -177,6 +180,16 @@ export async function generateAffiliateAd(input: AffiliateAdInput): Promise<Affi
       title: (input.productName.trim() || remote.title).slice(0, 80),
       hashtags: toEnglishHashtags([...remote.hashtags, ...local.hashtags], input.hashtagCount),
     };
+  } catch {
+    return local;
+  }
+}
+
+export async function generateFestivalIdeas(input: { festival: Festival; date: string | null; channel: ChannelProfile | null }): Promise<FestivalIdeasResult> {
+  const local = localFestivalIdeas(input.festival, input.channel);
+  if (!remoteAiEnabled()) return local;
+  try {
+    return await remoteFestivalIdeas(input);
   } catch {
     return local;
   }
