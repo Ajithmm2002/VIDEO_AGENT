@@ -36,7 +36,7 @@ import { signOut } from "@/lib/actions/auth";
 import { BrandMark } from "@/components/brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui";
-import { useGenerationJobs } from "@/lib/background-generate";
+import { NAVIGATE_EVENT, useGenerationJobs } from "@/lib/background-generate";
 import { headerContext, usesContentSearch } from "@/lib/app-shell-nav";
 import { formatCoins } from "@/lib/game-coins";
 import { cn } from "@/lib/utils";
@@ -183,6 +183,16 @@ export function AppShell({
       window.removeEventListener("keydown", onKey);
     };
   }, [userMenu]);
+
+  // Links from background-job toasts (for example "View ideas") navigate inside the app.
+  useEffect(() => {
+    function onNavigate(event: Event) {
+      const href = (event as CustomEvent<unknown>).detail;
+      if (typeof href === "string" && href.startsWith("/") && !href.startsWith("//")) router.push(href);
+    }
+    window.addEventListener(NAVIGATE_EVENT, onNavigate);
+    return () => window.removeEventListener(NAVIGATE_EVENT, onNavigate);
+  }, [router]);
 
   // Press "/" anywhere outside a text field to jump to search.
   useEffect(() => {

@@ -224,7 +224,7 @@ Keywords: festival, festivals, onam, vishu, christmas, diwali, eid, easter, kera
 Pages: /festivals
 Ask: How do festival ideas work?
 
-Festival ideas (in the Plan menu) shows upcoming festivals and special days as small cards with the date and a countdown. Tap a card, then Generate ideas with AI to get 4 ideas written for your channel, each with a title, opening hook, what to film, a caption, and hashtags. Tap Generate new ideas for a fresh set. Tick the ones you like and tap Add to Content; each is planned 3 days before the festival. Onam, Diwali, Eid, and Navaratri follow the lunar or Malayalam calendar, so pick this year's date first. Fill About my channel in Profile so the ideas fit your niche. Review AI ideas before posting.
+Festival ideas (in the Plan menu) shows upcoming festivals and special days as small cards with the date and a countdown. Tap a card, then Generate ideas with AI to get 4 ideas written for your channel, each with a title, opening hook, what to film, a caption, and hashtags. Tap Generate new ideas for a fresh set. If you close the panel while it is writing, it keeps going in the background: the header shows the progress, a message with View ideas appears when it is done, and the ideas stay on that festival's card for this browser tab. Tick the ones you like and tap Add to Content; each is planned 3 days before the festival. Onam, Diwali, Eid, and Navaratri follow the lunar or Malayalam calendar, so pick this year's date first. Fill About my channel in Profile so the ideas fit your niche. Review AI ideas before posting.
 
 ## Templates
 Kind: help

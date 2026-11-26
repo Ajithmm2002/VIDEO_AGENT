@@ -11,8 +11,9 @@ function todayInIndia() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
 
-export default async function FestivalsPage() {
-  const { channel } = await getChannelProfile();
+export default async function FestivalsPage({ searchParams }: PageProps<"/festivals">) {
+  const [{ channel }, params] = await Promise.all([getChannelProfile(), searchParams]);
+  const openId = typeof params.open === "string" && /^[a-z0-9-]{1,40}$/.test(params.open) ? params.open : null;
   const setUp = channelIsSetUp(channel);
   return (
     <div>
@@ -28,6 +29,7 @@ export default async function FestivalsPage() {
         channelSummary={setUp && channel ? channelSummary(channel) : null}
         channelLanguage={channel?.language ?? "en"}
         channelPlatform={channel?.platform ?? "both"}
+        initialOpenId={openId}
       />
     </div>
   );

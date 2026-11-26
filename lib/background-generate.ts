@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import { mergeDraft, readDraft, writeDraft } from "@/lib/draft";
 import { newId } from "@/lib/utils";
 import type { AffiliateProductType, Language, Platform, VideoDuration } from "@/lib/types";
+import type { FestivalIdeaDraft } from "@/lib/ai/festival-ideas";
+import { generateFestivalContent } from "@/lib/actions/generate";
 
-export type GenerationKind = "thumbnail" | "writing" | "topic" | "plan" | "script" | "affiliate";
+export type GenerationKind = "thumbnail" | "writing" | "topic" | "plan" | "script" | "affiliate" | "festival";
 
 type JobMeta = {
   pending: boolean;
@@ -22,6 +24,7 @@ const jobs: Record<GenerationKind, JobMeta> = {
   plan: { pending: false, label: "Planning ideas…", href: "/planner" },
   script: { pending: false, label: "Writing audio script…", href: "/planner" },
   affiliate: { pending: false, label: "Writing product ad…", href: "/affiliate" },
+  festival: { pending: false, label: "Writing festival ideas…", href: "/festivals" },
 };
 
 const listeners = new Set<() => void>();
@@ -32,6 +35,7 @@ const resultListeners: Record<GenerationKind, Set<(payload: unknown) => void>> =
   plan: new Set(),
   script: new Set(),
   affiliate: new Set(),
+  festival: new Set(),
 };
 
 let snapshotCache = { ...jobs };
@@ -44,7 +48,9 @@ function emit() {
     plan: jobs.plan,
     script: jobs.script,
     affiliate: jobs.affiliate,
+    festival: jobs.festival,
   };
+  festivalSnapshot = { ...festivalResults };
   for (const listener of listeners) listener();
 }
 
@@ -358,4 +364,97 @@ export function startAffiliateGeneration(input: {
     toast.success("Product ad ready. Open Affiliate ads to copy the caption and prompts.", { id: "gen-affiliate" });
     for (const listener of resultListeners.affiliate) listener(data);
   }, "/affiliate");
+}
+
+// ---------------------------------------------------------------------------
+// Festival ideas: keep running after the panel closes, and keep each festival's
+// latest ideas for this browser tab so reopening the card shows them.
+// ---------------------------------------------------------------------------
+
+export type FestivalResult = {
+  ideas: FestivalIdeaDraft[];
+  provider: "local" | "remote";
+  date: string | null;
+  round: number;
+  createdAt: number;
+};
+
+const FESTIVAL_RESULTS_KEY = "festival-ideas";
+
+/** Asks the app shell to navigate with the Next router (toasts live outside React components). */
+export const NAVIGATE_EVENT = "cs:navigate";
+let festivalResults: Record<string, FestivalResult> = {};
+let festivalLoaded = false;
+let festivalSnapshot: Record<string, FestivalResult> = {};
+const EMPTY_RESULTS: Record<string, FestivalResult> = {};
+
+function loadFestivalResults() {
+  if (festivalLoaded || typeof window === "undefined") return;
+  festivalLoaded = true;
+  festivalResults = readDraft<Record<string, FestivalResult>>(FESTIVAL_RESULTS_KEY) ?? {};
+  festivalSnapshot = { ...festivalResults };
+}
+
+/** Latest ideas per festival id, kept for this tab. */
+export function useFestivalResults() {
+  return useSyncExternalStore(
+    subscribeGeneration,
+    () => {
+      loadFestivalResults();
+      return festivalSnapshot;
+    },
+    () => EMPTY_RESULTS,
+  );
+}
+
+export function startFestivalGeneration(input: { festivalId: string; festivalName: string; date: string | null }) {
+  loadFestivalResults();
+  if (jobs.festival.pending) {
+    toast.message(`Still writing ${jobs.festival.label.replace(/^Writing |…$/g, "")}. Try again when it finishes.`);
+    return;
+  }
+  const toastId = "gen-festival";
+  const href = `/festivals?open=${encodeURIComponent(input.festivalId)}`;
+  jobs.festival = { pending: true, label: `Writing ${input.festivalName} ideas…`, href, itemId: input.festivalId };
+  emit();
+  toast.loading(jobs.festival.label, { id: toastId, description: "You can close the panel. The ideas will be saved here." });
+  void (async () => {
+    try {
+      const response = await generateFestivalContent({ festivalId: input.festivalId, date: input.date });
+      if (!response.ok) {
+        toast.error(response.error, { id: toastId, description: undefined });
+        return;
+      }
+      const previous = festivalResults[input.festivalId];
+      const result: FestivalResult = {
+        ideas: response.result.ideas,
+        provider: response.result.provider,
+        date: input.date,
+        round: (previous?.round ?? 0) + 1,
+        createdAt: Date.now(),
+      };
+      festivalResults = { ...festivalResults, [input.festivalId]: result };
+      writeDraft(FESTIVAL_RESULTS_KEY, festivalResults);
+      toast.success(`${input.festivalName} ideas are ready.`, {
+        id: toastId,
+        description: undefined,
+        duration: 10_000,
+        action: {
+          label: "View ideas",
+          onClick: () => {
+            for (const listener of resultListeners.festival) listener({ festivalId: input.festivalId, open: true });
+            if (!window.location.pathname.startsWith("/festivals")) {
+              window.dispatchEvent(new CustomEvent(NAVIGATE_EVENT, { detail: href }));
+            }
+          },
+        },
+      });
+      for (const listener of resultListeners.festival) listener({ festivalId: input.festivalId, open: false });
+    } catch {
+      toast.error("Could not write festival ideas. Check your connection and try again.", { id: toastId, description: undefined });
+    } finally {
+      jobs.festival = { ...jobs.festival, pending: false };
+      emit();
+    }
+  })();
 }

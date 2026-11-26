@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Check, Plus, RefreshCw, Search, Sparkles, X } from "lucide-react";
 import { createIdeas } from "@/lib/actions/content";
-import { generateFestivalContent } from "@/lib/actions/generate";
 import type { FestivalIdeaDraft } from "@/lib/ai/festival-ideas";
+import { onGenerationResult, startFestivalGeneration, useFestivalResults, useGenerationJobs, type FestivalResult } from "@/lib/background-generate";
 import type { ChannelLanguage } from "@/lib/channel-profile";
 import { CopyButton } from "@/components/copy-button";
 import { AiThinking, Button, TextInput, choiceClass } from "@/components/ui";
@@ -32,7 +32,19 @@ function starterIdeas(festival: Festival): FestivalIdeaDraft[] {
   return festival.ideas.map((idea) => ({ title: idea.title, hook: "", outline: idea.howTo, caption: "", hashtags: [] }));
 }
 
-function FestivalTile({ entry, today, onOpen }: { entry: Entry; today: string; onOpen: () => void }) {
+function FestivalTile({
+  entry,
+  today,
+  running,
+  ready,
+  onOpen,
+}: {
+  entry: Entry;
+  today: string;
+  running: boolean;
+  ready: boolean;
+  onOpen: () => void;
+}) {
   const { festival, date } = entry;
   const day = date ? new Date(`${date}T00:00:00Z`) : null;
   const soon = date ? daysUntil(date, today) <= 14 : false;
@@ -54,7 +66,19 @@ function FestivalTile({ entry, today, onOpen }: { entry: Entry; today: string; o
           {date ? countdown(date, today) : "Pick the date"}
         </span>
       </span>
-      <Sparkles className="hidden h-4 w-4 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100 sm:block" aria-hidden />
+      {running ? (
+        <span className="shrink-0" title="Writing ideas">
+          <Sparkles className="ai-sparkle-spin h-4 w-4 text-[var(--ai-2)]" aria-hidden />
+          <span className="sr-only">Writing ideas</span>
+        </span>
+      ) : ready ? (
+        <span className="shrink-0" title="Ideas ready">
+          <span className="ai-badge block h-2 w-2 rounded-full" aria-hidden />
+          <span className="sr-only">Ideas ready</span>
+        </span>
+      ) : (
+        <Sparkles className="hidden h-4 w-4 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100 sm:block" aria-hidden />
+      )}
     </button>
   );
 }
@@ -106,12 +130,21 @@ function FestivalSheet({
 }) {
   const router = useRouter();
   const { festival } = entry;
-  const [customDate, setCustomDate] = useState("");
-  const [ideas, setIdeas] = useState<FestivalIdeaDraft[]>(() => starterIdeas(festival));
-  const [source, setSource] = useState<"starter" | "local" | "remote">("starter");
-  const [picked, setPicked] = useState<Set<number>>(new Set());
-  const [generating, setGenerating] = useState(false);
-  const [round, setRound] = useState(0);
+  const results = useFestivalResults();
+  const jobsState = useGenerationJobs();
+  const result = results[festival.id] as FestivalResult | undefined;
+  // Results live in the background store, so closing the panel never loses a generation.
+  const ideas = result?.ideas ?? starterIdeas(festival);
+  const source: "starter" | "local" | "remote" = result?.provider ?? "starter";
+  const round = result?.round ?? 0;
+  const festivalJob = jobsState.festival;
+  const generating = festivalJob.pending && festivalJob.itemId === festival.id;
+  const otherRunning = festivalJob.pending && festivalJob.itemId !== festival.id ? festivalJob.label : null;
+  const [customDate, setCustomDate] = useState(() => (entry.date ? "" : (result?.date ?? "")));
+  // Selections belong to one set of ideas; a new round starts with nothing selected.
+  const [selection, setSelection] = useState<{ round: number; set: Set<number> }>({ round, set: new Set() });
+  const picked = selection.round === round ? selection.set : new Set<number>();
+  const setPicked = (update: (current: Set<number>) => Set<number>) => setSelection({ round, set: update(picked) });
   const [adding, setAdding] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const eventDate = entry.date ?? (customDate || null);
@@ -130,21 +163,14 @@ function FestivalSheet({
     };
   }, [onClose]);
 
-  async function generate() {
-    setGenerating(true);
-    const response = await generateFestivalContent({ festivalId: festival.id, date: eventDate });
-    setGenerating(false);
-    if (!response.ok) return toast.error(response.error);
-    setIdeas(response.result.ideas);
-    setSource(response.result.provider);
-    setRound((value) => value + 1);
-    setPicked(new Set());
+  function generate() {
+    startFestivalGeneration({ festivalId: festival.id, festivalName: festival.name, date: eventDate });
   }
 
   async function addPicked() {
     setAdding(true);
     const chosen = [...picked].sort().map((index) => ideas[index]);
-    const result = await createIdeas(
+    const added = await createIdeas(
       chosen.map((idea) => ({
         title: idea.title.slice(0, 200),
         topic: `${festival.name}: ${idea.title}`.slice(0, 500),
@@ -158,9 +184,9 @@ function FestivalSheet({
       })),
     );
     setAdding(false);
-    if (!result.ok) return toast.error(result.error);
-    toast.success(result.message ?? "Added");
-    setPicked(new Set());
+    if (!added.ok) return toast.error(added.error);
+    toast.success(added.message ?? "Added");
+    setPicked(() => new Set());
     router.refresh();
   }
 
@@ -208,10 +234,12 @@ function FestivalSheet({
                 .
               </p>
             )}
-            <Button variant="ai" className="mt-3 w-full" loading={generating} disabled={generating} onClick={generate}>
+            <Button variant="ai" className="mt-3 w-full" loading={generating} disabled={generating || Boolean(otherRunning)} onClick={generate}>
               {generating ? null : source === "starter" ? <Sparkles className="h-4 w-4" aria-hidden /> : <RefreshCw className="h-4 w-4" aria-hidden />}
               {generating ? "Writing ideas…" : source === "starter" ? "Generate ideas with AI" : "Generate new ideas"}
             </Button>
+            {otherRunning ? <p className="mt-2 text-xs text-muted">{otherRunning} Wait for it to finish.</p> : null}
+            {generating ? <p className="mt-2 text-xs text-muted">You can close this panel. The ideas will be saved on this festival.</p> : null}
             {!aiConnected ? <p className="mt-2 text-xs text-muted">AI is not connected on this site, so you get built-in ideas that use your niche.</p> : null}
           </div>
 
@@ -265,6 +293,7 @@ export function FestivalPlanner({
   channelSummary,
   channelLanguage,
   channelPlatform,
+  initialOpenId = null,
 }: {
   today: string;
   configured: boolean;
@@ -272,12 +301,27 @@ export function FestivalPlanner({
   channelSummary: string | null;
   channelLanguage: ChannelLanguage;
   channelPlatform: Platform;
+  initialOpenId?: string | null;
 }) {
   const [region, setRegion] = useState<(typeof REGIONS)[number]>("All");
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState<Entry | null>(null);
-  const close = useCallback(() => setOpen(null), []);
   const list = useMemo(() => upcomingFestivals(today), [today]);
+  const [open, setOpen] = useState<Entry | null>(() => list.find((item) => item.festival.id === initialOpenId) ?? null);
+  const close = useCallback(() => setOpen(null), []);
+  const results = useFestivalResults();
+  const jobsState = useGenerationJobs();
+  const runningId = jobsState.festival.pending ? jobsState.festival.itemId : null;
+
+  // "View ideas" on the finished toast opens that festival's panel.
+  useEffect(
+    () =>
+      onGenerationResult<{ festivalId: string; open: boolean }>("festival", (payload) => {
+        if (!payload.open) return;
+        const entry = list.find((item) => item.festival.id === payload.festivalId);
+        if (entry) setOpen(entry);
+      }),
+    [list],
+  );
   const needle = query.trim().toLowerCase();
   const shown = list.filter((item) => (region === "All" || item.festival.region === region) && (!needle || item.festival.name.toLowerCase().includes(needle)));
   const groups = [
@@ -319,7 +363,14 @@ export function FestivalPlanner({
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{group.title}</h2>
             <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4">
               {group.items.map((item) => (
-                <FestivalTile key={item.festival.id} entry={item} today={today} onOpen={() => setOpen(item)} />
+                <FestivalTile
+                  key={item.festival.id}
+                  entry={item}
+                  today={today}
+                  running={runningId === item.festival.id}
+                  ready={Boolean(results[item.festival.id])}
+                  onOpen={() => setOpen(item)}
+                />
               ))}
             </div>
           </section>
