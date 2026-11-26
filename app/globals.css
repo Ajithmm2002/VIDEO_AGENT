@@ -688,3 +688,156 @@ button.bg-accent:not(:disabled):hover {
 .reveal-stagger > *:nth-child(n + 6) {
   animation-delay: 350ms;
 }
+
+/* ---------------------------------------------------------------------------
+ * Auth pages: drifting gradient light, floating previews, pointer tilt,
+ * hover lift, and a rotating headline word.
+ * ------------------------------------------------------------------------- */
+
+@keyframes aurora-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(8%, -6%, 0) scale(1.15);
+  }
+}
+
+.aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora > span {
+  position: absolute;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  filter: blur(70px);
+  opacity: 0.32;
+  animation: aurora-drift 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+.aurora > span:nth-child(1) {
+  top: -10%;
+  left: -10%;
+  background: var(--ai-1);
+}
+
+.aurora > span:nth-child(2) {
+  top: 25%;
+  right: -15%;
+  background: var(--ai-2);
+  animation-duration: 24s;
+  animation-delay: -8s;
+}
+
+.aurora > span:nth-child(3) {
+  bottom: -20%;
+  left: 20%;
+  background: var(--ai-3);
+  animation-duration: 28s;
+  animation-delay: -14s;
+}
+
+.dark .aurora > span {
+  opacity: 0.2;
+}
+
+@keyframes float-card {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+.float-card {
+  animation: float-card 6s ease-in-out infinite;
+}
+
+.tilt-stage {
+  perspective: 1200px;
+  --mx: 0;
+  --my: 0;
+}
+
+.tilt-layer {
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--my) * -5deg)) rotateY(calc(var(--mx) * 7deg));
+  transition: transform 400ms var(--ease-decelerate);
+}
+
+.lift-card {
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard);
+}
+
+.lift-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: color-mix(in srgb, var(--ai-2) 45%, var(--line));
+  box-shadow: var(--shadow-lg), var(--ai-glow);
+}
+
+/* Each word is fully gone (at 31%) before the next one starts (at 33.3%). */
+@keyframes word-cycle {
+  0% {
+    opacity: 0;
+    transform: translateY(70%);
+  }
+  7%,
+  27% {
+    opacity: 1;
+    transform: none;
+  }
+  31%,
+  100% {
+    opacity: 0;
+    transform: translateY(-70%);
+  }
+}
+
+.word-rotator {
+  display: inline-grid;
+  vertical-align: bottom;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.word-rotator > span {
+  grid-area: 1 / 1;
+  opacity: 0;
+  animation: word-cycle 7.5s var(--ease-standard) infinite;
+}
+
+.word-rotator > span:nth-child(2) {
+  animation-delay: 2.5s;
+}
+
+.word-rotator > span:nth-child(3) {
+  animation-delay: 5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word-rotator > span:first-child {
+    opacity: 1;
+    transform: none;
+  }
+
+  .word-rotator > span:not(:first-child) {
+    display: none;
+  }
+
+  .tilt-layer {
+    transform: none;
+  }
+}
