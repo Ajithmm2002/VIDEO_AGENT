@@ -9,7 +9,8 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { CopyField } from "@/components/copy-button";
 import { ContentScoreCard } from "@/components/content-score-card";
 import { RepurposeButton, ReviewLinkCard } from "@/components/content-share";
-import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Sparkles } from "lucide-react";
+import { AiThinking, Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels, statusLabels } from "@/lib/labels";
 import type { Category, Content, ContentInput, HashtagCollection } from "@/lib/types";
 import { languages, platforms, statuses } from "@/lib/types";
@@ -355,9 +356,11 @@ export function ContentForm({
           <CountSelect label="Number of YouTube tags" value={tagCount} onChange={setTagCount} />
           <CountSelect label="Number of hashtags" value={hashtagCount} onChange={setHashtagCount} />
         </div>
-        <Button onClick={onGenerateCopy} loading={generating} disabled={pending || busy !== null}>
+        <Button variant="ai" className="w-fit" onClick={onGenerateCopy} loading={generating} disabled={pending || busy !== null}>
+          {generating ? null : <Sparkles className="h-4 w-4" aria-hidden />}
           {generating ? "Writing…" : "Generate description and tags"}
         </Button>
+        {generating ? <AiThinking label="Writing your description and tags" className="border-t border-line pt-4" /> : null}
       </Card>
 
       <Card className="grid gap-4">

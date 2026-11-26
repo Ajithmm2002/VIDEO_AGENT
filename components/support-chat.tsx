@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { BookOpen, Headset, RotateCcw, Send, X } from "lucide-react";
+import { ArrowUp, BookOpen, RotateCcw, Sparkles, X } from "lucide-react";
 import { SUPPORT_QUICK_PROMPTS } from "@/lib/ai/support-public";
 import { cn } from "@/lib/utils";
 
@@ -222,8 +222,8 @@ export function SupportChat() {
         >
           <header className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
             <div className="flex min-w-0 items-center gap-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent" aria-hidden>
-                <Headset className="h-4 w-4" />
+              <span className="ai-badge grid h-9 w-9 shrink-0 place-items-center rounded-full shadow-[var(--ai-glow)]" aria-hidden>
+                <Sparkles className="h-4 w-4" />
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-semibold">Help</p>
@@ -256,7 +256,7 @@ export function SupportChat() {
 
           <div ref={listRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4" aria-live="polite">
             {messages.map((item) => (
-              <div key={item.id} className={cn("flex max-w-[88%] flex-col gap-1.5", item.role === "user" ? "self-end items-end" : "self-start")}>
+              <div key={item.id} className={cn("animate-fade-up flex max-w-[88%] flex-col gap-1.5", item.role === "user" ? "self-end items-end" : "self-start")}>
                 <p
                   className={cn(
                     "whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-6",
@@ -288,18 +288,19 @@ export function SupportChat() {
               </div>
             ))}
             {pending ? (
-              <div className="self-start rounded-2xl rounded-bl-md bg-surface-2 px-4 py-3" role="status" aria-label="Writing a reply">
-                <span className="typing-dots" aria-hidden>
-                  <span />
-                  <span />
-                  <span />
+              <div className="grid w-56 gap-2 self-start rounded-2xl rounded-bl-md bg-surface-2/60 px-4 py-3" role="status" aria-label="Writing a reply">
+                <span className="flex items-center gap-1.5 text-xs font-semibold" aria-hidden>
+                  <Sparkles className="ai-sparkle-spin h-3.5 w-3.5 text-[var(--ai-2)]" />
+                  <span className="ai-text">Thinking…</span>
                 </span>
+                <span className="ai-shimmer-line w-full" aria-hidden />
+                <span className="ai-shimmer-line w-3/4" style={{ animationDelay: "120ms" }} aria-hidden />
               </div>
             ) : null}
           </div>
 
           <form
-            className="flex items-end gap-2 border-t border-line p-3"
+            className="ai-glow m-3 flex items-end gap-2 rounded-2xl bg-bg p-1.5"
             onSubmit={(event) => {
               event.preventDefault();
               void send();
@@ -319,15 +320,15 @@ export function SupportChat() {
               maxLength={500}
               placeholder="Ask a question…"
               aria-label="Your question"
-              className="max-h-28 min-h-10 min-w-0 flex-1 resize-none rounded-xl border border-line bg-bg px-3 py-2 text-base leading-6 sm:text-sm"
+              className="max-h-28 min-h-10 min-w-0 flex-1 resize-none rounded-xl border-0 bg-transparent px-2.5 py-2 text-base leading-6 shadow-none focus-visible:outline-none sm:text-sm"
             />
             <button
               type="submit"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-ink hover:bg-accent-2 disabled:opacity-50"
+              className="ai-badge grid h-9 w-9 shrink-0 place-items-center rounded-full shadow-[var(--ai-glow)] disabled:opacity-40 disabled:shadow-none"
               disabled={pending || !input.trim()}
               aria-label="Send"
             >
-              <Send className="h-4 w-4" />
+              <ArrowUp className="h-4 w-4" />
             </button>
           </form>
         </section>
@@ -351,13 +352,13 @@ export function SupportChat() {
           }
         }}
         className={cn(
-          "pointer-events-auto absolute grid touch-none place-items-center rounded-full bg-accent text-accent-ink shadow-[var(--shadow-lg)] hover:bg-accent-2",
+          "ai-badge pointer-events-auto absolute grid touch-none place-items-center rounded-full shadow-[var(--ai-glow)] hover:brightness-110",
           open ? "max-sm:hidden" : "",
           dragTop ? "cursor-grabbing" : "transition-[left,top] duration-200",
         )}
         style={{ left: position.x, top: position.y, width: BUTTON, height: BUTTON }}
       >
-        {open ? <X className="h-5 w-5" aria-hidden /> : <Headset className="h-5 w-5" aria-hidden />}
+        {open ? <X className="h-5 w-5" aria-hidden /> : <Sparkles className="h-5 w-5" aria-hidden />}
       </button>
     </div>
   );

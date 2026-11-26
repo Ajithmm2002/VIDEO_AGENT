@@ -7,7 +7,8 @@ import { saveContentPlan } from "@/lib/actions/generate";
 import { onGenerationResult, startPlanGeneration, startScriptGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyField } from "@/components/copy-button";
 import { ConfirmButton } from "@/components/confirm-button";
-import { Button, Card, choiceClass, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Sparkles } from "lucide-react";
+import { AiThinking, Button, Card, choiceClass, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { ideaThemeLabels, languageLabels, planDayLabel, platformLabels, videoDurationLabels } from "@/lib/labels";
 import type { Category, IdeaTheme, Language, Platform, VideoDuration } from "@/lib/types";
 import { ideaThemes, languages, planDays, platforms, videoDurations } from "@/lib/types";
@@ -365,13 +366,20 @@ export function PlannerStudio({
             </SelectInput>
           </Field>
         </div>
-        <Button className="w-fit" onClick={onGenerate} loading={generating} disabled={saving}>
+        <Button variant="ai" className="w-fit" onClick={onGenerate} loading={generating} disabled={saving}>
+          {generating ? null : <Sparkles className="h-4 w-4" aria-hidden />}
           {generating ? "Planning…" : `Suggest ${planDayLabel(days)} of video ideas`}
         </Button>
       </Card>
 
+      {generating ? (
+        <Card>
+          <AiThinking label={`Planning ${planDayLabel(days)} of video ideas`} lines={5} />
+        </Card>
+      ) : null}
+
       {items.length ? (
-        <div className="grid gap-3">
+        <div className="reveal-stagger grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">Suggested videos</h2>
             <p className="text-sm text-muted">Title is the idea. Description is how to shoot it. Write an audio script only when you need one.</p>
@@ -436,7 +444,7 @@ export function PlannerStudio({
               </CopyField>
               <div className="flex flex-wrap gap-2">
                 <Button
-                  variant="secondary"
+                  variant="ai"
                   loading={scriptingId === item.id}
                   disabled={!item.title.trim() || generating || (Boolean(scriptingId) && scriptingId !== item.id)}
                   onClick={() =>

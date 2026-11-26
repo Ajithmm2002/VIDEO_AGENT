@@ -29,7 +29,7 @@ const quickActions = [
 ];
 
 function greeting(name: string) {
-  return name === "Workspace" || name === "Local draft mode" ? "Your studio at a glance" : `Welcome back, ${name}`;
+  return name === "Workspace" || name === "Local draft mode" ? "Your studio at a glance" : `Hello, ${name}`;
 }
 
 export default async function DashboardPage() {
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
   return (
     <div>
       <PageHeader
-        title={greeting(name)}
+        title={<span className="ai-text animate-fade-up inline-block pb-1">{greeting(name)}</span>}
         description="What you are planning, drafting, and publishing, in one place."
         action={
           <>

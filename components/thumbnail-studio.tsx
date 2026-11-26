@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { savePrompt } from "@/lib/actions/generate";
 import { onGenerationResult, startThumbnailGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyButton, CopyField } from "@/components/copy-button";
 import { Button, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { googleFlowUrl, languageLabels } from "@/lib/labels";
 import type { ContentOption, Language } from "@/lib/types";
 import { languages } from "@/lib/types";
@@ -275,7 +276,8 @@ export function ThumbnailStudio({
           <p className="text-xs leading-5 text-muted">Unchecked formats are left as they are. You can leave this page while a prompt is writing; it keeps going in the background.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onGenerate} loading={pending} disabled={saving || (!wantLandscape && !wantVertical)}>
+          <Button variant="ai" onClick={onGenerate} loading={pending} disabled={saving || (!wantLandscape && !wantVertical)}>
+            {pending ? null : <Sparkles className="h-4 w-4" aria-hidden />}
             {pending ? "Writing prompt…" : wantLandscape && wantVertical ? "Generate both prompts" : wantLandscape ? "Generate 16:9 prompt" : wantVertical ? "Generate 9:16 prompt" : "Generate prompts"}
           </Button>
           <a
@@ -295,7 +297,7 @@ export function ThumbnailStudio({
             <h2 className="font-semibold">Landscape 16:9</h2>
             <CopyButton text={landscape} />
           </div>
-          <div className="aspect-video overflow-hidden rounded-xl border border-line bg-[radial-gradient(circle_at_20%_20%,rgb(var(--glow)/0.22),transparent_45%),radial-gradient(circle_at_80%_80%,rgb(var(--glow-warm)/0.2),transparent_40%),var(--surface-2)]" />
+          <div className={cn("aspect-video overflow-hidden rounded-xl border border-line bg-[radial-gradient(circle_at_20%_20%,rgb(var(--glow)/0.22),transparent_45%),radial-gradient(circle_at_80%_80%,rgb(var(--glow-warm)/0.2),transparent_40%),var(--surface-2)]", pending && wantLandscape && "ai-shimmer-box")} />
           <TextArea className="min-h-80" value={landscape} onChange={(event) => setLandscape(event.target.value)} />
         </Card>
         <Card className="grid gap-3">
@@ -303,7 +305,7 @@ export function ThumbnailStudio({
             <h2 className="font-semibold">Vertical 9:16</h2>
             <CopyButton text={vertical} />
           </div>
-          <div className="mx-auto h-40 w-24 overflow-hidden rounded-xl border border-line bg-[radial-gradient(circle_at_30%_20%,rgb(var(--glow-warm)/0.28),transparent_42%),radial-gradient(circle_at_70%_80%,rgb(var(--glow)/0.22),transparent_40%),var(--surface-2)]" />
+          <div className={cn("mx-auto h-40 w-24 overflow-hidden rounded-xl border border-line bg-[radial-gradient(circle_at_30%_20%,rgb(var(--glow-warm)/0.28),transparent_42%),radial-gradient(circle_at_70%_80%,rgb(var(--glow)/0.22),transparent_40%),var(--surface-2)]", pending && wantVertical && "ai-shimmer-box")} />
           <TextArea className="min-h-80" value={vertical} onChange={(event) => setVertical(event.target.value)} />
         </Card>
       </div>

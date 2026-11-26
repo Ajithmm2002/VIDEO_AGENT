@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { applyWriting, createFromWriting } from "@/lib/actions/generate";
 import { onGenerationResult, startWritingGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyButton, CopyField } from "@/components/copy-button";
-import { Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Sparkles } from "lucide-react";
+import { AiThinking, Button, Card, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { languageLabels, platformLabels } from "@/lib/labels";
 import type { ContentInput, ContentOption, Language, Platform } from "@/lib/types";
 import { languages, platforms } from "@/lib/types";
@@ -198,10 +199,17 @@ export function WritingStudio({
           <CountSelect label="Number of YouTube tags" value={tagCount} onChange={setTagCount} />
           <CountSelect label="Number of hashtags" value={hashtagCount} onChange={setHashtagCount} />
         </div>
-        <Button className="w-fit" onClick={onGenerate} loading={pending} disabled={saving !== null}>
+        <Button variant="ai" className="w-fit" onClick={onGenerate} loading={pending} disabled={saving !== null}>
+          {pending ? null : <Sparkles className="h-4 w-4" aria-hidden />}
           {pending ? "Writing…" : "Generate draft"}
         </Button>
       </Card>
+
+      {pending ? (
+        <Card>
+          <AiThinking label="Writing titles, captions, and tags" lines={4} />
+        </Card>
+      ) : null}
 
       <Card className="grid gap-3">
         <h2 className="font-semibold">Titles</h2>

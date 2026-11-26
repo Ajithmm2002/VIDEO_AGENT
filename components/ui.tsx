@@ -9,7 +9,7 @@ export function PageHeader({
   action,
   eyebrow,
 }: {
-  title: string;
+  title: ReactNode;
   description?: string;
   action?: ReactNode;
   eyebrow?: string;
@@ -31,6 +31,7 @@ const buttonStyles = {
   secondary: "border border-line bg-surface text-ink shadow-[var(--shadow)] hover:border-line-strong hover:bg-surface-2",
   danger: "bg-danger text-accent-ink shadow-[var(--shadow)] hover:opacity-90",
   ghost: "text-ink hover:bg-surface-2",
+  ai: "ai-button",
 };
 
 /** Shared classes for links that should look like buttons. */
@@ -65,7 +66,13 @@ export const Button = forwardRef<
       )}
       {...props}
     >
-      {loading ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden /> : null}
+      {loading ? (
+        variant === "ai" ? (
+          <Sparkles className="ai-sparkle-spin h-4 w-4 shrink-0" aria-hidden />
+        ) : (
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+        )
+      ) : null}
       {children}
     </button>
   );
@@ -176,6 +183,24 @@ export function EmptyState({
       <p className="font-semibold">{title}</p>
       <p className="mt-1.5 max-w-sm text-sm leading-6 text-muted">{body}</p>
       {action ? <div className="mt-5">{action}</div> : null}
+    </div>
+  );
+}
+
+/** Shown while the AI is writing: a spinning sparkle, a gradient label, and shimmering lines. */
+export function AiThinking({ label = "Thinking", lines = 3, className }: { label?: string; lines?: number; className?: string }) {
+  const widths = ["92%", "78%", "86%", "64%", "72%"];
+  return (
+    <div className={cn("grid gap-3", className)} role="status" aria-live="polite">
+      <p className="flex items-center gap-2 text-sm font-semibold">
+        <Sparkles className="ai-sparkle-spin h-4 w-4 text-[var(--ai-2)]" aria-hidden />
+        <span className="ai-text">{label}…</span>
+      </p>
+      <div className="grid gap-2.5" aria-hidden>
+        {Array.from({ length: lines }, (_, index) => (
+          <span key={index} className="ai-shimmer-line" style={{ width: widths[index % widths.length], animationDelay: `${index * 120}ms` }} />
+        ))}
+      </div>
     </div>
   );
 }

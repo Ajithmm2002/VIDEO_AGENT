@@ -10,7 +10,7 @@ import { generateFestivalContent } from "@/lib/actions/generate";
 import type { FestivalIdeaDraft } from "@/lib/ai/festival-ideas";
 import type { ChannelLanguage } from "@/lib/channel-profile";
 import { CopyButton } from "@/components/copy-button";
-import { Button, TextInput, choiceClass } from "@/components/ui";
+import { AiThinking, Button, TextInput, choiceClass } from "@/components/ui";
 import { suggestedPostDate, upcomingFestivals, type Festival } from "@/lib/festivals";
 import type { Platform } from "@/lib/types";
 import { cn, formatDate } from "@/lib/utils";
@@ -111,6 +111,7 @@ function FestivalSheet({
   const [source, setSource] = useState<"starter" | "local" | "remote">("starter");
   const [picked, setPicked] = useState<Set<number>>(new Set());
   const [generating, setGenerating] = useState(false);
+  const [round, setRound] = useState(0);
   const [adding, setAdding] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const eventDate = entry.date ?? (customDate || null);
@@ -136,6 +137,7 @@ function FestivalSheet({
     if (!response.ok) return toast.error(response.error);
     setIdeas(response.result.ideas);
     setSource(response.result.provider);
+    setRound((value) => value + 1);
     setPicked(new Set());
   }
 
@@ -206,7 +208,7 @@ function FestivalSheet({
                 .
               </p>
             )}
-            <Button className="mt-3 w-full" loading={generating} disabled={generating} onClick={generate}>
+            <Button variant="ai" className="mt-3 w-full" loading={generating} disabled={generating} onClick={generate}>
               {generating ? null : source === "starter" ? <Sparkles className="h-4 w-4" aria-hidden /> : <RefreshCw className="h-4 w-4" aria-hidden />}
               {generating ? "Writing ideas…" : source === "starter" ? "Generate ideas with AI" : "Generate new ideas"}
             </Button>
@@ -215,16 +217,14 @@ function FestivalSheet({
 
           <div>
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-              {source === "starter" ? "Starter ideas" : source === "remote" ? "Written by AI for your channel" : "Ideas for your niche"}
+              {source === "starter" ? "Starter ideas" : source === "remote" ? <span className="ai-text">Written by AI for your channel</span> : "Ideas for your niche"}
             </h3>
             {generating ? (
-              <ul className="grid gap-2" aria-hidden>
-                {[0, 1, 2, 3].map((index) => (
-                  <li key={index} className="h-24 animate-pulse rounded-xl bg-surface-2" />
-                ))}
-              </ul>
+              <div className="rounded-xl border border-line p-4">
+                <AiThinking label={channelSummary ? "Writing ideas for your channel" : "Writing festival ideas"} lines={5} />
+              </div>
             ) : (
-              <ul className="grid gap-2">
+              <ul key={`${source}-${round}`} className="reveal-stagger grid gap-2">
                 {ideas.map((idea, index) => (
                   <IdeaCard
                     key={`${source}-${index}`}

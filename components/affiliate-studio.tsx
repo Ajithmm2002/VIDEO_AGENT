@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { createFromWriting } from "@/lib/actions/generate";
 import { onGenerationResult, startAffiliateGeneration, useGenerationJobs } from "@/lib/background-generate";
 import { CopyButton, CopyField } from "@/components/copy-button";
-import { Button, Card, choiceClass, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { AiThinking, Button, Card, choiceClass, CountSelect, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { affiliateProductTypeLabels, googleFlowUrl, languageLabels, platformLabels } from "@/lib/labels";
 import type { AffiliateAd, AffiliateProductType, Language, Platform, ProductPreview } from "@/lib/types";
 import { affiliateProductTypes, languages, platforms } from "@/lib/types";
@@ -382,7 +382,8 @@ export function AffiliateStudio({
           </label>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onGenerate} loading={pending} disabled={saving}>
+          <Button variant="ai" onClick={onGenerate} loading={pending} disabled={saving}>
+            {pending ? null : <Sparkles className="h-4 w-4" aria-hidden />}
             {pending ? "Writing ad…" : "Generate product ad"}
           </Button>
           <a
@@ -395,6 +396,12 @@ export function AffiliateStudio({
           </a>
         </div>
       </Card>
+
+      {pending ? (
+        <Card>
+          <AiThinking label="Writing your product ad" lines={4} />
+        </Card>
+      ) : null}
 
       {title || postDescription || imagePrompt ? (
         <>
